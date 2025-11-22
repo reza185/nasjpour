@@ -16,7 +16,22 @@
 <link rel="manifest" href="../../manifest.json">
 <link rel="icon" href="../../icons/icon-192x192.png">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
+    <script>
+// ذخیره alert اصلی
+const originalAlert = window.alert;
+
+// جایگزین کردن alert
+window.alert = function(message) {
+    // اگر روی PWA نصب شده هستیم، از confirm استفاده کن
+    if (window.matchMedia('(display-mode: standalone)').matches || 
+        window.navigator.standalone === true) {
+        confirm(message);
+    } else {
+        // در حالت عادی از alert اصلی استفاده کن
+        originalAlert(message);
+    }
+};
+</script>
     <style>
         * {
             margin: 0;
