@@ -15,7 +15,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="manifest" href="../../manifest.json">
 <link rel="icon" href="../../icons/icon-192x192.png">
-   
+    
     <!-- <script src="../../auth.js"></script> -->
     <style>
         * {
@@ -960,6 +960,72 @@
     </div>
 
     <script>
+        // ==================== CUSTOM ALERT SYSTEM ====================
+        delete window.alert;
+        
+        window.alert = function(message) {
+            return new Promise((resolve) => {
+                // ساخت overlay
+                const overlay = document.createElement('div');
+                overlay.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0,0,0,0.5);
+                    z-index: 10000;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                `;
+                
+                // ساخت dialog
+                const dialog = document.createElement('div');
+                dialog.style.cssText = `
+                    background: white;
+                    padding: 25px;
+                    border-radius: 12px;
+                    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+                    text-align: center;
+                    min-width: 300px;
+                    max-width: 90%;
+                    font-family: Vazirmatn, sans-serif;
+                    border: 2px solid #2c3e50;
+                `;
+                
+                dialog.innerHTML = `
+                    <div style="margin-bottom: 20px; font-size: 16px; color: #2c3e50; line-height: 1.5;">${message}</div>
+                    <button id="customAlertConfirm" 
+                            style="padding: 10px 25px; background: #2c3e50; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                        تأیید
+                    </button>
+                `;
+                
+                overlay.appendChild(dialog);
+                document.body.appendChild(overlay);
+                
+                // تابع بستن
+                const closeAlert = function() {
+                    if (document.body.contains(overlay)) {
+                        document.body.removeChild(overlay);
+                    }
+                    resolve();
+                };
+                
+                // اضافه کردن event listener برای دکمه
+                const confirmBtn = document.getElementById('customAlertConfirm');
+                confirmBtn.addEventListener('click', closeAlert);
+                
+                // با کلیک روی overlay هم بسته نشه (مثل alert اصلی)
+                overlay.onclick = function(e) {
+                    if (e.target === overlay) {
+                        // کاری نکن - مثل alert اصلی که با کلیک خارج بسته نمیشه
+                    }
+                };
+            });
+        };
+        
         // تابع برای فرمت کردن تاریخ و زمان به فارسی
         function formatPersianDateTime(date) {
             const options = {
@@ -971,7 +1037,7 @@
             };
             return new Intl.DateTimeFormat('fa-IR', options).format(date);
         }
-
+        
         // تابع برای محاسبه زمان گذشته از ورود
         function getTimeSinceLogin(loginTime) {
             const now = new Date();
@@ -985,7 +1051,7 @@
                 return `${minutes} دقیقه قبل`;
             }
         }
-
+        
         // تابع برای به روز رسانی زمان آنلاین
         function updateOnlineTime() {
             const loginTimeElement = document.getElementById('loginTime');
@@ -993,7 +1059,7 @@
                 loginTimeElement.textContent = getTimeSinceLogin(window.loginTime);
             }
         }
-
+        
         // جلوگیری از زوم در دستگاه‌های موبایل و مدیریت زمان ورود
         document.addEventListener('DOMContentLoaded', function() {
             // جلوگیری از زوم با حرکات چندلمسی
@@ -1002,7 +1068,7 @@
                     e.preventDefault();
                 }
             }, { passive: false });
-
+        
             let lastTouchEnd = 0;
             document.addEventListener('touchend', function(e) {
                 const now = (new Date()).getTime();
@@ -1011,19 +1077,19 @@
                 }
                 lastTouchEnd = now;
             }, false);
-
+        
             document.addEventListener('gesturestart', function(e) {
                 e.preventDefault();
             });
-
+        
             document.addEventListener('gesturechange', function(e) {
                 e.preventDefault();
             });
-
+        
             document.addEventListener('gestureend', function(e) {
                 e.preventDefault();
             });
-
+        
             // مدیریت زمان ورود کاربر
             const now = new Date();
             window.loginTime = now;
@@ -1041,10 +1107,10 @@
             if (lastLoginTimeElement) {
                 lastLoginTimeElement.textContent = formatPersianDateTime(now);
             }
-
+        
             // به روز رسانی زمان آنلاین هر دقیقه
             setInterval(updateOnlineTime, 60000);
-
+        
             // تغییر وضعیت فعال در نویگیشن
             const navLinks = document.querySelectorAll('.nav-link');
             navLinks.forEach(link => {
@@ -1057,10 +1123,10 @@
                     this.classList.add('active');
                 });
             });
-
+        
             // لود اولیه چک لیست
             loadChecklist();
-
+        
             // محافظت از صفحه و نمایش اطلاعات کاربر
             if (typeof auth !== 'undefined') {
                 if (auth.protectPageByRole('operator')) {
@@ -1083,14 +1149,14 @@
                 }
             }
         });
-
+        
         // جلوگیری از اسکرول هنگام زوم در iOS
         document.addEventListener('touchmove', function(e) {
             if(e.scale !== 1) {
                 e.preventDefault();
             }
         }, { passive: false });
-
+        
         // داده‌های چک لیست اقدامات اولیه
         const initialChecklist = [
             {
@@ -1136,14 +1202,14 @@
                 completed: false
             }
         ];
-
+        
         let checklist = JSON.parse(JSON.stringify(initialChecklist));
-
+        
         // لود چک لیست
         function loadChecklist() {
             const checklistItems = document.getElementById('checklistItems');
             checklistItems.innerHTML = '';
-
+        
             checklist.forEach(item => {
                 const itemElement = document.createElement('div');
                 itemElement.className = `checklist-item ${item.completed ? 'completed' : ''} ${item.critical ? 'critical' : ''}`;
@@ -1163,11 +1229,11 @@
                 
                 checklistItems.appendChild(itemElement);
             });
-
+        
             updateProgress();
             updateUIState();
         }
-
+        
         // تغییر وضعیت آیتم چک لیست
         function toggleChecklistItem(itemId) {
             const item = checklist.find(i => i.id === itemId);
@@ -1176,16 +1242,16 @@
                 loadChecklist();
             }
         }
-
+        
         // آپدیت پیشرفت
         function updateProgress() {
             const completed = checklist.filter(item => item.completed).length;
             const total = checklist.length;
             const percentage = (completed / total) * 100;
-
+        
             document.getElementById('progressText').textContent = `${completed} از ${total} تکمیل شده`;
             document.getElementById('progressFill').style.width = `${percentage}%`;
-
+        
             // تغییر رنگ پیشرفت
             const progressFill = document.getElementById('progressFill');
             if (percentage === 100) {
@@ -1196,14 +1262,14 @@
                 progressFill.style.background = 'var(--danger)';
             }
         }
-
+        
         // آپدیت وضعیت UI
         function updateUIState() {
             const allCriticalCompleted = checklist.filter(item => item.critical).every(item => item.completed);
             const troubleshootingLink = document.getElementById('troubleshootingLink');
             const reportButtons = document.querySelectorAll('.report-btn');
             const checklistAlert = document.getElementById('checklistAlert');
-
+        
             if (allCriticalCompleted) {
                 // فعال کردن لینک عیب‌یابی
                 troubleshootingLink.classList.remove('disabled');
@@ -1213,7 +1279,7 @@
                 reportButtons.forEach(btn => {
                     btn.disabled = false;
                 });
-
+        
                 // تغییر هشدار به موفقیت
                 checklistAlert.className = 'alert alert-success';
                 checklistAlert.innerHTML = `
@@ -1231,7 +1297,7 @@
                 reportButtons.forEach(btn => {
                     btn.disabled = true;
                 });
-
+        
                 // نمایش هشدار
                 checklistAlert.className = 'alert alert-warning';
                 checklistAlert.innerHTML = `
@@ -1242,7 +1308,7 @@
                 `;
             }
         }
-
+        
         // مدیریت پاپاپ گزارش
         function openReportPopup(machineName) {
             const allCriticalCompleted = checklist.filter(item => item.critical).every(item => item.completed);
@@ -1250,17 +1316,17 @@
                 alert('لطفاً ابتدا اقدامات حیاتی اولیه را تکمیل کنید.');
                 return;
             }
-
+        
             document.getElementById('machineName').value = machineName;
             document.getElementById('reportPopup').style.display = 'flex';
             document.getElementById('reporterName').focus();
         }
-
+        
         function closeReportPopup() {
             document.getElementById('reportPopup').style.display = 'none';
             document.getElementById('reportForm').reset();
         }
-
+        
         // مدیریت ارسال فرم
         document.getElementById('reportForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -1281,46 +1347,35 @@
             
             closeReportPopup();
         });
-
+        
         // نمایش چک لیست دستگاه
         function showMachineChecklist(machineName) {
             alert(`چک لیست دستگاه "${machineName}" در حال بارگذاری...`);
         }
-
+        
         // بستن پاپاپ با کلیک خارج از آن
         document.getElementById('reportPopup').addEventListener('click', function(e) {
             if (e.target === this) {
                 closeReportPopup();
             }
         });
-
+        
         // فعال کردن اسکرول فقط در container اصلی
         const container = document.getElementById('mainContainer');
         container.addEventListener('touchmove', function(e) {
             e.stopPropagation();
         }, { passive: true });
-
+        
         // جلوگیری از اسکرول در body
         document.body.addEventListener('touchmove', function(e) {
             if (e.target === document.body) {
                 e.preventDefault();
             }
         }, { passive: false });
-
-
-
         
-if (window.matchMedia('(display-mode: standalone)').matches) {
-    document.body.style.overscrollBehavior = 'none';
-}
-
-    </script>
-    <script>
-// این رو دقیقاً قبل از </body> بذار
-window.alert = function(message) {
-    // ساده‌ترین راه - همیشه از confirm استفاده کن
-    confirm(message);
-};
-</script>
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+            document.body.style.overscrollBehavior = 'none';
+        }
+        </script>
 </body>
 </html>
