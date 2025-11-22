@@ -17,21 +17,34 @@
 <link rel="icon" href="../../icons/icon-192x192.png">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- <script src="../../auth.js"></script> -->
-    <script>
-// ذخیره alert اصلی
-const originalAlert = window.alert;
-
-// جایگزین کردن alert
+   <script>
 window.alert = function(message) {
-    // اگر روی PWA نصب شده هستیم، از confirm استفاده کن
-    if (window.matchMedia('(display-mode: standalone)').matches || 
-        window.navigator.standalone === true) {
-        confirm(message);
+    // تشخیص PWA نصب شده
+    const isPWA = window.matchMedia('(display-mode: standalone)').matches || 
+                  window.navigator.standalone === true ||
+                  document.referrer.includes('android-app://') ||
+                  window.location.protocol === 'chrome-extension:';
+    
+    console.log('🔍 وضعیت PWA:', isPWA);
+    
+    if (isPWA) {
+        // در PWA از confirm استفاده کن (آدرس نداره)
+        return confirm(message);
     } else {
         // در حالت عادی از alert اصلی استفاده کن
-        originalAlert(message);
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        document.body.appendChild(iframe);
+        const result = iframe.contentWindow.alert(message);
+        document.body.removeChild(iframe);
+        return result;
     }
 };
+
+// تست
+setTimeout(() => {
+    alert('این یک تست است!');
+}, 1000);
 </script>
     <style>
         /* استایل‌های اصلی با قابلیت‌های جدید */
