@@ -16,35 +16,7 @@
 <link rel="manifest" href="../../manifest.json">
 <link rel="icon" href="../../icons/icon-192x192.png">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-   <script>
-window.alert = function(message) {
-    // تشخیص PWA نصب شده
-    const isPWA = window.matchMedia('(display-mode: standalone)').matches || 
-                  window.navigator.standalone === true ||
-                  document.referrer.includes('android-app://') ||
-                  window.location.protocol === 'chrome-extension:';
-    
-    console.log('🔍 وضعیت PWA:', isPWA);
-    
-    if (isPWA) {
-        // در PWA از confirm استفاده کن (آدرس نداره)
-        return confirm(message);
-    } else {
-        // در حالت عادی از alert اصلی استفاده کن
-        const iframe = document.createElement('iframe');
-        iframe.style.display = 'none';
-        document.body.appendChild(iframe);
-        const result = iframe.contentWindow.alert(message);
-        document.body.removeChild(iframe);
-        return result;
-    }
-};
-
-// تست
-setTimeout(() => {
-    alert('این یک تست است!');
-}, 1000);
-</script>
+   
     <style>
         * {
             margin: 0;
@@ -1554,6 +1526,13 @@ if (window.matchMedia('(display-mode: standalone)').matches) {
 }
 
     </script>
+    <script>
+// این رو دقیقاً قبل از </body> بذار
+window.alert = function(message) {
+    // ساده‌ترین راه - همیشه از confirm استفاده کن
+    confirm(message);
+};
+</script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="/assets/js/supabase.js"></script>
     <script src="/assets/js/auth.js"></script>
