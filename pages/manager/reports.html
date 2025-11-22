@@ -11,7 +11,6 @@
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- <script src="../../auth.js"></script> -->
-    
     <style>
         * {
             margin: 0;
@@ -200,6 +199,7 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
             border: 1px solid #eaeaea;
             width: 100%;
+            margin-bottom: 50px;
         }
 
         .section-title {
@@ -725,11 +725,7 @@
             </h2>
             
             <div class="report-list" id="reportsList">
-                <!-- گزارشات به صورت داینامیک لود می‌شوند -->
-            </div>
-        </div>
-
-        <!-- معیارهای کلیدی عملکرد -->
+                  <!-- معیارهای کلیدی عملکرد -->
         <div class="card">
             <h2 class="section-title">
                 <i class="fas fa-chart-bar"></i>
@@ -770,8 +766,64 @@
             </div>
         </div>
     </div>
+            </div>
+        </div>
+
+      
 
     <script>
+        // ==================== CUSTOM ALERT SYSTEM ====================
+        delete window.alert;
+
+        window.alert = function(message) {
+            return new Promise((resolve) => {
+                const overlay = document.createElement('div');
+                overlay.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0,0,0,0.5);
+                    z-index: 10000;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 20px;
+                `;
+                
+                const dialog = document.createElement('div');
+                dialog.style.cssText = `
+                    background: white;
+                    padding: 25px;
+                    border-radius: 12px;
+                    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+                    text-align: center;
+                    min-width: 300px;
+                    max-width: 90%;
+                    font-family: Vazirmatn, sans-serif;
+                    border: 2px solid #2c3e50;
+                `;
+                
+                dialog.innerHTML = `
+                    <div style="margin-bottom: 20px; font-size: 16px; color: #2c3e50; line-height: 1.5;">${message}</div>
+                    <button onclick="closeCustomAlert()" 
+                            style="padding: 10px 25px; background: #2c3e50; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                        تأیید
+                    </button>
+                `;
+                
+                overlay.appendChild(dialog);
+                document.body.appendChild(overlay);
+                
+                window.closeCustomAlert = function() {
+                    document.body.removeChild(overlay);
+                    resolve();
+                };
+            });
+        };
+
+        // ==================== ORIGINAL CODE (ONLY ALERT MODIFIED) ====================
         // تابع برای فرمت کردن تاریخ و زمان به فارسی
         function formatPersianDateTime(date) {
             const options = {
@@ -972,60 +1024,10 @@
                 
             } catch (error) {
                 console.error('خطا در دریافت گزارشات مدیریتی:', error);
-                alert('خطا در دریافت گزارشات از سرور');
+                await alert('خطا در دریافت گزارشات از سرور');
             }
         }
 
-        // ایجاد داده نمونه اگر جدول خالی است
-        // async function createSampleData() {
-        //     try {
-        //         const sampleData = [
-        //             {
-        //                 reporter_name: 'اپراتور ۱',
-        //                 machine_name: 'دستگاه CNC شماره ۱',
-        //                 machine_status: 'خراب',
-        //                 problem_description: 'سیستم هیدرولیک دستگاه دچار مشکل شده است',
-        //                 status: 'pending',
-        //                 priority: 'high',
-        //                 actions_taken: 'بررسی اولیه انجام شد',
-        //                 manager_message: 'نیاز به بررسی فنی دارد',
-        //                 action_type: 'technical_review',
-        //                 technician_name: 'تکنسین احمدی',
-        //                 estimated_time: 8,
-        //                 budget_required: 1500.00,
-        //                 decision_status: 'pending_review'
-        //             },
-        //             {
-        //                 reporter_name: 'اپراتور ۲',
-        //                 machine_name: 'کمپرسور مرکزی',
-        //                 machine_status: 'در دست تعمیر',
-        //                 problem_description: 'سطح روغن پایین و نیاز به سرویس',
-        //                 status: 'in-progress',
-        //                 priority: 'medium',
-        //                 actions_taken: 'روغن‌کاری انجام شد',
-        //                 manager_message: 'در حال پیگیری',
-        //                 action_type: 'maintenance',
-        //                 technician_name: 'تکنسین رضایی',
-        //                 estimated_time: 4,
-        //                 budget_required: 500.00,
-        //                 decision_status: 'approved'
-        //             }
-        //         ];
-
-        //         const { error } = await supabase
-        //             .from('managerreports')
-        //             .insert(sampleData);
-
-        //         if (error) throw error;
-
-        //         // دوباره داده‌ها رو لود کن
-        //         loadManagerReports();
-                
-        //     } catch (error) {
-        //         console.error('خطا در ایجاد داده نمونه:', error);
-        //         alert('خطا در ایجاد داده‌های اولیه');
-        //     }
-        // }
 
         // آپدیت آمار
         function updateStats() {
@@ -1210,11 +1212,11 @@
                 createDownloadLink(csvData, `${filename}.csv`, 'text/csv');
                 createDownloadLink(jsonData, `${filename}.json`, 'application/json');
 
-                alert(`داده‌ها با موفقیت آماده شدند. فرمت‌های CSV و JSON در دسترس هستند.`);
+                await alert(`داده‌ها با موفقیت آماده شدند. فرمت‌های CSV و JSON در دسترس هستند.`);
                 
             } catch (error) {
                 console.error('خطا در تولید فایل:', error);
-                alert('خطا در تولید فایل دانلودی');
+                await alert('خطا در تولید فایل دانلودی');
             }
         }
 
@@ -1252,12 +1254,5 @@
             URL.revokeObjectURL(url);
         }
     </script>
-    <script>
-// این رو دقیقاً قبل از </body> بذار
-window.alert = function(message) {
-    // ساده‌ترین راه - همیشه از confirm استفاده کن
-    confirm(message);
-};
-</script>
 </body>
 </html>
