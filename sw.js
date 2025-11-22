@@ -1,12 +1,12 @@
 const CACHE_NAME = 'tpm-v1';
 const urlsToCache = [
-  './',
-  './index.html',
-  './styles.css',
-  './app.js',
-  './icons/icon-192x192.png',
-  './icons/icon-512x512.png',
-  './manifest.json'
+  '/nasjpour/',
+  '/nasjpour/index.html',
+  '/nasjpour/icons/icon-192x192.png',
+  '/nasjpour/icons/icon-512x512.png',
+  '/nasjpour/manifest.json',
+  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
+  'https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap'
 ];
 
 self.addEventListener('install', event => {
