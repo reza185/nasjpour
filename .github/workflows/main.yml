@@ -1,0 +1,33 @@
+name: Keep Supabase Alive
+
+on:
+  schedule:
+    - cron: '0 0 */5 * *'  # هر 5 روز
+  workflow_dispatch:
+
+jobs:
+  ping-supabase:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Health Check Supabase
+        run: |
+          echo "🕒 Performing health check at $(date -u)"
+          
+          # درخواست به تیبل مخصوص health_check
+          RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST \
+            "https://kalykylvjqigqlaprlca.supabase.co/rest/v1/health_check" \
+            -H "apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImthbHlreWx2anFpZ3FsYXBybGNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM1NjI1OTcsImV4cCI6MjA3OTEzODU5N30.S8YtogVrxkqYjkgfkGpy4_mS6mqaNxmsHjxnhyBPwEY" \
+            -H "Content-Type: application/json" \
+            -H "Prefer: return=minimal" \
+            -d '{"status": "checked"}')
+          
+          HTTP_STATUS=$(echo "$RESPONSE" | grep "HTTP_STATUS:" | cut -d':' -f2)
+          
+          if [ "$HTTP_STATUS" -eq 201 ] || [ "$HTTP_STATUS" -eq 200 ]; then
+            echo "✅ Supabase health check passed! (Status: $HTTP_STATUS)"
+            echo "📅 Next check in 5 days..."
+          else
+            echo "❌ Health check failed! (Status: $HTTP_STATUS)"
+            echo "🔍 Response: $RESPONSE"
+            exit 1
+          fi
