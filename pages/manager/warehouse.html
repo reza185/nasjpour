@@ -898,12 +898,15 @@
                 
                 // تابع بستن
                 const closeAlert = function() {
-                    document.body.removeChild(overlay);
+                    if (document.body.contains(overlay)) {
+                        document.body.removeChild(overlay);
+                    }
                     resolve();
                 };
                 
                 // اضافه کردن event listener برای دکمه
-                document.getElementById('customAlertConfirm').addEventListener('click', closeAlert);
+                const confirmBtn = document.getElementById('customAlertConfirm');
+                confirmBtn.addEventListener('click', closeAlert);
                 
                 // با کلیک روی overlay هم بسته نشه (مثل alert اصلی)
                 overlay.onclick = function(e) {
@@ -976,6 +979,44 @@
                 console.error('❌ خطا در initialize کردن Supabase:', error);
                 return null;
             }
+        }
+        
+        // ==================== SAMPLE DATA ====================
+        function getSampleData() {
+            return [
+                {
+                    id: '1',
+                    code: 'PNL-001',
+                    name: 'پنل کنترل اصلی',
+                    category: 'الکترونیکی',
+                    currentStock: 5,
+                    minStock: 3,
+                    maxStock: 20,
+                    unit: 'عدد',
+                    location: 'قفسه A-1',
+                    supplier: 'تامین کننده الف',
+                    usedIn: ['دستگاه استنتر'],
+                    status: 'adequate',
+                    lastOrder: '1402/10/15',
+                    nextOrder: '1402/11/15'
+                },
+                {
+                    id: '2',
+                    code: 'MTR-002',
+                    name: 'موتور الکتریکی',
+                    category: 'الکتریکی',
+                    currentStock: 2,
+                    minStock: 5,
+                    maxStock: 15,
+                    unit: 'عدد',
+                    location: 'قفسه B-2',
+                    supplier: 'تامین کننده ب',
+                    usedIn: ['دستگاه استنتر', 'دستگاه خشک کن'],
+                    status: 'low',
+                    lastOrder: '1402/09/20',
+                    nextOrder: '1402/10/20'
+                }
+            ];
         }
         
         // ==================== SUPABASE FUNCTIONS ====================
@@ -1306,8 +1347,6 @@
                     <div class="detail-label">حداکثر موجودی</div>
                     <div class="detail-value">${part.maxStock} عدد</div>
                 </div>
-                
-                
             `;
         
             document.getElementById('partDetailsPopup').style.display = 'flex';
@@ -1362,19 +1401,6 @@
         
             renderInventoryTable(filteredData);
         }
-        
-        // ویرایش قطعه
-        // function editPart() {
-        //     alert('ویرایش اطلاعات قطعه');
-        // }
-        
-        // // حذف قطعه
-        // function deletePart() {
-        //     if (confirm('آیا از حذف این قطعه اطمینان دارید؟')) {
-        //         alert('قطعه با موفقیت حذف شد');
-        //         closePartDetails();
-        //     }
-        // }
         
         // ==================== EVENT LISTENERS ====================
         document.addEventListener('DOMContentLoaded', function() {
