@@ -16,7 +16,7 @@
 <link rel="manifest" href="../../manifest.json">
 <link rel="icon" href="../../icons/icon-192x192.png">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-   
+    
     <style>
         * {
             margin: 0;
@@ -966,13 +966,151 @@
     </div>
 
     <script>
+        // ==================== CUSTOM ALERT SYSTEM ====================
+        delete window.alert;
+        
+        window.alert = function(message) {
+            return new Promise((resolve) => {
+                // ساخت overlay
+                const overlay = document.createElement('div');
+                overlay.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0,0,0,0.5);
+                    z-index: 10000;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                `;
+                
+                // ساخت dialog
+                const dialog = document.createElement('div');
+                dialog.style.cssText = `
+                    background: white;
+                    padding: 25px;
+                    border-radius: 12px;
+                    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+                    text-align: center;
+                    min-width: 300px;
+                    max-width: 90%;
+                    font-family: Vazirmatn, sans-serif;
+                    border: 2px solid #2c3e50;
+                `;
+                
+                dialog.innerHTML = `
+                    <div style="margin-bottom: 20px; font-size: 16px; color: #2c3e50; line-height: 1.5;">${message}</div>
+                    <button id="customAlertConfirm" 
+                            style="padding: 10px 25px; background: #2c3e50; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                        تأیید
+                    </button>
+                `;
+                
+                overlay.appendChild(dialog);
+                document.body.appendChild(overlay);
+                
+                // تابع بستن
+                const closeAlert = function() {
+                    if (document.body.contains(overlay)) {
+                        document.body.removeChild(overlay);
+                    }
+                    resolve();
+                };
+                
+                // اضافه کردن event listener برای دکمه
+                const confirmBtn = document.getElementById('customAlertConfirm');
+                confirmBtn.addEventListener('click', closeAlert);
+                
+                // با کلیک روی overlay هم بسته نشه (مثل alert اصلی)
+                overlay.onclick = function(e) {
+                    if (e.target === overlay) {
+                        // کاری نکن - مثل alert اصلی که با کلیک خارج بسته نمیشه
+                    }
+                };
+            });
+        };
+        
+        // ==================== CUSTOM CONFIRM SYSTEM ====================
+        delete window.confirm;
+        
+        window.confirm = function(message) {
+            return new Promise((resolve) => {
+                // ساخت overlay
+                const overlay = document.createElement('div');
+                overlay.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0,0,0,0.5);
+                    z-index: 10000;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                `;
+                
+                // ساخت dialog
+                const dialog = document.createElement('div');
+                dialog.style.cssText = `
+                    background: white;
+                    padding: 25px;
+                    border-radius: 12px;
+                    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+                    text-align: center;
+                    min-width: 300px;
+                    max-width: 90%;
+                    font-family: Vazirmatn, sans-serif;
+                    border: 2px solid #2c3e50;
+                `;
+                
+                dialog.innerHTML = `
+                    <div style="margin-bottom: 20px; font-size: 16px; color: #2c3e50; line-height: 1.5;">${message}</div>
+                    <div style="display: flex; gap: 10px; justify-content: center;">
+                        <button id="customConfirmYes" 
+                                style="padding: 10px 25px; background: #27ae60; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                            بله
+                        </button>
+                        <button id="customConfirmNo" 
+                                style="padding: 10px 25px; background: #e74c3c; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                            خیر
+                        </button>
+                    </div>
+                `;
+                
+                overlay.appendChild(dialog);
+                document.body.appendChild(overlay);
+                
+                // تابع بستن
+                const closeConfirm = function(result) {
+                    if (document.body.contains(overlay)) {
+                        document.body.removeChild(overlay);
+                    }
+                    resolve(result);
+                };
+                
+                // اضافه کردن event listener برای دکمه‌ها
+                document.getElementById('customConfirmYes').addEventListener('click', () => closeConfirm(true));
+                document.getElementById('customConfirmNo').addEventListener('click', () => closeConfirm(false));
+                
+                // با کلیک روی overlay هم بسته نشه (مثل confirm اصلی)
+                overlay.onclick = function(e) {
+                    if (e.target === overlay) {
+                        // کاری نکن - مثل confirm اصلی که با کلیک خارج بسته نمیشه
+                    }
+                };
+            });
+        };
+        
         // اتصال به Supabase
         const SUPABASE_URL = 'https://kalykylvjqigqlaprlca.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImthbHlreWx2anFpZ3FsYXBybGNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM1NjI1OTcsImV4cCI6MjA3OTEzODU5N30.S8YtogVrxkqYjkgfkGpy4_mS6mqaNxmsHjxnhyBPwEY';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
+        
         let currentReports = [];
-
+        
         // تابع ساده برای نمایش تاریخ و زمان فارسی
         function getPersianDateTime() {
             const now = new Date();
@@ -987,7 +1125,7 @@
             });
             return `${dateString} - ${timeString}`;
         }
-
+        
         // تابع برای محاسبه زمان گذشته از ورود
         function getTimeSinceLogin(loginTime) {
             const now = new Date();
@@ -1003,7 +1141,7 @@
                 return 'همین الان';
             }
         }
-
+        
         // تابع برای به روز رسانی زمان آنلاین
         function updateOnlineTime() {
             const loginTimeElement = document.getElementById('loginTime');
@@ -1011,7 +1149,7 @@
                 loginTimeElement.textContent = getTimeSinceLogin(window.loginTime);
             }
         }
-
+        
         // جلوگیری از زوم در دستگاه‌های موبایل و مدیریت زمان ورود
         document.addEventListener('DOMContentLoaded', function() {
             // جلوگیری از زوم با حرکات چندلمسی
@@ -1020,7 +1158,7 @@
                     e.preventDefault();
                 }
             }, { passive: false });
-
+        
             let lastTouchEnd = 0;
             document.addEventListener('touchend', function(e) {
                 const now = (new Date()).getTime();
@@ -1029,19 +1167,19 @@
                 }
                 lastTouchEnd = now;
             }, false);
-
+        
             document.addEventListener('gesturestart', function(e) {
                 e.preventDefault();
             });
-
+        
             document.addEventListener('gesturechange', function(e) {
                 e.preventDefault();
             });
-
+        
             document.addEventListener('gestureend', function(e) {
                 e.preventDefault();
             });
-
+        
             // مدیریت زمان ورود کاربر
             const now = new Date();
             window.loginTime = now;
@@ -1059,10 +1197,10 @@
             if (lastLoginTimeElement) {
                 lastLoginTimeElement.textContent = getPersianDateTime();
             }
-
+        
             // به روز رسانی زمان آنلاین هر دقیقه
             setInterval(updateOnlineTime, 60000);
-
+        
             // تغییر وضعیت فعال در نویگیشن
             const navLinks = document.querySelectorAll('.nav-link');
             navLinks.forEach(link => {
@@ -1071,10 +1209,10 @@
                     this.classList.add('active');
                 });
             });
-
+        
             // بارگذاری گزارشات
             loadReports();
-
+        
             // محافظت از صفحه و نمایش اطلاعات کاربر
             if (typeof auth !== 'undefined') {
                 if (auth.protectPageByRole('supervisor')) {
@@ -1097,14 +1235,14 @@
                 }
             }
         });
-
+        
         // جلوگیری از اسکرول هنگام زوم در iOS
         document.addEventListener('touchmove', function(e) {
             if(e.scale !== 1) {
                 e.preventDefault();
             }
         }, { passive: false });
-
+        
         // توابع کمکی
         function getStatusText(status) {
             const statusMap = {
@@ -1117,7 +1255,7 @@
             };
             return statusMap[status] || status;
         }
-
+        
         function getPriorityText(priority) {
             const priorityMap = {
                 'low': 'کم',
@@ -1127,7 +1265,7 @@
             };
             return priorityMap[priority] || priority;
         }
-
+        
         // لود گزارشات از Supabase
         async function loadReports() {
             try {
@@ -1135,9 +1273,9 @@
                     .from('operatourreports')
                     .select('*')
                     .order('created_at', { ascending: false });
-
+        
                 if (error) throw error;
-
+        
                 currentReports = reports || [];
                 updateStats();
                 renderReports(currentReports);
@@ -1152,7 +1290,7 @@
                 }
             }
         }
-
+        
         // آپدیت آمار
         function updateStats() {
             const pendingCount = currentReports.filter(r => 
@@ -1161,12 +1299,12 @@
             
             const approvedCount = currentReports.filter(r => r.status === 'approved').length;
             const rejectedCount = currentReports.filter(r => r.status === 'rejected').length;
-
+        
             document.getElementById('pendingCount').textContent = pendingCount;
             document.getElementById('approvedCount').textContent = approvedCount;
             document.getElementById('rejectedCount').textContent = rejectedCount;
         }
-
+        
         // نمایش گزارشات
         function renderReports(reports) {
             const reportList = document.getElementById('reportList');
@@ -1181,7 +1319,7 @@
                 `;
                 return;
             }
-
+        
             reportList.innerHTML = reports.map(report => {
                 const displayStatus = report.status || 'pending';
                 const displayPriority = report.priority || 'medium';
@@ -1256,124 +1394,133 @@
                 `;
             }).join('');
         }
-
+        
         // توابع مدیریت گزارشات
         async function approveReport(reportId) {
-            if (confirm('آیا از تأیید این گزارش اطمینان دارید؟')) {
-                try {
-                    const { error } = await supabase
-                        .from('operatourreports')
-                        .update({ 
-                            status: 'approved',
-                            updated_at: new Date().toISOString()
-                        })
-                        .eq('id', reportId);
-
-                    if (error) throw error;
-                    
-                    alert('گزارش تأیید شد.');
-                    loadReports();
-                    
-                } catch (error) {
-                    console.error('خطا در تأیید گزارش:', error);
-                    alert('خطا در تأیید گزارش');
-                }
+            const result = await confirm('آیا از تأیید این گزارش اطمینان دارید؟');
+            if (!result) {
+                return;
+            }
+        
+            try {
+                const { error } = await supabase
+                    .from('operatourreports')
+                    .update({ 
+                        status: 'approved',
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', reportId);
+        
+                if (error) throw error;
+                
+                alert('گزارش تأیید شد.');
+                loadReports();
+                
+            } catch (error) {
+                console.error('خطا در تأیید گزارش:', error);
+                alert('خطا در تأیید گزارش');
             }
         }
-
+        
         async function rejectReport(reportId) {
-            if (confirm('آیا از رد این گزارش اطمینان دارید؟')) {
-                try {
-                    const { error } = await supabase
-                        .from('operatourreports')
-                        .update({ 
-                            status: 'rejected',
-                            updated_at: new Date().toISOString()
-                        })
-                        .eq('id', reportId);
-
-                    if (error) throw error;
-                    
-                    alert('گزارش رد شد.');
-                    loadReports();
-                    
-                } catch (error) {
-                    console.error('خطا در رد گزارش:', error);
-                    alert('خطا در رد گزارش');
-                }
+            const result = await confirm('آیا از رد این گزارش اطمینان دارید؟');
+            if (!result) {
+                return;
+            }
+        
+            try {
+                const { error } = await supabase
+                    .from('operatourreports')
+                    .update({ 
+                        status: 'rejected',
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', reportId);
+        
+                if (error) throw error;
+                
+                alert('گزارش رد شد.');
+                loadReports();
+                
+            } catch (error) {
+                console.error('خطا در رد گزارش:', error);
+                alert('خطا در رد گزارش');
             }
         }
-
+        
         async function completeReport(reportId) {
-            if (confirm('آیا این گزارش تکمیل شده است؟')) {
-                try {
-                    // انتقال به جدول مدیران
-                    const report = currentReports.find(r => r.id === reportId);
-                    if (report) {
-                        const reportData = {
-                            reporter_name: report.reporter_name || report.reporterName,
-                            machine_name: report.machine_name || report.machineName,
-                            machine_status: report.machine_status || report.machineStatus,
-                            problem_description: report.problem_description || report.problemDescription,
-                            status: 'completed',
-                            priority: report.priority || 'medium',
-                            actions_taken: report.actions_taken || report.actionsTaken,
-                            manager_message: report.manager_note || report.managerNote,
-                            technician_name: report.technician_name || report.technicianName,
-                            estimated_time: report.estimated_time || report.estimatedTime,
-                            created_at: report.created_at || report.createdAt,
-                            completed_at: new Date().toISOString()
-                        };
-
-                        const { error: insertError } = await supabase
-                            .from('managerreports')
-                            .insert([reportData]);
-
-                        if (insertError) throw insertError;
-
-                        // حذف از جدول اصلی
-                        const { error: deleteError } = await supabase
-                            .from('operatourreports')
-                            .delete()
-                            .eq('id', reportId);
-
-                        if (deleteError) throw deleteError;
-                    }
-                    
-                    alert('گزارش تکمیل و به آرشیو مدیران انتقال داده شد.');
-                    loadReports();
-                    
-                } catch (error) {
-                    console.error('خطا در تکمیل گزارش:', error);
-                    alert('خطا در تکمیل گزارش');
+            const result = await confirm('آیا این گزارش تکمیل شده است؟');
+            if (!result) {
+                return;
+            }
+        
+            try {
+                // انتقال به جدول مدیران
+                const report = currentReports.find(r => r.id === reportId);
+                if (report) {
+                    const reportData = {
+                        reporter_name: report.reporter_name || report.reporterName,
+                        machine_name: report.machine_name || report.machineName,
+                        machine_status: report.machine_status || report.machineStatus,
+                        problem_description: report.problem_description || report.problemDescription,
+                        status: 'completed',
+                        priority: report.priority || 'medium',
+                        actions_taken: report.actions_taken || report.actionsTaken,
+                        manager_message: report.manager_note || report.managerNote,
+                        technician_name: report.technician_name || report.technicianName,
+                        estimated_time: report.estimated_time || report.estimatedTime,
+                        created_at: report.created_at || report.createdAt,
+                        completed_at: new Date().toISOString()
+                    };
+        
+                    const { error: insertError } = await supabase
+                        .from('managerreports')
+                        .insert([reportData]);
+        
+                    if (insertError) throw insertError;
+        
+                    // حذف از جدول اصلی
+                    const { error: deleteError } = await supabase
+                        .from('operatourreports')
+                        .delete()
+                        .eq('id', reportId);
+        
+                    if (deleteError) throw deleteError;
                 }
+                
+                alert('گزارش تکمیل و به آرشیو مدیران انتقال داده شد.');
+                loadReports();
+                
+            } catch (error) {
+                console.error('خطا در تکمیل گزارش:', error);
+                alert('خطا در تکمیل گزارش');
             }
         }
-
+        
         // مدیریت پاپاپ‌ها
         function openManagerPopup(reportId) {
             document.getElementById('currentReportId').value = reportId;
             document.getElementById('managerPopup').style.display = 'flex';
             document.getElementById('managerMessage').focus();
         }
-
+        
         function closeManagerPopup() {
             document.getElementById('managerPopup').style.display = 'none';
             document.getElementById('managerForm').reset();
         }
-
+        
         function openActionPopup(reportId, actionType) {
             document.getElementById('actionReportId').value = reportId;
             document.getElementById('actionTypeField').value = actionType;
             document.getElementById('actionPopup').style.display = 'flex';
             document.getElementById('actionDescription').focus();
         }
-
+        
         function closeActionPopup() {
             document.getElementById('actionPopup').style.display = 'none';
             document.getElementById('actionForm').reset();
         }
-
+        
         // ارسال به مدیر
         document.getElementById('managerForm').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -1381,7 +1528,7 @@
             const reportId = document.getElementById('currentReportId').value;
             const message = document.getElementById('managerMessage').value;
             const actionType = document.getElementById('actionType').value;
-
+        
             try {
                 // انتقال به جدول مدیران
                 const report = currentReports.find(r => r.id === reportId);
@@ -1401,13 +1548,13 @@
                         created_at: report.created_at || report.createdAt,
                         referred_at: new Date().toISOString()
                     };
-
+        
                     const { error } = await supabase
                         .from('managerreports')
                         .insert([reportData]);
-
+        
                     if (error) throw error;
-
+        
                     // آپدیت وضعیت در جدول اصلی
                     const { error: updateError } = await supabase
                         .from('operatourreports')
@@ -1417,7 +1564,7 @@
                             updated_at: new Date().toISOString()
                         })
                         .eq('id', reportId);
-
+        
                     if (updateError) throw updateError;
                 }
                 
@@ -1430,7 +1577,7 @@
                 alert('خطا در ارسال به مدیر');
             }
         });
-
+        
         // ثبت اقدام
         document.getElementById('actionForm').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -1440,14 +1587,14 @@
             const technician = document.getElementById('technicianName').value;
             const estimatedTime = document.getElementById('estimatedTime').value;
             const actionType = document.getElementById('actionTypeField').value;
-
+        
             try {
                 const report = currentReports.find(r => r.id === reportId);
                 const currentActions = (report.actions_taken || report.actionsTaken) ? 
                     (Array.isArray(report.actions_taken || report.actionsTaken) ? 
                         (report.actions_taken || report.actionsTaken) : 
                         [report.actions_taken || report.actionsTaken]) : [];
-
+        
                 const newAction = `ارجاع به ${technician} - زمان تخمینی: ${estimatedTime} ساعت - ${description}`;
                 
                 const { error } = await supabase
@@ -1460,7 +1607,7 @@
                         updated_at: new Date().toISOString()
                     })
                     .eq('id', reportId);
-
+        
                 if (error) throw error;
                 
                 alert('اقدام با موفقیت ثبت شد.');
@@ -1472,13 +1619,13 @@
                 alert('خطا در ثبت اقدام');
             }
         });
-
+        
         // فیلتر کردن گزارشات
         function filterReports() {
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const statusFilter = document.getElementById('statusFilter').value;
             const priorityFilter = document.getElementById('priorityFilter').value;
-
+        
             const filtered = currentReports.filter(report => {
                 const machineName = report.machine_name || report.machineName || '';
                 const problemDescription = report.problem_description || report.problemDescription || '';
@@ -1497,42 +1644,32 @@
                 
                 return matchesSearch && matchesStatus && matchesPriority;
             });
-
+        
             renderReports(filtered);
         }
-
+        
         // رویدادهای فیلتر
         document.getElementById('searchInput').addEventListener('input', filterReports);
         document.getElementById('statusFilter').addEventListener('change', filterReports);
         document.getElementById('priorityFilter').addEventListener('change', filterReports);
-
+        
         // فعال کردن اسکرول فقط در container اصلی
         const container = document.getElementById('mainContainer');
         container.addEventListener('touchmove', function(e) {
             e.stopPropagation();
         }, { passive: true });
-
+        
         // جلوگیری از اسکرول در body
         document.body.addEventListener('touchmove', function(e) {
             if (e.target === document.body) {
                 e.preventDefault();
             }
         }, { passive: false });
-
-
         
-if (window.matchMedia('(display-mode: standalone)').matches) {
-    document.body.style.overscrollBehavior = 'none';
-}
-
-    </script>
-    <script>
-// این رو دقیقاً قبل از </body> بذار
-window.alert = function(message) {
-    // ساده‌ترین راه - همیشه از confirm استفاده کن
-    confirm(message);
-};
-</script>
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+            document.body.style.overscrollBehavior = 'none';
+        }
+        </script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="/assets/js/supabase.js"></script>
     <script src="/assets/js/auth.js"></script>
