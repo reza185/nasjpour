@@ -21,7 +21,7 @@
     <!-- Icons -->
     <link rel="icon" href="icons/icon-192x192.png">
     <link rel="apple-touch-icon" href="icons/icon-192x192.png">
- 
+    
     <style>
         * {
             margin: 0;
@@ -451,7 +451,7 @@
                 </div>
                 <div class="logo-text">
                     <div class="logo-main">TPM PRO</div>
-                    <div class="logo-sub">سیستم مدیریت تولید کارخانه رنگین چاپ سپاهان</div>
+                    <div class="logo-sub">سیستم مدیریت تولید شرکت رنگیم چاپ سپاهان</div>
                 </div>
             </div>
             <p class="tagline">بهترین راهکار برای مدیریت نگهداری و تعمیرات تولید در محیط‌های صنعتی</p>
@@ -527,184 +527,100 @@
     </div>
 
     <script>
-        // PWA Installation Code
-        let installPrompt = null;
-        let installAlertShown = false;
-
-        // وقتی PWA آماده نصب باشد
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            installPrompt = e;
-            
-            if (!isPWAInstalled() && !installAlertShown) {
-                setTimeout(showInstallAlert, 5000);
-            }
-        });
-
-        // نمایش الرت نصب
-        function showInstallAlert() {
-            if (installAlertShown || isPWAInstalled()) return;
-            
-            installAlertShown = true;
-            
-            const alertBox = document.createElement('div');
-            alertBox.className = 'pwa-alert';
-            alertBox.innerHTML = `
-                <div class="pwa-content">
-                    <span style="font-size: 20px;">📲</span>
-                    <div>
-                        <div style="font-weight: bold;">نصب برنامه TPM</div>
-                        <div style="font-size: 12px; opacity: 0.8;">برای تجربه بهتر، برنامه را نصب کنید</div>
-                    </div>
-                </div>
-                <div class="pwa-buttons">
-                    <button class="pwa-btn" onclick="installApp()">نصب کن</button>
-                    <button class="pwa-btn-cancel" onclick="closeInstallAlert()">بعداً</button>
-                </div>
-            `;
-            
-            const overlay = document.createElement('div');
-            overlay.className = 'pwa-overlay';
-            overlay.onclick = closeInstallAlert;
-            
-            alertBox.id = 'install-alert';
-            document.body.appendChild(overlay);
-            document.body.appendChild(alertBox);
-            
-            // بستن خودکار بعد از 15 ثانیه
-            setTimeout(closeInstallAlert, 15000);
-        }
-
-        // نصب برنامه
-        async function installApp() {
-            if (!installPrompt) return;
-            
-            try {
-                installPrompt.prompt();
-                const { outcome } = await installPrompt.userChoice;
-                
-                if (outcome === 'accepted') {
-                    console.log('✅ برنامه نصب شد');
-                    showSuccessMessage();
-                }
-            } catch (error) {
-                console.log('خطا در نصب:', error);
-            }
-            
-            installPrompt = null;
-            closeInstallAlert();
-        }
-
-        // بستن الرت
-        function closeInstallAlert() {
-            const alertBox = document.getElementById('install-alert');
-            const overlay = document.querySelector('.pwa-overlay');
-            
-            if (alertBox) alertBox.remove();
-            if (overlay) overlay.remove();
-        }
-
-        // نمایش پیام موفقیت
-        function showSuccessMessage() {
-            const successMsg = document.createElement('div');
-            successMsg.className = 'pwa-success';
-            successMsg.innerHTML = `
-                <div class="pwa-content">
-                    <span style="font-size: 20px;">✅</span>
-                    <div>
-                        <div style="font-weight: bold;">نصب موفق!</div>
-                        <div style="font-size: 12px;">برنامه با موفقیت نصب شد</div>
-                    </div>
-                </div>
-            `;
-            
-            document.body.appendChild(successMsg);
-            setTimeout(() => successMsg.remove(), 3000);
-        }
-
-        // بررسی نصب شده بودن
-        function isPWAInstalled() {
-            return window.matchMedia('(display-mode: standalone)').matches;
-        }
-
-        // ثبت Service Worker
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(registration => {
-                        console.log('✅ Service Worker ثبت شد');
-                    })
-                    .catch(error => {
-                        console.log('❌ خطا در ثبت Service Worker:', error);
-                    });
-            });
-        }
-
-        // Login System Code
-        document.addEventListener('DOMContentLoaded', function() {
-            const loginForm = document.getElementById('loginForm');
-            const errorMessage = document.getElementById('errorMessage');
-
-            // هندل کردن ارسال فرم
-            loginForm.addEventListener('submit', function(e) {
-                e.preventDefault(); // جلوگیری از ارسال واقعی فرم
-                
-                const username = document.getElementById('username').value.trim();
-                const password = document.getElementById('password').value.trim();
-
-                console.log('ورودی کاربر:', username, password); // برای دیباگ
-
-                // پنهان کردن پیام خطا
-                errorMessage.style.display = 'none';
-
-                // اعتبارسنجی
-                if (username === 'nasajpour' && password === '09131182533') {
-                    alert('ورود موفق! در حال انتقال به صفحه مدیر...');
-                    window.location.href = './pages/manager/dashboard.html';
-                } else if (username === 'norozi' && password === '09138650762') {
-                    alert('ورود موفق! در حال انتقال به صفحه اپراتور...');
-                    window.location.href = './pages/operator/dashboard.html';
-                } else if (username === 'broumand' && password === '123456') {
-                    alert('ورود موفق! در حال انتقال به صفحه سرپرست...');
-                    window.location.href = './pages/superviser/dashboard.html';
-                } else if (username === 'anbar' && password === '123456') {
-                    alert('ورود موفق! در حال انتقال به صفحه انباز...');
-                    window.location.href = './pages/anbar/dashboard.html';
-                } else {
-                    // نمایش خطا
-                    errorMessage.style.display = 'block';
-                    // انیمیشن لرزش
-                    loginForm.style.animation = 'shake 0.5s';
-                    setTimeout(() => {
-                        loginForm.style.animation = '';
-                    }, 500);
-                }
-            });
-
-            // انیمیشن‌های UI
-            const inputs = document.querySelectorAll('.form-input');
-            inputs.forEach(input => {
-                input.addEventListener('focus', function() {
-                    this.parentElement.querySelector('.input-icon').style.color = '#3498db';
-                });
-                
-                input.addEventListener('blur', function() {
-                    this.parentElement.querySelector('.input-icon').style.color = '#95a5a6';
-                });
-            });
-        });
+        // فقط این کد رو نگه دار و بقیه alert ها رو پاک کن
         
-if (window.matchMedia('(display-mode: standalone)').matches) {
-    document.body.style.overscrollBehavior = 'none';
-}
-
-    </script>
-    <script>
-// این رو دقیقاً قبل از </body> بذار
-window.alert = function(message) {
-    // ساده‌ترین راه - همیشه از confirm استفاده کن
-    confirm(message);
-};
-</script>
+        // حذف alert اصلی
+        delete window.alert;
+        
+        // ساخت alert با توقف واقعی
+        window.alert = function(message) {
+            return new Promise((resolve) => {
+                // ساخت overlay
+                const overlay = document.createElement('div');
+                overlay.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0,0,0,0.5);
+                    z-index: 10000;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                `;
+                
+                // ساخت dialog
+                const dialog = document.createElement('div');
+                dialog.style.cssText = `
+                    background: white;
+                    padding: 25px;
+                    border-radius: 12px;
+                    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+                    text-align: center;
+                    min-width: 300px;
+                    max-width: 90%;
+                    font-family: Vazirmatn, sans-serif;
+                    border: 2px solid #2c3e50;
+                `;
+                
+                dialog.innerHTML = `
+                    <div style="margin-bottom: 20px; font-size: 16px; color: #2c3e50; line-height: 1.5;">${message}</div>
+                    <button onclick="closeCurrentAlert()" 
+                            style="padding: 10px 25px; background: #2c3e50; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                        تأیید
+                    </button>
+                `;
+                
+                overlay.appendChild(dialog);
+                document.body.appendChild(overlay);
+                
+                // تابع بستن
+                window.closeCurrentAlert = function() {
+                    document.body.removeChild(overlay);
+                    resolve();
+                };
+                
+                // با کلیک روی overlay هم بسته نشه (مثل alert اصلی)
+                overlay.onclick = function(e) {
+                    if (e.target === overlay) {
+                        // کاری نکن - مثل alert اصلی که با کلیک خارج بسته نمیشه
+                    }
+                };
+            });
+        };
+        
+        // حالا در کد لاگین از await استفاده کن
+        async function handleLogin() {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+        
+            if (username === 'nasajpour' && password === '09131182533') {
+                await alert('ورود موفق! در حال انتقال به صفحه مدیر...');
+                window.location.href = './pages/manager/dashboard.html';
+            } else if (username === 'norozi' && password === '09138650762') {
+                await alert('ورود موفق! در حال انتقال به صفحه اپراتور...');
+                window.location.href = './pages/operator/dashboard.html';
+            } else if (username === 'broumand' && password === '123456') {
+                await alert('ورود موفق! در حال انتقال به صفحه سرپرست...');
+                window.location.href = './pages/superviser/dashboard.html';
+            } else if (username === 'anbar' && password === '123456') {
+                await alert('ورود موفق! در حال انتقال به صفحه انبار...');
+                window.location.href = './pages/anbar/dashboard.html';
+            } else {
+                errorMessage.style.display = 'block';
+                loginForm.style.animation = 'shake 0.5s';
+                setTimeout(() => {
+                    loginForm.style.animation = '';
+                }, 500);
+            }
+        }
+        
+        // در event listener فرم
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            await handleLogin();
+        });
+        </script>
 </body>
 </html>
