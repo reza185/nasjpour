@@ -1315,5 +1315,12 @@ if (window.matchMedia('(display-mode: standalone)').matches) {
 }
 
     </script>
+    <script>
+// این رو دقیقاً قبل از </body> بذار
+window.alert = function(message) {
+    // ساده‌ترین راه - همیشه از confirm استفاده کن
+    confirm(message);
+};
+</script>
 </body>
 </html>
