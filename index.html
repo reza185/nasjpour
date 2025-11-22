@@ -564,17 +564,12 @@ window.alert = function(message) {
             border: 2px solid #2c3e50;
         `;
         
-        // ایجاد تابع بستن برای این آلرت خاص
-        const closeCurrentAlert = function() {
-            if (document.body.contains(overlay)) {
-                document.body.removeChild(overlay);
-            }
-            resolve();
-        };
+        // ایجاد یک ID منحصربه‌فرد برای این آلرت
+        const alertId = 'alert-' + Date.now();
         
         dialog.innerHTML = `
             <div style="margin-bottom: 20px; font-size: 16px; color: #2c3e50; line-height: 1.5;">${message}</div>
-            <button id="loginAlertConfirm" 
+            <button id="${alertId}-confirm" 
                     style="padding: 10px 25px; background: #2c3e50; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
                 تأیید
             </button>
@@ -583,8 +578,16 @@ window.alert = function(message) {
         overlay.appendChild(dialog);
         document.body.appendChild(overlay);
         
+        // تابع بستن
+        const closeAlert = function() {
+            if (document.body.contains(overlay)) {
+                document.body.removeChild(overlay);
+            }
+            resolve();
+        };
+        
         // اضافه کردن event listener برای دکمه
-        document.getElementById('loginAlertConfirm').addEventListener('click', closeCurrentAlert);
+        document.getElementById(alertId + '-confirm').addEventListener('click', closeAlert);
         
         // با کلیک روی overlay هم بسته نشه (مثل alert اصلی)
         overlay.onclick = function(e) {
@@ -628,6 +631,6 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
     e.preventDefault();
     await handleLogin();
 });
-</script>
+   </script>
 </body>
 </html>
