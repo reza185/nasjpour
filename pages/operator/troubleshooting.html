@@ -17,7 +17,6 @@
 <link rel="icon" href="../../icons/icon-192x192.png">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- <script src="../../auth.js"></script> -->
-  
     <style>
         /* استایل‌های اصلی با قابلیت‌های جدید */
         * {
@@ -1323,6 +1322,144 @@
     </div>
 
     <script>
+        // ==================== CUSTOM ALERT SYSTEM ====================
+        delete window.alert;
+        
+        window.alert = function(message) {
+            return new Promise((resolve) => {
+                // ساخت overlay
+                const overlay = document.createElement('div');
+                overlay.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0,0,0,0.5);
+                    z-index: 10000;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                `;
+                
+                // ساخت dialog
+                const dialog = document.createElement('div');
+                dialog.style.cssText = `
+                    background: white;
+                    padding: 25px;
+                    border-radius: 12px;
+                    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+                    text-align: center;
+                    min-width: 300px;
+                    max-width: 90%;
+                    font-family: Vazirmatn, sans-serif;
+                    border: 2px solid #2c3e50;
+                `;
+                
+                dialog.innerHTML = `
+                    <div style="margin-bottom: 20px; font-size: 16px; color: #2c3e50; line-height: 1.5;">${message}</div>
+                    <button id="customAlertConfirm" 
+                            style="padding: 10px 25px; background: #2c3e50; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                        تأیید
+                    </button>
+                `;
+                
+                overlay.appendChild(dialog);
+                document.body.appendChild(overlay);
+                
+                // تابع بستن
+                const closeAlert = function() {
+                    if (document.body.contains(overlay)) {
+                        document.body.removeChild(overlay);
+                    }
+                    resolve();
+                };
+                
+                // اضافه کردن event listener برای دکمه
+                const confirmBtn = document.getElementById('customAlertConfirm');
+                confirmBtn.addEventListener('click', closeAlert);
+                
+                // با کلیک روی overlay هم بسته نشه (مثل alert اصلی)
+                overlay.onclick = function(e) {
+                    if (e.target === overlay) {
+                        // کاری نکن - مثل alert اصلی که با کلیک خارج بسته نمیشه
+                    }
+                };
+            });
+        };
+        
+        // ==================== CUSTOM CONFIRM SYSTEM ====================
+        delete window.confirm;
+        
+        window.confirm = function(message) {
+            return new Promise((resolve) => {
+                // ساخت overlay
+                const overlay = document.createElement('div');
+                overlay.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0,0,0,0.5);
+                    z-index: 10000;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                `;
+                
+                // ساخت dialog
+                const dialog = document.createElement('div');
+                dialog.style.cssText = `
+                    background: white;
+                    padding: 25px;
+                    border-radius: 12px;
+                    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+                    text-align: center;
+                    min-width: 300px;
+                    max-width: 90%;
+                    font-family: Vazirmatn, sans-serif;
+                    border: 2px solid #2c3e50;
+                `;
+                
+                dialog.innerHTML = `
+                    <div style="margin-bottom: 20px; font-size: 16px; color: #2c3e50; line-height: 1.5;">${message}</div>
+                    <div style="display: flex; gap: 10px; justify-content: center;">
+                        <button id="customConfirmYes" 
+                                style="padding: 10px 25px; background: #27ae60; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                            بله
+                        </button>
+                        <button id="customConfirmNo" 
+                                style="padding: 10px 25px; background: #e74c3c; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                            خیر
+                        </button>
+                    </div>
+                `;
+                
+                overlay.appendChild(dialog);
+                document.body.appendChild(overlay);
+                
+                // تابع بستن
+                const closeConfirm = function(result) {
+                    if (document.body.contains(overlay)) {
+                        document.body.removeChild(overlay);
+                    }
+                    resolve(result);
+                };
+                
+                // اضافه کردن event listener برای دکمه‌ها
+                document.getElementById('customConfirmYes').addEventListener('click', () => closeConfirm(true));
+                document.getElementById('customConfirmNo').addEventListener('click', () => closeConfirm(false));
+                
+                // با کلیک روی overlay هم بسته نشه (مثل confirm اصلی)
+                overlay.onclick = function(e) {
+                    if (e.target === overlay) {
+                        // کاری نکن - مثل confirm اصلی که با کلیک خارج بسته نمیشه
+                    }
+                };
+            });
+        };
+        
         // داده‌های کامل عیب‌های دستگاه استنتر (همان داده‌های قبلی)
         const stenterFaults = {
             // قسمت ورودی (فولارد)
@@ -1399,7 +1536,7 @@
                     }
                 ]
             },
-
+        
             // قسمت خشک کن (اتاقک‌ها)
             "خشک کن": {
                 "برقی": [
@@ -1573,7 +1710,7 @@
                     }
                 ]
             },
-
+        
             // قسمت انتهایی (بچ)
             "انتهایی": {
                 "برقی": [
@@ -1626,18 +1763,18 @@
                 ]
             }
         };
-
+        
         // اتصال به Supabase
         const SUPABASE_URL = 'https://kalykylvjqigqlaprlca.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImthbHlreWx2anFpZ3FsYXBybGNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM1NjI1OTcsImV4cCI6MjA3OTEzODU5N30.S8YtogVrxkqYjkgfkGpy4_mS6mqaNxmsHjxnhyBPwEY';
         
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
+        
         let selectedMachine = null;
         let selectedSection = null;
         let selectedCategory = null;
         let selectedFault = null;
-
+        
         // تابع برای فرمت کردن تاریخ و زمان به فارسی
         function formatPersianDateTime(date) {
             const options = {
@@ -1649,7 +1786,7 @@
             };
             return new Intl.DateTimeFormat('fa-IR', options).format(date);
         }
-
+        
         // تابع برای محاسبه زمان گذشته از ورود
         function getTimeSinceLogin(loginTime) {
             const now = new Date();
@@ -1663,7 +1800,7 @@
                 return `${minutes} دقیقه قبل`;
             }
         }
-
+        
         // تابع برای به روز رسانی زمان آنلاین
         function updateOnlineTime() {
             const loginTimeElement = document.getElementById('loginTime');
@@ -1671,7 +1808,7 @@
                 loginTimeElement.textContent = getTimeSinceLogin(window.loginTime);
             }
         }
-
+        
         // جلوگیری از زوم در دستگاه‌های موبایل و مدیریت زمان ورود
         document.addEventListener('DOMContentLoaded', function() {
             // جلوگیری از زوم با حرکات چندلمسی
@@ -1680,7 +1817,7 @@
                     e.preventDefault();
                 }
             }, { passive: false });
-
+        
             let lastTouchEnd = 0;
             document.addEventListener('touchend', function(e) {
                 const now = (new Date()).getTime();
@@ -1689,19 +1826,19 @@
                 }
                 lastTouchEnd = now;
             }, false);
-
+        
             document.addEventListener('gesturestart', function(e) {
                 e.preventDefault();
             });
-
+        
             document.addEventListener('gesturechange', function(e) {
                 e.preventDefault();
             });
-
+        
             document.addEventListener('gestureend', function(e) {
                 e.preventDefault();
             });
-
+        
             // مدیریت زمان ورود کاربر
             const now = new Date();
             window.loginTime = now;
@@ -1719,10 +1856,10 @@
             if (lastLoginTimeElement) {
                 lastLoginTimeElement.textContent = formatPersianDateTime(now);
             }
-
+        
             // به روز رسانی زمان آنلاین هر دقیقه
             setInterval(updateOnlineTime, 60000);
-
+        
             // تغییر وضعیت فعال در نویگیشن
             const navLinks = document.querySelectorAll('.nav-link');
             navLinks.forEach(link => {
@@ -1731,13 +1868,13 @@
                     this.classList.add('active');
                 });
             });
-
+        
             // لود گزارش‌ها هنگام بارگذاری صفحه
             loadReports();
             
             // اجرای پاک‌سازی خودکار هر بار که صفحه لود می‌شود
             autoDeleteOldReports();
-
+        
             // محافظت از صفحه و نمایش اطلاعات کاربر
             if (typeof auth !== 'undefined') {
                 if (auth.protectPageByRole('operator')) {
@@ -1760,26 +1897,26 @@
                 }
             }
         });
-
+        
         // جلوگیری از اسکرول هنگام زوم در iOS
         document.addEventListener('touchmove', function(e) {
             if(e.scale !== 1) {
                 e.preventDefault();
             }
         }, { passive: false });
-
+        
         // مدیریت پاپاپ گزارش
         function openReportPopup(machine_name) {
             document.getElementById('machine_name').value = machine_name;
             document.getElementById('reportPopup').style.display = 'flex';
             document.getElementById('reporter_name').focus();
         }
-
+        
         function closeReportPopup() {
             document.getElementById('reportPopup').style.display = 'none';
             document.getElementById('reportForm').reset();
         }
-
+        
         // شروع عیب‌یابی
         function startTroubleshooting(machine_name) {
             selectedMachine = { name: machine_name };
@@ -1793,7 +1930,7 @@
             // اسکرول به بخش عیب‌یابی
             document.getElementById('troubleshootingSection').scrollIntoView({ behavior: 'smooth' });
         }
-
+        
         // انتخاب بخش دستگاه
         function selectSection(section) {
             selectedSection = section;
@@ -1812,7 +1949,7 @@
             // نمایش دکمه‌ها
             document.getElementById('backToStep1Btn').style.display = 'flex';
         }
-
+        
         // لود دسته‌بندی‌ها
         function loadCategories(section) {
             const categoryTabs = document.getElementById('categoryTabs');
@@ -1845,7 +1982,7 @@
                 selectCategory(firstCategory);
             }
         }
-
+        
         // انتخاب دسته‌بندی
         function selectCategory(category) {
             selectedCategory = category;
@@ -1859,7 +1996,7 @@
             // لود مشکلات
             loadFaults(selectedSection, category);
         }
-
+        
         // لود مشکلات
         function loadFaults(section, category) {
             const faultsList = document.getElementById('faultsList');
@@ -1890,7 +2027,7 @@
                 faultsList.appendChild(faultCard);
             });
         }
-
+        
         // انتخاب مشکل
         function selectFault(fault) {
             selectedFault = fault;
@@ -1913,7 +2050,7 @@
             document.getElementById('backToStep2Btn').style.display = 'flex';
             document.getElementById('resetBtn').style.display = 'flex';
         }
-
+        
         // لود راه حل‌ها
         function loadSolutions(fault) {
             const solutionsContainer = document.getElementById('solutionsContainer');
@@ -1931,7 +2068,7 @@
                 solutionsContainer.appendChild(solutionItem);
             });
         }
-
+        
         // بازگشت به مرحله ۱
         function backToStep1() {
             document.getElementById('step2').classList.remove('active');
@@ -1941,7 +2078,7 @@
             
             document.getElementById('backToStep1Btn').style.display = 'none';
         }
-
+        
         // بازگشت به مرحله ۲
         function backToStep2() {
             document.getElementById('step3').classList.remove('active');
@@ -1953,7 +2090,7 @@
             document.getElementById('resetBtn').style.display = 'none';
             document.getElementById('backToStep1Btn').style.display = 'flex';
         }
-
+        
         // شروع مجدد
         function resetTroubleshooting() {
             selectedMachine = null;
@@ -1974,7 +2111,7 @@
             document.getElementById('backToStep2Btn').style.display = 'none';
             document.getElementById('resetBtn').style.display = 'none';
         }
-
+        
         // مدیریت ارسال فرم
         document.getElementById('reportForm').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -2011,7 +2148,7 @@
                 alert('خطا در ارسال گزارش. لطفاً دوباره تلاش کنید.');
             }
         });
-
+        
         // لود گزارش‌ها از Supabase
         async function loadReports() {
             try {
@@ -2031,7 +2168,7 @@
                 alert('خطا در دریافت گزارش‌ها');
             }
         }
-
+        
         // نمایش گزارش‌ها در جدول
         function displayReports(reports) {
             const container = document.getElementById('reportsTableContainer');
@@ -2091,10 +2228,11 @@
             
             container.innerHTML = tableHTML;
         }
-
+        
         // حذف گزارش
         async function deleteReport(reportId) {
-            if (!confirm('آیا از حذف این گزارش اطمینان دارید؟')) {
+            const result = await confirm('آیا از حذف این گزارش اطمینان دارید؟');
+            if (!result) {
                 return;
             }
             
@@ -2116,7 +2254,7 @@
                 alert('خطا در حذف گزارش');
             }
         }
-
+        
         // تابع برای پاک کردن خودکار گزارش‌های قدیمی (هر ماه)
         async function autoDeleteOldReports() {
             try {
@@ -2139,39 +2277,30 @@
                 console.error('خطا در پاک کردن گزارش‌های قدیمی:', error);
             }
         }
-
+        
         // بستن پاپاپ با کلیک خارج از آن
         document.getElementById('reportPopup').addEventListener('click', function(e) {
             if (e.target === this) {
                 closeReportPopup();
             }
         });
-
+        
         // فعال کردن اسکرول فقط در container اصلی
         const container = document.getElementById('mainContainer');
         container.addEventListener('touchmove', function(e) {
             e.stopPropagation();
         }, { passive: true });
-
+        
         // جلوگیری از اسکرول در body
         document.body.addEventListener('touchmove', function(e) {
             if (e.target === document.body) {
                 e.preventDefault();
             }
         }, { passive: false });
-
         
-if (window.matchMedia('(display-mode: standalone)').matches) {
-    document.body.style.overscrollBehavior = 'none';
-}
-
-    </script>
-    <script>
-// این رو دقیقاً قبل از </body> بذار
-window.alert = function(message) {
-    // ساده‌ترین راه - همیشه از confirm استفاده کن
-    confirm(message);
-};
-</script>
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+            document.body.style.overscrollBehavior = 'none';
+        }
+        </script>
 </body>
 </html>
