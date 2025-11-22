@@ -1,0 +1,1266 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TMP</title>
+    <link rel="icon" href="icons/icon-192x192.png">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- <script src="../../auth.js"></script> -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Vazirmatn', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-text-size-adjust: 100%;
+            touch-action: manipulation;
+        }
+
+        :root {
+            --primary: #2c3e50;
+            --primary-light: #34495e;
+            --accent: #e74c3c;
+            --accent-light: #ff6b6b;
+            --secondary: #3498db;
+            --dark: #1a252f;
+            --light: #ecf0f1;
+            --gray: #95a5a6;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+        }
+
+        body {
+            background: #f8f9fa;
+            color: var(--dark);
+            min-height: 100vh;
+            overflow-x: hidden;
+            width: 100%;
+        }
+
+        /* نویگیشن */
+        .navbar {
+            background: var(--primary);
+            color: white;
+            padding: 0 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            width: 100%;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 60px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            background: transparent;
+            width: 35px;
+            height: 35px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .logo-text {
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .nav-link.active {
+            background: rgba(255,255,255,0.15);
+        }
+
+        .nav-link:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-details {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 2px;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .login-time {
+            font-size: 11px;
+            opacity: 0.8;
+            color: #ecf0f1;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+
+        /* محتوای اصلی */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px 15px;
+            width: 100%;
+        }
+
+        .header-card {
+            background: var(--primary);
+            color: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: 100%;
+        }
+
+        .page-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .page-subtitle {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border: 1px solid #eaeaea;
+            width: 100%;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title i {
+            color: var(--accent);
+        }
+
+        /* KPI Cards */
+        .kpi-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .kpi-item {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border: 1px solid #eaeaea;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .kpi-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .kpi-value {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .kpi-label {
+            color: var(--gray);
+            font-size: 14px;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: #ecf0f1;
+            border-radius: 4px;
+            margin-top: 12px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        /* Metrics Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .metric-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            border: 1px solid #eaeaea;
+            transition: transform 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .metric-value {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .metric-label {
+            color: var(--gray);
+            font-size: 12px;
+        }
+
+        /* جدول */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 10px;
+            border: 1px solid #eaeaea;
+            width: 100%;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            min-width: 500px;
+        }
+
+        .data-table th {
+            background: #f8f9fa;
+            padding: 12px 10px;
+            text-align: right;
+            font-weight: 600;
+            color: var(--primary);
+            border-bottom: 1px solid #eaeaea;
+            font-size: 14px;
+        }
+
+        .data-table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #eaeaea;
+            font-size: 14px;
+        }
+
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .data-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-operational {
+            background: #e8f5e8;
+            color: var(--success);
+        }
+
+        .status-warning {
+            background: #fff8e1;
+            color: var(--warning);
+        }
+
+        .status-down {
+            background: #ffebee;
+            color: var(--danger);
+        }
+
+        /* Action Items */
+        .action-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .action-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-right: 4px solid var(--secondary);
+            transition: transform 0.3s ease;
+        }
+
+        .action-item:hover {
+            transform: translateX(-5px);
+        }
+
+        .action-icon {
+            width: 35px;
+            height: 35px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .action-content {
+            flex: 1;
+        }
+
+        .action-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+
+        .action-desc {
+            color: var(--gray);
+            font-size: 12px;
+        }
+
+        /* Report Buttons */
+        .report-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            width: 100%;
+        }
+
+        .report-button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 13px;
+            touch-action: manipulation;
+        }
+
+        .report-button.outlined {
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        .report-button:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+        }
+
+        .report-button.outlined:hover {
+            background: rgba(44, 62, 80, 0.05);
+        }
+
+        /* دستگاه استنتر */
+        .machine-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .machine-icon {
+            width: 120px;
+            height: 120px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            color: white;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+            overflow: hidden;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .machine-icon i {
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+        }
+
+        .machine-name {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .machine-status {
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+
+        .machine-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+
+        .detail-item {
+            background: #f8f9fa;
+            padding: 10px 15px;
+            border-radius: 8px;
+            min-width: 150px;
+        }
+
+        .detail-label {
+            font-size: 12px;
+            color: var(--gray);
+            margin-bottom: 5px;
+        }
+
+        .detail-value {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .status-operational {
+            background: #e8f5e8;
+            color: var(--success);
+        }
+
+        .status-maintenance {
+            background: #fff8e1;
+            color: var(--warning);
+        }
+
+        .status-broken {
+            background: #ffebee;
+            color: var(--danger);
+        }
+
+        .bg-operational { background: var(--success); }
+        .bg-maintenance { background: var(--warning); }
+        .bg-broken { background: var(--danger); }
+
+        /* لاودر */
+        .loader {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loader-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* کارایی دستگاه‌ها */
+        .performance-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .performance-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border: 1px solid #eaeaea;
+            transition: transform 0.3s ease;
+        }
+
+        .performance-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .machine-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .machine-icon-small {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .machine-info {
+            flex: 1;
+        }
+
+        .machine-title {
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .machine-subtitle {
+            color: var(--gray);
+            font-size: 12px;
+        }
+
+        .performance-metrics {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .metric {
+            text-align: center;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+
+        .metric-value {
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: 2px;
+        }
+
+        .metric-label {
+            color: var(--gray);
+            font-size: 11px;
+        }
+
+        .performance-bar {
+            height: 8px;
+            background: #ecf0f1;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            overflow: hidden;
+        }
+
+        .performance-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .performance-value {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--gray);
+        }
+
+        /* رنگ‌های وضعیت */
+        .color-success { color: var(--success); }
+        .color-warning { color: var(--warning); }
+        .color-danger { color: var(--danger); }
+        .color-info { color: var(--secondary); }
+        .bg-success { background: var(--success); }
+        .bg-warning { background: var(--warning); }
+        .bg-danger { background: var(--danger); }
+        .bg-info { background: var(--secondary); }
+
+        /* رسپانسیو */
+        @media (max-width: 1024px) {
+            .kpi-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .report-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .kpi-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .report-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .performance-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-links {
+                gap: 8px;
+            }
+            
+            .nav-link span {
+                display: none;
+            }
+            
+            .user-details {
+                display: none;
+            }
+            
+            .logo-text {
+                font-size: 14px;
+            }
+            
+            .header-card {
+                padding: 15px;
+            }
+            
+            .page-title {
+                font-size: 18px;
+            }
+            
+            .card {
+                padding: 15px;
+            }
+            
+            .section-title {
+                font-size: 16px;
+            }
+            
+            .machine-icon {
+                width: 100px;
+                height: 100px;
+                font-size: 40px;
+            }
+            
+            .machine-name {
+                font-size: 20px;
+            }
+            
+            .machine-details {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .detail-item {
+                width: 100%;
+                max-width: 250px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .navbar {
+                padding: 0 10px;
+            }
+            
+            .nav-container {
+                height: 50px;
+            }
+            
+            .logo-icon {
+                width: 30px;
+                height: 30px;
+                font-size: 14px;
+            }
+            
+            .user-avatar {
+                width: 35px;
+                height: 35px;
+                font-size: 12px;
+            }
+            
+            .container {
+                padding: 15px 10px;
+            }
+            
+            .kpi-value {
+                font-size: 20px;
+            }
+            
+            .metric-value {
+                font-size: 18px;
+            }
+            
+            .action-item {
+                padding: 12px;
+            }
+            
+            .action-icon {
+                width: 30px;
+                height: 30px;
+                font-size: 14px;
+            }
+        }
+
+        /* جلوگیری از زوم */
+        @media (hover: none) and (pointer: coarse) {
+            * {
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+            }
+            
+            input, textarea, select {
+                -webkit-user-select: text;
+                -moz-user-select: text;
+                -ms-user-select: text;
+                user-select: text;
+            }
+        }
+
+        /* انیمیشن‌ها */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card, .kpi-item, .metric-card, .performance-card {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .machine-icon.pulse {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <!-- نویگیشن -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-industry"></i>
+                </div>
+                <div class="logo-text">TPM PRO</div>
+            </div>
+            
+            <div class="nav-links">
+                <a href="dashboard.html" class="nav-link active">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>داشبورد</span>
+                </a>
+                <a href="reports.html" class="nav-link">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>گزارشات</span>
+                </a>
+                <a href="warehouse.html" class="nav-link">
+                    <i class="fas fa-warehouse"></i>
+                    <span>انبار</span>
+                </a>
+            </div>
+            
+            <div class="user-info">
+                <div class="user-details">
+                    <div class="user-name">مدیر (توسعه)</div>
+                    <div class="login-time" id="loginTime">در حال بارگذاری...</div>
+                </div>
+                <div class="user-avatar">M</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- محتوای اصلی -->
+    <div class="container">
+        <!-- هدر صفحه -->
+        <div class="header-card">
+            <h1 class="page-title">داشبورد مدیر</h1>
+            <p class="page-subtitle">نمای کلی عملکرد کارخانه - آخرین ورود: <span id="lastLoginTime"></span></p>
+        </div>
+
+        <!-- شاخص‌های کلیدی عملکرد -->
+       
+
+        <!-- دستگاه استنتر -->
+        <div class="card">
+            <h2 class="section-title">
+                <i class="fas fa-industry"></i>
+                وضعیت دستگاه استنتر
+            </h2>
+            
+            <div class="loader" id="loader">
+                <div class="loader-spinner"></div>
+                <p>در حال دریافت اطلاعات از سرور...</p>
+            </div>
+            
+            <div class="machine-container" id="machineContainer" style="display: none;">
+                <div class="machine-icon" id="machineIcon">
+                    <i class="fas fa-cogs"></i>
+                </div>
+                
+                <div class="machine-name">دستگاه استنتر</div>
+                
+                <div class="machine-status" id="machineStatus">
+                    در حال بارگذاری...
+                </div>
+                
+                <div class="machine-details">
+                    <div class="detail-item">
+                        <div class="detail-label">آخرین بروزرسانی</div>
+                        <div class="detail-value" id="lastUpdate">-</div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <div class="detail-label">سرپرست</div>
+                        <div class="detail-value" id="operatorName">نوروزی</div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <div class="detail-label">تاریخ گزارش</div>
+                        <div class="detail-value" id="reportDate">-</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- کارایی دستگاه‌ها -->
+        
+
+       
+
+    <!-- اسکریپت Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // تنظیمات Supabase
+        const SUPABASE_URL = 'https://kalykylvjqigqlaprlca.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImthbHlreWx2anFpZ3FsYXBybGNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM1NjI1OTcsImV4cCI6MjA3OTEzODU5N30.S8YtogVrxkqYjkgfkGpy4_mS6mqaNxmsHjxnhyBPwEY';
+        
+        // ایجاد کلاینت Supabase
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // تابع برای فرمت کردن تاریخ و زمان به فارسی
+        function formatPersianDateTime(date) {
+            const options = {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            };
+            return new Intl.DateTimeFormat('fa-IR', options).format(date);
+        }
+
+        // تابع برای محاسبه زمان گذشته از ورود
+        function getTimeSinceLogin(loginTime) {
+            const now = new Date();
+            const diff = now - loginTime;
+            const minutes = Math.floor(diff / 60000);
+            const hours = Math.floor(minutes / 60);
+            
+            if (hours > 0) {
+                return `${hours} ساعت و ${minutes % 60} دقیقه قبل`;
+            } else {
+                return `${minutes} دقیقه قبل`;
+            }
+        }
+
+        // تابع برای به روز رسانی زمان آنلاین
+        function updateOnlineTime() {
+            const loginTimeElement = document.getElementById('loginTime');
+            if (loginTimeElement && window.loginTime) {
+                loginTimeElement.textContent = getTimeSinceLogin(window.loginTime);
+            }
+        }
+
+        // تابع برای دریافت آخرین وضعیت دستگاه استنتر
+        async function getLatestMachineStatus() {
+            try {
+                // نمایش لاودر
+                document.getElementById('loader').style.display = 'block';
+                document.getElementById('machineContainer').style.display = 'none';
+                
+                // دریافت داده‌ها از جدول operatorreports
+                const { data, error } = await supabase
+                    .from('operatourreports')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(1);
+                
+                if (error) {
+                    throw error;
+                }
+                
+                // پنهان کردن لاودر و نمایش اطلاعات
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('machineContainer').style.display = 'flex';
+                
+                if (data && data.length > 0) {
+                    const latestReport = data[0];
+                    updateMachineStatus(latestReport);
+                } else {
+                    // اگر داده‌ای وجود ندارد
+                    showNoDataMessage();
+                }
+            } catch (error) {
+                console.error('خطا در دریافت اطلاعات:', error);
+                document.getElementById('loader').style.display = 'none';
+                showErrorMessage('خطا در اتصال به سرور');
+            }
+        }
+
+        // تابع برای به روز رسانی وضعیت دستگاه استنتر
+        function updateMachineStatus(report) {
+            const machineStatus = report.machine_status;
+            const machineIcon = document.getElementById('machineIcon');
+            const machineStatusElement = document.getElementById('machineStatus');
+            const lastUpdateElement = document.getElementById('lastUpdate');
+            const operatorNameElement = document.getElementById('operatorName');
+            const reportDateElement = document.getElementById('reportDate');
+            
+            // تنظیم وضعیت دستگاه
+            if (machineStatus === 'سالم') {
+                machineStatusElement.textContent = 'سالم و عملیاتی';
+                machineStatusElement.className = 'machine-status status-operational';
+                machineIcon.className = 'machine-icon bg-operational pulse';
+                machineIcon.innerHTML = '<i class="fas fa-check-circle"></i>';
+            } else if (machineStatus === 'در حال تعمیر') {
+                machineStatusElement.textContent = 'در حال تعمیر';
+                machineStatusElement.className = 'machine-status status-maintenance';
+                machineIcon.className = 'machine-icon bg-maintenance';
+                machineIcon.innerHTML = '<i class="fas fa-tools"></i>';
+            } else if (machineStatus === 'خراب') {
+                machineStatusElement.textContent = 'خراب و غیرفعال';
+                machineStatusElement.className = 'machine-status status-broken';
+                machineIcon.className = 'machine-icon bg-broken';
+                machineIcon.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
+            } else {
+                machineStatusElement.textContent = machineStatus || 'نامشخص';
+                machineStatusElement.className = 'machine-status status-maintenance';
+                machineIcon.className = 'machine-icon bg-maintenance';
+                machineIcon.innerHTML = '<i class="fas fa-question-circle"></i>';
+            }
+            
+            // تنظیم اطلاعات دیگر
+            lastUpdateElement.textContent = formatPersianDateTime(new Date());
+            operatorNameElement.textContent = 'نوروزی';
+            reportDateElement.textContent = report.created_at ? 
+                formatPersianDateTime(new Date(report.created_at)) : 'نامشخص';
+        }
+
+        // تابع برای تولید کارت‌های کارایی دستگاه‌ها
+        function generatePerformanceCards() {
+            const performanceContainer = document.getElementById('performanceContainer');
+            
+            // داده‌های نمونه برای دستگاه‌ها
+            const machines = [
+                {
+                    id: 1,
+                    name: 'دستگاه فرز CNC #1',
+                    type: 'فرز CNC',
+                    oee: 92,
+                    availability: 95,
+                    performance: 96,
+                    quality: 98,
+                    status: 'عملیاتی'
+                },
+                {
+                    id: 2,
+                    name: 'پرس هیدرولیک #3',
+                    type: 'پرس هیدرولیک',
+                    oee: 88,
+                    availability: 90,
+                    performance: 92,
+                    quality: 95,
+                    status: 'عملیاتی'
+                },
+                {
+                    id: 3,
+                    name: 'دستگاه تزریق پلاستیک #2',
+                    type: 'تزریق پلاستیک',
+                    oee: 76,
+                    availability: 80,
+                    performance: 85,
+                    quality: 90,
+                    status: 'هشدار'
+                },
+                {
+                    id: 4,
+                    name: 'دستگاه برش لیزری #1',
+                    type: 'برش لیزری',
+                    oee: 65,
+                    availability: 70,
+                    performance: 75,
+                    quality: 85,
+                    status: 'هشدار'
+                },
+                {
+                    id: 5,
+                    name: 'کوره حرارتی #2',
+                    type: 'کوره حرارتی',
+                    oee: 45,
+                    availability: 50,
+                    performance: 60,
+                    quality: 75,
+                    status: 'متوقف'
+                }
+            ];
+            
+            // پاک کردن محتوای قبلی
+            performanceContainer.innerHTML = '';
+            
+            // ایجاد کارت برای هر دستگاه
+            machines.forEach(machine => {
+                const card = document.createElement('div');
+                card.className = 'performance-card';
+                
+                // تعیین رنگ و آیکون بر اساس وضعیت
+                let statusColor, statusIcon, statusClass;
+                if (machine.status === 'عملیاتی') {
+                    statusColor = 'var(--success)';
+                    statusIcon = 'fa-check-circle';
+                    statusClass = 'status-operational';
+                } else if (machine.status === 'هشدار') {
+                    statusColor = 'var(--warning)';
+                    statusIcon = 'fa-exclamation-triangle';
+                    statusClass = 'status-warning';
+                } else {
+                    statusColor = 'var(--danger)';
+                    statusIcon = 'fa-times-circle';
+                    statusClass = 'status-down';
+                }
+                
+                card.innerHTML = `
+                    <div class="machine-header">
+                        <div class="machine-icon-small" style="background: ${statusColor}">
+                            <i class="fas ${statusIcon}"></i>
+                        </div>
+                        <div class="machine-info">
+                            <div class="machine-title">${machine.name}</div>
+                            <div class="machine-subtitle">${machine.type}</div>
+                        </div>
+                        <span class="status-badge ${statusClass}">${machine.status}</span>
+                    </div>
+                    
+                    <div class="performance-metrics">
+                        <div class="metric">
+                            <div class="metric-value color-success">${machine.availability}%</div>
+                            <div class="metric-label">در دسترس بودن</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value color-info">${machine.performance}%</div>
+                            <div class="metric-label">کارایی</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value color-warning">${machine.quality}%</div>
+                            <div class="metric-label">کیفیت</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value" style="color: ${statusColor}">${machine.oee}%</div>
+                            <div class="metric-label">OEE</div>
+                        </div>
+                    </div>
+                    
+                    <div class="performance-bar">
+                        <div class="performance-fill" style="width: ${machine.oee}%; background: ${statusColor}"></div>
+                    </div>
+                    <div class="performance-value">
+                        <span>کارایی کلی تجهیزات (OEE)</span>
+                        <span>${machine.oee}%</span>
+                    </div>
+                `;
+                
+                performanceContainer.appendChild(card);
+            });
+        }
+
+        // تابع برای نمایش پیام عدم وجود داده
+        function showNoDataMessage() {
+            document.getElementById('machineContainer').style.display = 'flex';
+            document.getElementById('machineStatus').textContent = 'داده‌ای یافت نشد';
+            document.getElementById('machineStatus').className = 'machine-status status-maintenance';
+            document.getElementById('machineIcon').className = 'machine-icon bg-maintenance';
+            document.getElementById('machineIcon').innerHTML = '<i class="fas fa-database"></i>';
+        }
+
+        // تابع برای نمایش پیام خطا
+        function showErrorMessage(message) {
+            document.getElementById('machineContainer').style.display = 'flex';
+            document.getElementById('machineStatus').textContent = message;
+            document.getElementById('machineStatus').className = 'machine-status status-broken';
+            document.getElementById('machineIcon').className = 'machine-icon bg-broken';
+            document.getElementById('machineIcon').innerHTML = '<i class="fas fa-exclamation-circle"></i>';
+        }
+
+        // اجرا پس از لود صفحه
+        document.addEventListener('DOMContentLoaded', function() {
+            // جلوگیری از زوم با حرکات چندلمسی
+            document.addEventListener('touchstart', function(e) {
+                if (e.touches.length > 1) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+
+            let lastTouchEnd = 0;
+            document.addEventListener('touchend', function(e) {
+                const now = (new Date()).getTime();
+                if (now - lastTouchEnd <= 300) {
+                    e.preventDefault();
+                }
+                lastTouchEnd = now;
+            }, false);
+
+            document.addEventListener('gesturestart', function(e) {
+                e.preventDefault();
+            });
+
+            document.addEventListener('gesturechange', function(e) {
+                e.preventDefault();
+            });
+
+            document.addEventListener('gestureend', function(e) {
+                e.preventDefault();
+            });
+
+            // مدیریت زمان ورود کاربر
+            const now = new Date();
+            window.loginTime = now;
+            
+            // نمایش زمان ورود
+            const loginTimeElement = document.getElementById('loginTime');
+            const lastLoginTimeElement = document.getElementById('lastLoginTime');
+            
+            if (loginTimeElement) {
+                loginTimeElement.textContent = formatPersianDateTime(now);
+            }
+            
+            if (lastLoginTimeElement) {
+                lastLoginTimeElement.textContent = formatPersianDateTime(now);
+            }
+
+            // به روز رسانی زمان آنلاین هر دقیقه
+            setInterval(updateOnlineTime, 60000);
+
+            // تغییر وضعیت فعال در نویگیشن
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+            
+            // نمایش اعلان برای دکمه‌ها
+            const buttons = document.querySelectorAll('.report-button');
+            buttons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const text = this.textContent.trim();
+                    alert(`گزارش "${text}" در حال آماده‌سازی است...`);
+                });
+            });
+
+            // دریافت وضعیت دستگاه استنتر
+            getLatestMachineStatus();
+            
+            // تولید کارت‌های کارایی دستگاه‌ها
+            generatePerformanceCards();
+            
+            // به روز رسانی خودکار وضعیت دستگاه هر 30 ثانیه
+            setInterval(getLatestMachineStatus, 30000);
+        });
+
+        // جلوگیری از اسکرول هنگام زوم در iOS
+        document.addEventListener('touchmove', function(e) {
+            if(e.scale !== 1) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+    </script>
+</body>
+</html>

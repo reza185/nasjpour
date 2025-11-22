@@ -1,0 +1,1525 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="TPM PRO">
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="msapplication-TileColor" content="#2c3e50">
+    <meta name="msapplication-tap-highlight" content="no">
+    <title>TMP</title>
+    <link rel="icon" href="icons/icon-192x192.png">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <meta name="theme-color" content="#2c3e50">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="../../manifest.json">
+<link rel="icon" href="../../icons/icon-192x192.png">
+
+    <!-- <script src="../../auth.js"></script> -->
+    <style>
+        /* استایل‌های قبلی بدون تغییر */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Vazirmatn', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-text-size-adjust: 100%;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        html {
+            height: 100%;
+            overflow: hidden;
+            background: #2c3e50;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            height: -webkit-fill-available;
+            height: fill-available;
+            overflow: hidden;
+            background: #f8f9fa;
+            color: #1a252f;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            -webkit-overflow-scrolling: touch;
+            touch-action: pan-y;
+        }
+
+        :root {
+            --primary: #2c3e50;
+            --primary-light: #34495e;
+            --accent: #e74c3c;
+            --accent-light: #ff6b6b;
+            --secondary: #3498db;
+            --dark: #1a252f;
+            --light: #ecf0f1;
+            --gray: #95a5a6;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+        }
+
+        /* ساختار اپ */
+        .app-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* نویگیشن */
+        .navbar {
+            background: var(--primary);
+            color: white;
+            padding: 0 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            width: 100%;
+            height: 60px;
+            flex-shrink: 0;
+        }
+
+        .nav-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            background: var(--accent);
+            width: 35px;
+            height: 35px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .logo-text {
+            font-size: 16px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .nav-link.active {
+            background: rgba(255,255,255,0.15);
+        }
+
+        .nav-link:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-details {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 2px;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .login-time {
+            font-size: 11px;
+            opacity: 0.8;
+            color: #ecf0f1;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            border: 2px solid rgba(255,255,255,0.2);
+            flex-shrink: 0;
+        }
+
+        /* محتوای اصلی */
+        .content-wrapper {
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 20px 15px;
+            width: 100%;
+        }
+
+        .header-card {
+            background: var(--primary);
+            color: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: 100%;
+        }
+
+        .page-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .page-subtitle {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .login-info {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .login-info i {
+            font-size: 11px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border: 1px solid #eaeaea;
+            width: 100%;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title i {
+            color: var(--accent);
+        }
+
+        /* آمار سریع انبار */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            border: 1px solid #eaeaea;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .stat-number {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .stat-label {
+            color: var(--gray);
+            font-size: 12px;
+        }
+
+        /* فیلترها و جستجو */
+        .filters-container {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid #eaeaea;
+            width: 100%;
+        }
+
+        .filters-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr auto;
+            gap: 12px;
+            align-items: end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-label {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--primary);
+        }
+
+        .filter-input, .filter-select {
+            padding: 10px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            transition: border-color 0.3s;
+            -webkit-appearance: none;
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+            user-select: text;
+            touch-action: manipulation;
+        }
+
+        .filter-input:focus, .filter-select:focus {
+            outline: none;
+            border-color: var(--secondary);
+        }
+
+        .search-btn {
+            padding: 10px 16px;
+            background: var(--secondary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            min-height: 42px;
+            touch-action: manipulation;
+        }
+
+        .search-btn:hover {
+            background: #2980b9;
+        }
+
+        /* جدول موجودی */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid #eaeaea;
+            background: white;
+            width: 100%;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .inventory-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1000px;
+        }
+
+        .inventory-table th {
+            background: #f8f9fa;
+            padding: 12px 10px;
+            text-align: right;
+            font-weight: 600;
+            color: var(--primary);
+            border-bottom: 2px solid #eaeaea;
+            position: sticky;
+            top: 0;
+            font-size: 14px;
+        }
+
+        .inventory-table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #eaeaea;
+            vertical-align: middle;
+            font-size: 14px;
+        }
+
+        .inventory-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .inventory-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        /* وضعیت‌های موجودی */
+        .status-badge {
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .status-adequate {
+            background: #e8f5e8;
+            color: var(--success);
+        }
+
+        .status-low {
+            background: #fff8e1;
+            color: var(--warning);
+        }
+
+        .status-critical {
+            background: #ffebee;
+            color: var(--danger);
+        }
+
+        .status-out {
+            background: #f5f5f5;
+            color: var(--gray);
+        }
+
+        /* فیلدهای ویرایش */
+        .editable-input {
+            width: 70px;
+            padding: 6px 8px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            text-align: center;
+            transition: border-color 0.3s;
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+            user-select: text;
+            touch-action: manipulation;
+        }
+
+        .editable-input:focus {
+            outline: none;
+            border-color: var(--secondary);
+            background: #f0f9ff;
+        }
+
+        .editable-input.changed {
+            border-color: var(--warning);
+            background: #fff8e1;
+        }
+
+        /* سلول وضعیت */
+        .status-select {
+            padding: 6px 8px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 12px;
+            background: white;
+            transition: border-color 0.3s;
+            min-width: 100px;
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+            user-select: text;
+            touch-action: manipulation;
+        }
+
+        .status-select:focus {
+            outline: none;
+            border-color: var(--secondary);
+        }
+
+        /* دکمه‌های اقدام */
+        .action-buttons {
+            display: flex;
+            gap: 6px;
+        }
+
+        .action-btn {
+            padding: 6px 10px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            min-height: 32px;
+            touch-action: manipulation;
+        }
+
+        .save-btn {
+            background: var(--success);
+            color: white;
+        }
+
+        .save-btn:hover {
+            background: #219a52;
+        }
+
+        .save-btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        .cancel-btn {
+            background: #f8f9fa;
+            color: var(--dark);
+            border: 2px solid #e0e0e0;
+        }
+
+        .cancel-btn:hover {
+            background: #e9ecef;
+        }
+
+        /* بخش تأیید تغییرات */
+        .changes-section {
+            background: #fff8e1;
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 20px;
+            border: 2px solid var(--warning);
+            display: none;
+            width: 100%;
+        }
+
+        .changes-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .changes-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .changes-list {
+            background: white;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+            border: 1px solid #eaeaea;
+        }
+
+        .change-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .change-item:last-child {
+            border-bottom: none;
+        }
+
+        .change-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .change-part {
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 14px;
+        }
+
+        .change-details {
+            font-size: 12px;
+            color: var(--gray);
+        }
+
+        .change-old {
+            text-decoration: line-through;
+            color: var(--danger);
+            margin-left: 6px;
+        }
+
+        .change-new {
+            color: var(--success);
+            font-weight: 600;
+        }
+
+        .changes-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        .confirm-btn {
+            background: var(--success);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            touch-action: manipulation;
+        }
+
+        .confirm-btn:hover {
+            background: #219a52;
+        }
+
+        /* پاپاپ تأیید */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 15px;
+        }
+
+        .popup-content {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .popup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .popup-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--gray);
+            padding: 5px;
+            touch-action: manipulation;
+        }
+
+        .close-btn:hover {
+            color: var(--danger);
+        }
+
+        .popup-message {
+            margin-bottom: 20px;
+            line-height: 1.6;
+            color: var(--dark);
+            font-size: 14px;
+        }
+
+        .popup-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        /* رسپانسیو */
+        @media (max-width: 1024px) {
+            .stats-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .filters-row {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .filters-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-links {
+                gap: 10px;
+            }
+            
+            .nav-link span {
+                display: none;
+            }
+            
+            .user-details {
+                display: none;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .changes-actions {
+                flex-direction: column;
+            }
+            
+            .content-wrapper {
+                padding: 15px 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .navbar {
+                padding: 0 10px;
+            }
+            
+            .logo-text {
+                font-size: 14px;
+            }
+            
+            .user-avatar {
+                width: 35px;
+                height: 35px;
+                font-size: 12px;
+            }
+            
+            .header-card {
+                padding: 15px;
+            }
+            
+            .page-title {
+                font-size: 18px;
+            }
+            
+            .card {
+                padding: 15px;
+            }
+            
+            .section-title {
+                font-size: 16px;
+            }
+            
+            .stat-number {
+                font-size: 18px;
+            }
+            
+            .filter-input, .filter-select {
+                padding: 8px 10px;
+                font-size: 13px;
+            }
+            
+            .search-btn {
+                padding: 8px 12px;
+                font-size: 13px;
+            }
+        }
+
+        /* مخفی کردن اسکرولبار */
+        .content-wrapper::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .content-wrapper::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .content-wrapper::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 2px;
+        }
+
+        .content-wrapper::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
+        /* حالت تمام صفحه برای PWA */
+        @media all and (display-mode: fullscreen) {
+            body {
+                height: 100vh;
+                height: -webkit-fill-available;
+                height: fill-available;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- نویگیشن -->
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <i class="fas fa-warehouse"></i>
+                    </div>
+                    <div class="logo-text">TPM PRO</div>
+                </div>
+                
+                <div class="nav-links">
+                    <a href="warehouse.html" class="nav-link active">
+                        <i class="fas fa-boxes"></i>
+                        <span>مدیریت انبار</span>
+                    </a>
+                </div>
+                
+                <div class="user-info">
+                    <div class="user-details">
+                        <div class="user-name" id="userName">انباردار</div>
+                        <div class="login-time" id="loginTime">در حال بارگذاری...</div>
+                    </div>
+                    <div class="user-avatar" id="userAvatar">ان</div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- محتوای اصلی -->
+        <div class="content-wrapper" id="contentWrapper">
+            <!-- هدر صفحه -->
+            <div class="header-card">
+                <h1 class="page-title">مدیریت موجودی انبار</h1>
+                <p class="page-subtitle">مشاهده و ویرایش اقلام انبار - تغییرات پس از تأیید برای مدیر ارسال می‌شود</p>
+                <div class="login-info">
+                    <i class="fas fa-clock"></i>
+                    آخرین ورود: <span id="lastLoginTime">در حال بارگذاری...</span>
+                </div>
+            </div>
+
+            <!-- آمار سریع انبار -->
+            <div class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalItems">۰</div>
+                    <div class="stat-label">کل قطعات</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" style="color: var(--success);" id="adequateItems">۰</div>
+                    <div class="stat-label">موجود</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" style="color: var(--warning);" id="lowItems">۰</div>
+                    <div class="stat-label">نیاز به بررسی</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" style="color: var(--danger);" id="criticalItems">۰</div>
+                    <div class="stat-label">اتمام موجودی</div>
+                </div>
+            </div>
+
+            <!-- فیلترها و جستجو -->
+            <div class="card">
+                <div class="filters-container">
+                    <div class="filters-row">
+                        <div class="filter-group">
+                            <label class="filter-label">جستجوی نام قطعه</label>
+                            <input type="text" class="filter-input" placeholder="نام قطعه یا لوازم یدکی..." id="searchInput">
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label class="filter-label">دسته‌بندی</label>
+                            <select class="filter-select" id="categoryFilter">
+                                <option value="">همه دسته‌ها</option>
+                                <option value="قطعات یدکی">قطعات یدکی</option>
+                                <option value="لوازم مصرفی">لوازم مصرفی</option>
+                                <option value="تجهیزات">تجهیزات</option>
+                                <option value="مواد اولیه">مواد اولیه</option>
+                            </select>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label class="filter-label">وضعیت موجودی</label>
+                            <select class="filter-select" id="statusFilter">
+                                <option value="">همه وضعیت‌ها</option>
+                                <option value="موجود">موجود</option>
+                                <option value="نیاز به بررسی">نیاز به بررسی</option>
+                                <option value="اتمام موجودی">اتمام موجودی</option>
+                            </select>
+                        </div>
+                        
+                        <button class="search-btn" onclick="loadInventoryData()">
+                            <i class="fas fa-search"></i>
+                            اعمال فیلتر
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- جدول موجودی -->
+            <div class="card">
+                <h2 class="section-title">
+                    <i class="fas fa-edit"></i>
+                    ویرایش موجودی قطعات
+                </h2>
+                
+                <div class="table-container">
+                    <table class="inventory-table">
+                        <thead>
+                            <tr>
+                                <th>کد قطعه</th>
+                                <th>نام قطعه</th>
+                                <th>دسته‌بندی</th>
+                                <th>موجودی فعلی</th>
+                                <th>موجودی جدید</th>
+                                <th>واحد</th>
+                                <th>وضعیت</th>
+                                <th>محل نگهداری</th>
+                                <th>اقدامات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventoryTableBody">
+                            <!-- داده‌ها به صورت داینامیک لود می‌شوند -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- بخش تأیید تغییرات -->
+            <div class="changes-section" id="changesSection">
+                <div class="changes-header">
+                    <h3 class="changes-title">
+                        <i class="fas fa-clipboard-check"></i>
+                        تغییرات در انتظار تأیید
+                    </h3>
+                    <div class="action-buttons">
+                        <button class="action-btn cancel-btn" onclick="cancelAllChanges()">
+                            <i class="fas fa-times"></i>
+                            لغو همه تغییرات
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="changes-list" id="changesList">
+                    <!-- لیست تغییرات به صورت داینامیک لود می‌شود -->
+                </div>
+                
+                <div class="changes-actions">
+                    <button class="confirm-btn" onclick="confirmChanges()">
+                        <i class="fas fa-paper-plane"></i>
+                        تأیید و ارسال به مدیر
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- پاپاپ تأیید نهایی -->
+    <div class="popup-overlay" id="confirmationPopup">
+        <div class="popup-content">
+            <div class="popup-header">
+                <h3 class="popup-title">تأیید نهایی تغییرات</h3>
+                <button class="close-btn" onclick="closeConfirmationPopup()">&times;</button>
+            </div>
+            
+            <div class="popup-message" id="confirmationMessage">
+                <!-- پیام تأیید به صورت داینامیک لود می‌شود -->
+            </div>
+            
+            <div class="popup-actions">
+                <button class="action-btn cancel-btn" onclick="closeConfirmationPopup()">
+                    <i class="fas fa-times"></i>
+                    بازگشت
+                </button>
+                <button class="action-btn save-btn" onclick="submitChangesToManager()">
+                    <i class="fas fa-check"></i>
+                    تأیید و ارسال
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ابتدا Supabase رو لود میکنیم -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script>
+        // ==================== SUPABASE CONFIGURATION ====================
+        const SUPABASE_URL = 'https://kalykylvjqigqlaprlca.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImthbHlreWx2anFpZ3FsYXBybGNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM1NjI1OTcsImV4cCI6MjA3OTEzODU5N30.S8YtogVrxkqYjkgfkGpy4_mS6mqaNxmsHjxnhyBPwEY';
+        
+        // ==================== GLOBAL VARIABLES ====================
+        let inventoryData = [];
+        let pendingChanges = new Map();
+        let supabaseClient = null;
+
+        // ==================== UTILITY FUNCTIONS ====================
+        function formatPersianDateTime(date) {
+            const options = {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            };
+            return new Intl.DateTimeFormat('fa-IR', options).format(date);
+        }
+
+        function getTimeSinceLogin(loginTime) {
+            const now = new Date();
+            const diff = now - loginTime;
+            const minutes = Math.floor(diff / 60000);
+            const hours = Math.floor(minutes / 60);
+            
+            if (hours > 0) {
+                return `${hours} ساعت و ${minutes % 60} دقیقه قبل`;
+            } else {
+                return `${minutes} دقیقه قبل`;
+            }
+        }
+
+        function updateOnlineTime() {
+            const loginTimeElement = document.getElementById('loginTime');
+            if (loginTimeElement && window.loginTime) {
+                loginTimeElement.textContent = getTimeSinceLogin(window.loginTime);
+            }
+        }
+
+        // ==================== SUPABASE INITIALIZATION ====================
+        function initializeSupabase() {
+            try {
+                if (supabaseClient) {
+                    console.log('✅ Supabase قبلاً initialized شده');
+                    return supabaseClient;
+                }
+                
+                // چک میکنیم که Supabase لود شده باشه
+                if (typeof supabase === 'undefined') {
+                    console.error('❌ Supabase هنوز لود نشده!');
+                    return null;
+                }
+                
+                console.log('🔄 در حال initialize کردن Supabase...');
+                supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                
+                console.log('✅ Supabase با موفقیت initialized شد');
+                return supabaseClient;
+            } catch (error) {
+                console.error('❌ خطا در initialize کردن Supabase:', error);
+                return null;
+            }
+        }
+
+        // ==================== SUPABASE FUNCTIONS ====================
+        async function fetchDataFromSupabase() {
+            try {
+                const client = initializeSupabase();
+                if (!client) {
+                    console.log('⏳ Supabase در حال لود شدن...');
+                    return [];
+                }
+
+                console.log('📡 در حال دریافت داده از Supabase...');
+                const { data, error } = await client
+                    .from('inventory')
+                    .select('*')
+                    .order('name');
+                
+                if (error) {
+                    console.error('❌ خطا در دریافت داده:', error);
+                    throw error;
+                }
+                
+                console.log('✅ داده دریافت شد:', data);
+                
+                // تبدیل نام فیلدها به camelCase برای سازگاری
+                return data.map(item => ({
+                    id: item.id,
+                    code: item.code,
+                    name: item.name,
+                    category: item.category,
+                    currentStock: item.current_stock,
+                    unit: item.unit,
+                    location: item.location,
+                    minStock: item.min_stock,
+                    maxStock: item.max_stock,
+                    status: item.status // اینجا وضعیت از دیتابیس خونده میشه
+                }));
+            } catch (error) {
+                console.error('❌ Error fetching data from Supabase:', error);
+                alert('خطا در دریافت داده‌ها از سرور');
+                return [];
+            }
+        }
+
+        // ==================== INVENTORY MANAGEMENT FUNCTIONS ====================
+        async function loadInventoryData() {
+            try {
+                console.log('🔄 لود داده‌های انبار...');
+                inventoryData = await fetchDataFromSupabase();
+                renderInventoryTable();
+                updateStats();
+            } catch (error) {
+                console.error('❌ خطا در لود داده‌ها:', error);
+            }
+        }
+
+        function updateStats() {
+            const total = inventoryData.length;
+            const adequate = inventoryData.filter(item => item.status === 'موجود').length;
+            const low = inventoryData.filter(item => item.status === 'نیاز به بررسی').length;
+            const critical = inventoryData.filter(item => item.status === 'اتمام موجودی').length;
+
+            document.getElementById('totalItems').textContent = total;
+            document.getElementById('adequateItems').textContent = adequate;
+            document.getElementById('lowItems').textContent = low;
+            document.getElementById('criticalItems').textContent = critical;
+        }
+
+        function renderInventoryTable() {
+            const tableBody = document.getElementById('inventoryTableBody');
+            tableBody.innerHTML = '';
+
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const category = document.getElementById('categoryFilter').value;
+            const status = document.getElementById('statusFilter').value;
+
+            const filteredData = inventoryData.filter(item => {
+                const matchesSearch = !searchTerm || 
+                    item.name.toLowerCase().includes(searchTerm) ||
+                    item.code.toLowerCase().includes(searchTerm);
+                
+                const matchesCategory = !category || item.category === category;
+                const matchesStatus = !status || item.status === status;
+                
+                return matchesSearch && matchesCategory && matchesStatus;
+            });
+
+            if (filteredData.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="9" style="text-align: center; padding: 40px; color: var(--gray);">
+                            <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 10px; display: block;"></i>
+                            موردی یافت نشد
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            filteredData.forEach(item => {
+                const row = document.createElement('tr');
+                const pendingChange = pendingChanges.get(item.id);
+                const newStock = pendingChange ? pendingChange.newStock : item.currentStock;
+                const hasChanges = pendingChange !== undefined;
+
+                // وضعیت براساس مقدار دیتابیس نمایش داده میشه
+                let statusClass = '';
+                if (item.status === 'اتمام موجودی') {
+                    statusClass = 'status-out';
+                } else if (item.status === 'نیاز به بررسی') {
+                    statusClass = 'status-low';
+                } else {
+                    statusClass = 'status-adequate';
+                }
+
+                row.innerHTML = `
+                    <td>
+                        <strong>${item.code}</strong>
+                    </td>
+                    <td>
+                        <div style="font-weight: 600;">${item.name}</div>
+                    </td>
+                    <td>${item.category}</td>
+                    <td>${item.currentStock}</td>
+                    <td>
+                        <input 
+                            type="number" 
+                            class="editable-input ${hasChanges ? 'changed' : ''}" 
+                            value="${newStock}" 
+                            min="0"
+                            onchange="updateStock('${item.id}', this.value)"
+                            ${hasChanges ? 'style="border-color: var(--warning);"' : ''}
+                        >
+                    </td>
+                    <td>${item.unit}</td>
+                    <td>
+                        <select class="status-select" onchange="updateStatus('${item.id}', this.value)">
+                            <option value="موجود" ${item.status === 'موجود' ? 'selected' : ''}>موجود</option>
+                            <option value="نیاز به بررسی" ${item.status === 'نیاز به بررسی' ? 'selected' : ''}>نیاز به بررسی</option>
+                            <option value="اتمام موجودی" ${item.status === 'اتمام موجودی' ? 'selected' : ''}>اتمام موجودی</option>
+                        </select>
+                    </td>
+                    <td>${item.location}</td>
+                    <td>
+                        <div class="action-buttons">
+                            ${hasChanges ? `
+                                <button class="action-btn save-btn" onclick="saveChanges('${item.id}')">
+                                    <i class="fas fa-save"></i>
+                                    ذخیره
+                                </button>
+                                <button class="action-btn cancel-btn" onclick="cancelChanges('${item.id}')">
+                                    <i class="fas fa-times"></i>
+                                    لغو
+                                </button>
+                            ` : ''}
+                        </div>
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+
+            updateChangesSection();
+        }
+
+        // تابع جدید برای آپدیت وضعیت
+        function updateStatus(itemId, newStatus) {
+            const item = inventoryData.find(i => i.id === itemId);
+            if (!item) return;
+
+            // اضافه کردن تغییر وضعیت به pendingChanges
+            if (!pendingChanges.has(itemId)) {
+                pendingChanges.set(itemId, {
+                    item: item,
+                    oldStock: item.currentStock,
+                    newStock: item.currentStock,
+                    oldStatus: item.status,
+                    newStatus: newStatus,
+                    timestamp: new Date()
+                });
+            } else {
+                const change = pendingChanges.get(itemId);
+                change.newStatus = newStatus;
+            }
+
+            renderInventoryTable();
+        }
+
+        function updateStock(itemId, newStock) {
+            const item = inventoryData.find(i => i.id === itemId);
+            if (!item) return;
+
+            const newStockNum = parseInt(newStock);
+            if (isNaN(newStockNum) || newStockNum < 0) return;
+
+            if (newStockNum === item.currentStock && !pendingChanges.get(itemId)?.newStatus) {
+                pendingChanges.delete(itemId);
+            } else {
+                const existingChange = pendingChanges.get(itemId);
+                if (existingChange) {
+                    existingChange.newStock = newStockNum;
+                } else {
+                    pendingChanges.set(itemId, {
+                        item: item,
+                        oldStock: item.currentStock,
+                        newStock: newStockNum,
+                        oldStatus: item.status,
+                        newStatus: item.status,
+                        timestamp: new Date()
+                    });
+                }
+            }
+
+            renderInventoryTable();
+        }
+
+        function saveChanges(itemId) {
+            const change = pendingChanges.get(itemId);
+            if (!change) return;
+            alert(`تغییرات برای ${change.item.name} ذخیره شد (منتظر تأیید نهایی)`);
+        }
+
+        function cancelChanges(itemId) {
+            pendingChanges.delete(itemId);
+            renderInventoryTable();
+        }
+
+        function cancelAllChanges() {
+            if (confirm('آیا از لغو تمام تغییرات اطمینان دارید؟')) {
+                pendingChanges.clear();
+                renderInventoryTable();
+            }
+        }
+
+        function updateChangesSection() {
+            const changesSection = document.getElementById('changesSection');
+            const changesList = document.getElementById('changesList');
+
+            if (pendingChanges.size === 0) {
+                changesSection.style.display = 'none';
+                return;
+            }
+
+            changesSection.style.display = 'block';
+            changesList.innerHTML = '';
+
+            pendingChanges.forEach((change, itemId) => {
+                const changeItem = document.createElement('div');
+                changeItem.className = 'change-item';
+                
+                let changesText = '';
+                if (change.oldStock !== change.newStock) {
+                    changesText += `موجودی: ${change.oldStock} → ${change.newStock} ${change.item.unit}`;
+                }
+                if (change.oldStatus !== change.newStatus) {
+                    if (changesText) changesText += ' | ';
+                    changesText += `وضعیت: ${change.oldStatus} → ${change.newStatus}`;
+                }
+                
+                changeItem.innerHTML = `
+                    <div class="change-info">
+                        <div class="change-part">${change.item.name} (${change.item.code})</div>
+                        <div class="change-details">
+                            ${changesText}
+                        </div>
+                    </div>
+                    <button class="action-btn cancel-btn" onclick="cancelChanges('${itemId}')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                
+                changesList.appendChild(changeItem);
+            });
+        }
+
+        function confirmChanges() {
+            const confirmationMessage = document.getElementById('confirmationMessage');
+            let message = '<strong>تغییرات زیر برای مدیر ارسال خواهند شد:</strong><br><br>';
+            
+            pendingChanges.forEach((change, itemId) => {
+                let changeText = `• ${change.item.name}: `;
+                const changes = [];
+                
+                if (change.oldStock !== change.newStock) {
+                    changes.push(`موجودی ${change.oldStock} → ${change.newStock} ${change.item.unit}`);
+                }
+                if (change.oldStatus !== change.newStatus) {
+                    changes.push(`وضعیت ${change.oldStatus} → ${change.newStatus}`);
+                }
+                
+                changeText += changes.join(' | ');
+                message += changeText + '<br>';
+            });
+            
+            message += '<br>آیا از ارسال این تغییرات اطمینان دارید؟';
+            
+            confirmationMessage.innerHTML = message;
+            document.getElementById('confirmationPopup').style.display = 'flex';
+        }
+
+        function closeConfirmationPopup() {
+            document.getElementById('confirmationPopup').style.display = 'none';
+        }
+
+        async function submitChangesToManager() {
+            const changesArray = Array.from(pendingChanges.values());
+            
+            try {
+                const client = initializeSupabase();
+                if (!client) {
+                    throw new Error('Supabase initialized نشده');
+                }
+
+                // 1. آپدیت موجودی‌ها و وضعیت در جدول inventory
+                console.log('🔄 در حال آپدیت موجودی‌ها و وضعیت...');
+                for (const change of changesArray) {
+                    const updateData = {};
+                    
+                    // اگر موجودی تغییر کرده
+                    if (change.oldStock !== change.newStock) {
+                        updateData.current_stock = change.newStock;
+                    }
+                    
+                    // اگر وضعیت تغییر کرده
+                    if (change.oldStatus !== change.newStatus) {
+                        updateData.status = change.newStatus;
+                    }
+                    
+                    updateData.updated_at = new Date().toISOString();
+
+                    const { error: updateError } = await client
+                        .from('inventory')
+                        .update(updateData)
+                        .eq('id', change.item.id);
+                    
+                    if (updateError) {
+                        console.error('❌ خطا در آپدیت موجودی:', updateError);
+                        throw updateError;
+                    }
+                    console.log(`✅ ${change.item.name} آپدیت شد`);
+                }
+                
+                // 2. ایجاد گزارش در managers_reports
+                console.log('📝 در حال ایجاد گزارش...');
+                for (const change of changesArray) {
+                    let description = `تغییرات ${change.item.name} (${change.item.code}) - `;
+                    const changes = [];
+                    
+                    if (change.oldStock !== change.newStock) {
+                        const difference = change.newStock - change.oldStock;
+                        const differenceText = difference >= 0 ? 
+                            `افزایش ${Math.abs(difference)}` : `کاهش ${Math.abs(difference)}`;
+                        changes.push(`موجودی: ${differenceText}`);
+                    }
+                    
+                    if (change.oldStatus !== change.newStatus) {
+                        changes.push(`وضعیت: ${change.oldStatus} → ${change.newStatus}`);
+                    }
+                    
+                    description += changes.join(' | ');
+                    
+                    const { error: reportError } = await client
+                        .from('managerreports')
+                        .insert({
+                            reporter_name: 'اپراتور انبار',
+                            machine_name: 'انبار مرکزی',
+                            machine_status: 'فعال',
+                            problem_description: description,
+                            status: 'completed',
+                            priority: 'medium',
+                            action_type: 'بروزرسانی موجودی انبار',
+                            technician_name: change.item.name,
+                            estimated_time: change.newStock,
+                            actions_taken: change.oldStock.toString(),
+                            manager_message: `تغییرات ثبت شده`
+                        });
+                    
+                    if (reportError) {
+                        console.error('❌ خطا در ایجاد گزارش:', reportError);
+                        throw reportError;
+                    }
+                    console.log(`✅ گزارش برای ${change.item.name} ایجاد شد`);
+                }
+                
+                alert('✅ تغییرات با موفقیت ثبت و برای مدیر ارسال شد.');
+                pendingChanges.clear();
+                closeConfirmationPopup();
+                await loadInventoryData(); // رفرش داده‌ها
+                
+            } catch (error) {
+                console.error('❌ Error submitting changes:', error);
+                alert('❌ خطا در ارسال تغییرات به سرور');
+            }
+        }
+
+        // ==================== EVENT LISTENERS ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            // جلوگیری از زوم در موبایل
+            document.addEventListener('touchstart', function(e) {
+                if (e.touches.length > 1) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+
+            let lastTouchEnd = 0;
+            document.addEventListener('touchend', function(e) {
+                const now = (new Date()).getTime();
+                if (now - lastTouchEnd <= 300) {
+                    e.preventDefault();
+                }
+                lastTouchEnd = now;
+            }, false);
+
+            // مدیریت زمان ورود کاربر
+            const now = new Date();
+            window.loginTime = now;
+            
+            const loginTimeElement = document.getElementById('loginTime');
+            const lastLoginTimeElement = document.getElementById('lastLoginTime');
+            const userNameElement = document.getElementById('userName');
+            const userAvatarElement = document.getElementById('userAvatar');
+            
+            if (loginTimeElement) {
+                loginTimeElement.textContent = formatPersianDateTime(now);
+            }
+            
+            if (lastLoginTimeElement) {
+                lastLoginTimeElement.textContent = formatPersianDateTime(now);
+            }
+
+            // به روز رسانی زمان آنلاین هر دقیقه
+            setInterval(updateOnlineTime, 60000);
+
+            // صبر میکنیم Supabase لود بشه
+            setTimeout(() => {
+                initializeSupabase();
+                loadInventoryData();
+            }, 500);
+
+            // حالت توسعه
+            console.log('🚀 حالت توسعه: اتصال به Supabase برقرار شد');
+            if (userNameElement) {
+                userNameElement.textContent = 'انباردار (توسعه)';
+            }
+            if (userAvatarElement) {
+                userAvatarElement.textContent = 'W';
+            }
+        });
+
+        // PWA support
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+            document.body.style.overscrollBehavior = 'none';
+        }
+    </script>
+</body>
+</html>

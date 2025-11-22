@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TMP</title>
+    <link rel="icon" href="icons/icon-192x192.png">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- <script src="../../auth.js"></script> -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Vazirmatn', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-text-size-adjust: 100%;
+            touch-action: manipulation;
+        }
+
+        :root {
+            --primary: #2c3e50;
+            --primary-light: #34495e;
+            --accent: #e74c3c;
+            --accent-light: #ff6b6b;
+            --secondary: #3498db;
+            --dark: #1a252f;
+            --light: #ecf0f1;
+            --gray: #95a5a6;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+        }
+
+        body {
+            background: #f8f9fa;
+            color: var(--dark);
+            min-height: 100vh;
+            overflow-x: hidden;
+            width: 100%;
+        }
+
+        /* نویگیشن */
+        .navbar {
+            background: var(--primary);
+            color: white;
+            padding: 0 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            width: 100%;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 60px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            background: transparent;
+            width: 35px;
+            height: 35px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .logo-text {
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .nav-link.active {
+            background: rgba(255,255,255,0.15);
+        }
+
+        .nav-link:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-details {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 2px;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .login-time {
+            font-size: 11px;
+            opacity: 0.8;
+            color: #ecf0f1;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px 15px;
+            width: 100%;
+        }
+
+        .header-card {
+            background: var(--secondary);
+            color: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: 100%;
+        }
+
+        .page-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .page-subtitle {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .login-info {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .login-info i {
+            font-size: 11px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border: 1px solid #eaeaea;
+            width: 100%;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title i {
+            color: var(--accent);
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .summary-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            border: 1px solid #eaeaea;
+            transition: transform 0.3s ease;
+        }
+
+        .summary-item:hover {
+            transform: translateY(-2px);
+        }
+
+        .summary-number {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: var(--secondary);
+        }
+
+        .summary-label {
+            color: var(--gray);
+            font-size: 12px;
+        }
+
+        .report-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .report-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 1px solid #eaeaea;
+            transition: transform 0.2s;
+        }
+
+        .report-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .report-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .report-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: white;
+            background: var(--secondary);
+            flex-shrink: 0;
+        }
+
+        .report-content {
+            flex: 1;
+        }
+
+        .report-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+
+        .report-desc {
+            color: var(--gray);
+            font-size: 12px;
+        }
+
+        .download-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            touch-action: manipulation;
+            flex-shrink: 0;
+        }
+
+        .download-btn:hover {
+            background: var(--accent-light);
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 10px;
+            border: 1px solid #eaeaea;
+            width: 100%;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            min-width: 500px;
+        }
+
+        .data-table th {
+            background: #f8f9fa;
+            padding: 12px 10px;
+            text-align: right;
+            font-weight: 600;
+            color: var(--primary);
+            border-bottom: 1px solid #eaeaea;
+            font-size: 14px;
+        }
+
+        .data-table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #eaeaea;
+            font-size: 14px;
+        }
+
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .negative {
+            color: var(--danger);
+            font-weight: 600;
+        }
+
+        .cleanup-alert {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+            animation: pulse 2s infinite;
+        }
+
+        .cleanup-alert-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .cleanup-alert-text {
+            flex: 1;
+        }
+
+        .cleanup-alert-title {
+            font-weight: 700;
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+
+        .cleanup-alert-desc {
+            opacity: 0.9;
+            font-size: 12px;
+        }
+
+        .cleanup-alert-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .alert-btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 12px;
+            touch-action: manipulation;
+        }
+
+        .alert-btn-primary {
+            background: white;
+            color: #e74c3c;
+        }
+
+        .alert-btn-secondary {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-select {
+            padding: 8px 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: white;
+            font-size: 13px;
+            cursor: pointer;
+            min-width: 120px;
+            touch-action: manipulation;
+        }
+
+        .search-bar {
+            flex: 1;
+            padding: 8px 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 13px;
+            background: white;
+            min-width: 150px;
+            touch-action: manipulation;
+        }
+
+        .bg-success { background: var(--success); }
+        .bg-warning { background: var(--warning); }
+        .bg-danger { background: var(--danger); }
+        .bg-info { background: var(--secondary); }
+        .bg-primary { background: var(--primary); }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        /* رسپانسیو */
+        @media (max-width: 1024px) {
+            .summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .report-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+            
+            .nav-links {
+                gap: 8px;
+            }
+            
+            .nav-link span {
+                display: none;
+            }
+            
+            .user-details {
+                display: none;
+            }
+
+            .cleanup-alert-content {
+                flex-direction: column;
+                gap: 12px;
+                text-align: center;
+            }
+
+            .filter-row {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .navbar {
+                padding: 0 10px;
+            }
+            
+            .nav-container {
+                height: 50px;
+            }
+            
+            .logo-icon {
+                width: 30px;
+                height: 30px;
+                font-size: 14px;
+            }
+            
+            .user-avatar {
+                width: 35px;
+                height: 35px;
+                font-size: 12px;
+            }
+            
+            .container {
+                padding: 15px 10px;
+            }
+            
+            .header-card {
+                padding: 15px;
+            }
+            
+            .page-title {
+                font-size: 18px;
+            }
+            
+            .card {
+                padding: 15px;
+            }
+            
+            .section-title {
+                font-size: 16px;
+            }
+            
+            .summary-number {
+                font-size: 18px;
+            }
+            
+            .report-icon {
+                width: 35px;
+                height: 35px;
+                font-size: 14px;
+            }
+        }
+
+        /* جلوگیری از زوم */
+        @media (hover: none) and (pointer: coarse) {
+            * {
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+            }
+            
+            input, textarea, select {
+                -webkit-user-select: text;
+                -moz-user-select: text;
+                -ms-user-select: text;
+                user-select: text;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- نویگیشن -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <div class="logo-icon">
+                    <img src="../../Logo.png" style="max-block-size:100% ;" >
+                </div>
+                <div class="logo-text">TPM PRO</div>
+            </div>
+            
+            <div class="nav-links">
+                <a href="dashboard.html" class="nav-link">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>داشبورد</span>
+                </a>
+                <a href="reports.html" class="nav-link active">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>گزارشات</span>
+                </a>
+                <a href="warehouse.html" class="nav-link">
+                    <i class="fas fa-warehouse"></i>
+                    <span>انبار</span>
+                </a>
+            </div>
+            
+            <div class="user-info">
+                <div class="user-details">
+                    <div class="user-name" id="userName">مدیر سیستم</div>
+                    <div class="login-time" id="loginTime">در حال بارگذاری...</div>
+                </div>
+                <div class="user-avatar" id="userAvatar">مد</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- محتوای اصلی -->
+    <div class="container">
+        <!-- هشدار پاک‌سازی -->
+        <div class="cleanup-alert" id="cleanupAlert">
+            <div class="cleanup-alert-content">
+                <div class="cleanup-alert-text">
+                    <div class="cleanup-alert-title">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        هشدار پاک‌سازی داده‌ها
+                    </div>
+                    <div class="cleanup-alert-desc" id="cleanupMessage">
+                        داده‌های جدول مدیریت تا 1 روز دیگر پاک خواهند شد. لطفاً از اطلاعات بکاپ بگیرید.
+                    </div>
+                </div>
+                <div class="cleanup-alert-actions">
+                    <button class="alert-btn alert-btn-secondary" onclick="dismissAlert()">
+                        بعداً یادآوری کن
+                    </button>
+                    <button class="alert-btn alert-btn-primary" onclick="downloadAllData()">
+                        <i class="fas fa-download"></i>
+                        دانلود همه داده‌ها
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- هدر صفحه -->
+        <div class="header-card">
+            <h1 class="page-title">گزارشات مدیریتی</h1>
+            <p class="page-subtitle">گزارشات استراتژیک برای تصمیم‌گیری مدیریت</p>
+            <div class="login-info">
+                <i class="fas fa-clock"></i>
+                آخرین ورود: <span id="lastLoginTime">در حال بارگذاری...</span>
+            </div>
+        </div>
+
+        <!-- خلاصه اجرایی -->
+        <div class="card">
+            <h2 class="section-title">
+                <i class="fas fa-chart-pie"></i>
+                خلاصه اجرایی
+            </h2>
+            
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <div class="summary-number" id="totalReports">0</div>
+                    <div class="summary-label">کل گزارشات</div>
+                </div>
+                
+                <div class="summary-item">
+                    <div class="summary-number" id="pendingReports">0</div>
+                    <div class="summary-label">در انتظار بررسی</div>
+                </div>
+                
+                <div class="summary-item">
+                    <div class="summary-number" id="completedReports">0</div>
+                    <div class="summary-label">تکمیل شده</div>
+                </div>
+                
+                <div class="summary-item">
+                    <div class="summary-number" id="referredReports">0</div>
+                    <div class="summary-label">ارجاع به مدیر</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- فیلتر و جستجو -->
+        <div class="card">
+            <h2 class="section-title">
+                <i class="fas fa-filter"></i>
+                فیلتر و جستجو
+            </h2>
+            
+            <div class="filter-row">
+                <input type="text" class="search-bar" placeholder="جستجو در گزارشات..." id="searchInput">
+                
+                <select class="filter-select" id="statusFilter">
+                    <option value="all">همه وضعیت‌ها</option>
+                    <option value="pending">در انتظار بررسی</option>
+                    <option value="approved">تأیید شده</option>
+                    <option value="rejected">رد شده</option>
+                    <option value="in-progress">در دست اقدام</option>
+                    <option value="completed">تکمیل شده</option>
+                    <option value="referred_to_manager">ارجاع به مدیر</option>
+                </select>
+                
+                <select class="filter-select" id="priorityFilter">
+                    <option value="all">همه اولویت‌ها</option>
+                    <option value="low">کم</option>
+                    <option value="medium">متوسط</option>
+                    <option value="high">بالا</option>
+                    <option value="critical">بحرانی</option>
+                </select>
+
+                <button class="download-btn" onclick="downloadFilteredData()">
+                    <i class="fas fa-download"></i>
+                    دانلود داده‌های فیلتر شده
+                </button>
+            </div>
+        </div>
+
+        <!-- گزارشات مدیریتی -->
+        <div class="card">
+            <h2 class="section-title">
+                <i class="fas fa-file-alt"></i>
+                گزارشات مدیریتی
+                <span style="font-size: 12px; color: var(--gray); margin-right: auto;" id="reportsCount">
+                    (0 گزارش)
+                </span>
+            </h2>
+            
+            <div class="report-list" id="reportsList">
+                <!-- گزارشات به صورت داینامیک لود می‌شوند -->
+            </div>
+        </div>
+
+        <!-- معیارهای کلیدی عملکرد -->
+        <div class="card">
+            <h2 class="section-title">
+                <i class="fas fa-chart-bar"></i>
+                
+            </h2>
+            
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>معیار</th>
+                            <th>مقدار فعلی</th>
+                            <th>هدف</th>
+                            <th>انحراف</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>میانگین زمان پاسخگویی (ساعت)</td>
+                            <td id="avgResponseTime">-</td>
+                            <td>4</td>
+                            <td class="negative" id="responseDeviation">-</td>
+                        </tr>
+                        <tr>
+                            <td>نرخ تکمیل موفق</td>
+                            <td id="completionRate">-</td>
+                            <td>95%</td>
+                            <td class="negative" id="completionDeviation">-</td>
+                        </tr>
+                        <tr>
+                            <td>هزینه متوسط تعمیرات</td>
+                            <td id="avgRepairCost">-</td>
+                            <td>$1,100</td>
+                            <td class="negative" id="costDeviation">-</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // تابع برای فرمت کردن تاریخ و زمان به فارسی
+        function formatPersianDateTime(date) {
+            const options = {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            };
+            return new Intl.DateTimeFormat('fa-IR', options).format(date);
+        }
+
+        // تابع برای محاسبه زمان گذشته از ورود
+        function getTimeSinceLogin(loginTime) {
+            const now = new Date();
+            const diff = now - loginTime;
+            const minutes = Math.floor(diff / 60000);
+            const hours = Math.floor(minutes / 60);
+            
+            if (hours > 0) {
+                return `${hours} ساعت و ${minutes % 60} دقیقه قبل`;
+            } else {
+                return `${minutes} دقیقه قبل`;
+            }
+        }
+
+        // تابع برای به روز رسانی زمان آنلاین
+        function updateOnlineTime() {
+            const loginTimeElement = document.getElementById('loginTime');
+            if (loginTimeElement && window.loginTime) {
+                loginTimeElement.textContent = getTimeSinceLogin(window.loginTime);
+            }
+        }
+
+        // جلوگیری از زوم در دستگاه‌های موبایل و مدیریت زمان ورود
+        document.addEventListener('DOMContentLoaded', function() {
+            // جلوگیری از زوم با حرکات چندلمسی
+            document.addEventListener('touchstart', function(e) {
+                if (e.touches.length > 1) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+
+            let lastTouchEnd = 0;
+            document.addEventListener('touchend', function(e) {
+                const now = (new Date()).getTime();
+                if (now - lastTouchEnd <= 300) {
+                    e.preventDefault();
+                }
+                lastTouchEnd = now;
+            }, false);
+
+            document.addEventListener('gesturestart', function(e) {
+                e.preventDefault();
+            });
+
+            document.addEventListener('gesturechange', function(e) {
+                e.preventDefault();
+            });
+
+            document.addEventListener('gestureend', function(e) {
+                e.preventDefault();
+            });
+
+            // مدیریت زمان ورود کاربر
+            const now = new Date();
+            window.loginTime = now;
+            
+            // نمایش زمان ورود
+            const loginTimeElement = document.getElementById('loginTime');
+            const lastLoginTimeElement = document.getElementById('lastLoginTime');
+            const userNameElement = document.getElementById('userName');
+            const userAvatarElement = document.getElementById('userAvatar');
+            
+            if (loginTimeElement) {
+                loginTimeElement.textContent = formatPersianDateTime(now);
+            }
+            
+            if (lastLoginTimeElement) {
+                lastLoginTimeElement.textContent = formatPersianDateTime(now);
+            }
+
+            // به روز رسانی زمان آنلاین هر دقیقه
+            setInterval(updateOnlineTime, 60000);
+
+            // اتصال به Supabase و لود داده‌ها
+            loadManagerReports();
+            
+            // رویدادهای فیلتر
+            document.getElementById('searchInput').addEventListener('input', filterReports);
+            document.getElementById('statusFilter').addEventListener('change', filterReports);
+            document.getElementById('priorityFilter').addEventListener('change', filterReports);
+            
+            // تغییر وضعیت فعال در نویگیشن
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+
+            // محافظت از صفحه و نمایش اطلاعات کاربر
+            if (typeof auth !== 'undefined') {
+                if (auth.protectPageByRole('manager')) {
+                    // نمایش اطلاعات کاربر
+                    if (userNameElement) {
+                        userNameElement.textContent = auth.getUsername() || 'مدیر سیستم';
+                    }
+                    if (userAvatarElement) {
+                        userAvatarElement.textContent = auth.getUsername() ? auth.getUsername().charAt(0) : 'M';
+                    }
+                }
+            } else {
+                // حالت توسعه - وقتی auth.js وجود ندارد
+                console.log('حالت توسعه: فایل auth.js یافت نشد');
+                if (userNameElement) {
+                    userNameElement.textContent = 'مدیر  (توسعه)';
+                }
+                if (userAvatarElement) {
+                    userAvatarElement.textContent = 'M';
+                }
+            }
+        });
+
+        // جلوگیری از اسکرول هنگام زوم در iOS
+        document.addEventListener('touchmove', function(e) {
+            if(e.scale !== 1) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        // اتصال به Supabase
+        const SUPABASE_URL = 'https://kalykylvjqigqlaprlca.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImthbHlreWx2anFpZ3FsYXBybGNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM1NjI1OTcsImV4cCI6MjA3OTEzODU5N30.S8YtogVrxkqYjkgfkGpy4_mS6mqaNxmsHjxnhyBPwEY';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let allReports = [];
+        let filteredReports = [];
+
+        // توابع کمکی
+        function getStatusText(status) {
+            const statusMap = {
+                'pending': 'در انتظار بررسی',
+                'approved': 'تأیید شده',
+                'rejected': 'رد شده',
+                'in-progress': 'در دست اقدام',
+                'completed': 'تکمیل شده',
+                'referred_to_manager': 'ارجاع به مدیر'
+            };
+            return statusMap[status] || status;
+        }
+
+        function getPriorityText(priority) {
+            const priorityMap = {
+                'low': 'کم',
+                'medium': 'متوسط',
+                'high': 'بالا',
+                'critical': 'بحرانی'
+            };
+            return priorityMap[priority] || priority;
+        }
+
+        function getPriorityColor(priority) {
+            const colorMap = {
+                'low': '#2ecc71',
+                'medium': '#f39c12', 
+                'high': '#e74c3c',
+                'critical': '#c0392b'
+            };
+            return colorMap[priority] || '#3498db';
+        }
+
+        // لود گزارشات از جدول managerreports
+        async function loadManagerReports() {
+            try {
+                const { data: reports, error } = await supabase
+                    .from('managerreports')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) {
+                    console.error('خطا در دریافت داده‌ها:', error);
+                    // اگر جدول وجود ندارد، نمونه داده ایجاد کن
+                    if (error.code === 'PGRST204') {
+                        await createSampleData();
+                        return;
+                    }
+                    throw error;
+                }
+
+                allReports = reports || [];
+                filteredReports = [...allReports];
+                
+                updateStats();
+                renderReports();
+                checkCleanupAlert();
+                
+            } catch (error) {
+                console.error('خطا در دریافت گزارشات مدیریتی:', error);
+                alert('خطا در دریافت گزارشات از سرور');
+            }
+        }
+
+        // ایجاد داده نمونه اگر جدول خالی است
+        // async function createSampleData() {
+        //     try {
+        //         const sampleData = [
+        //             {
+        //                 reporter_name: 'اپراتور ۱',
+        //                 machine_name: 'دستگاه CNC شماره ۱',
+        //                 machine_status: 'خراب',
+        //                 problem_description: 'سیستم هیدرولیک دستگاه دچار مشکل شده است',
+        //                 status: 'pending',
+        //                 priority: 'high',
+        //                 actions_taken: 'بررسی اولیه انجام شد',
+        //                 manager_message: 'نیاز به بررسی فنی دارد',
+        //                 action_type: 'technical_review',
+        //                 technician_name: 'تکنسین احمدی',
+        //                 estimated_time: 8,
+        //                 budget_required: 1500.00,
+        //                 decision_status: 'pending_review'
+        //             },
+        //             {
+        //                 reporter_name: 'اپراتور ۲',
+        //                 machine_name: 'کمپرسور مرکزی',
+        //                 machine_status: 'در دست تعمیر',
+        //                 problem_description: 'سطح روغن پایین و نیاز به سرویس',
+        //                 status: 'in-progress',
+        //                 priority: 'medium',
+        //                 actions_taken: 'روغن‌کاری انجام شد',
+        //                 manager_message: 'در حال پیگیری',
+        //                 action_type: 'maintenance',
+        //                 technician_name: 'تکنسین رضایی',
+        //                 estimated_time: 4,
+        //                 budget_required: 500.00,
+        //                 decision_status: 'approved'
+        //             }
+        //         ];
+
+        //         const { error } = await supabase
+        //             .from('managerreports')
+        //             .insert(sampleData);
+
+        //         if (error) throw error;
+
+        //         // دوباره داده‌ها رو لود کن
+        //         loadManagerReports();
+                
+        //     } catch (error) {
+        //         console.error('خطا در ایجاد داده نمونه:', error);
+        //         alert('خطا در ایجاد داده‌های اولیه');
+        //     }
+        // }
+
+        // آپدیت آمار
+        function updateStats() {
+            const totalReports = allReports.length;
+            const pendingReports = allReports.filter(r => 
+                !r.status || r.status === 'pending' || r.status === 'in-progress'
+            ).length;
+            const completedReports = allReports.filter(r => r.status === 'completed').length;
+            const referredReports = allReports.filter(r => r.status === 'referred_to_manager').length;
+
+            document.getElementById('totalReports').textContent = totalReports;
+            document.getElementById('pendingReports').textContent = pendingReports;
+            document.getElementById('completedReports').textContent = completedReports;
+            document.getElementById('referredReports').textContent = referredReports;
+            document.getElementById('reportsCount').textContent = `(${filteredReports.length} گزارش)`;
+
+            // محاسبه معیارهای عملکرد
+            updatePerformanceMetrics();
+        }
+
+        // آپدیت معیارهای عملکرد
+        function updatePerformanceMetrics() {
+            const completedReports = allReports.filter(r => r.status === 'completed');
+            
+            if (completedReports.length > 0) {
+                // میانگین زمان پاسخگویی
+                const totalResponseTime = completedReports.reduce((sum, report) => {
+                    const createdAt = new Date(report.created_at);
+                    const completedAt = new Date(report.completed_at || report.updated_at || report.created_at);
+                    const diffHours = (completedAt - createdAt) / (1000 * 60 * 60);
+                    return sum + (isNaN(diffHours) ? 0 : diffHours);
+                }, 0);
+                
+                const avgResponseTime = (totalResponseTime / completedReports.length).toFixed(1);
+                document.getElementById('avgResponseTime').textContent = `${avgResponseTime} ساعت`;
+                document.getElementById('responseDeviation').textContent = `${(avgResponseTime - 4).toFixed(1)} ساعت`;
+
+                // نرخ تکمیل موفق
+                const successfulCompletions = completedReports.filter(r => 
+                    !r.decision_status || r.decision_status === 'approved'
+                ).length;
+                const completionRate = ((successfulCompletions / completedReports.length) * 100).toFixed(1);
+                document.getElementById('completionRate').textContent = `${completionRate}%`;
+                document.getElementById('completionDeviation').textContent = `${(completionRate - 95).toFixed(1)}%`;
+            } else {
+                document.getElementById('avgResponseTime').textContent = '-';
+                document.getElementById('responseDeviation').textContent = '-';
+                document.getElementById('completionRate').textContent = '-';
+                document.getElementById('completionDeviation').textContent = '-';
+            }
+            
+            document.getElementById('avgRepairCost').textContent = '-';
+            document.getElementById('costDeviation').textContent = '-';
+        }
+
+        // نمایش گزارشات
+        function renderReports() {
+            const reportsList = document.getElementById('reportsList');
+            
+            if (!filteredReports || filteredReports.length === 0) {
+                reportsList.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 16px; color: #ddd;"></i>
+                        <h3>گزارشی یافت نشد</h3>
+                        <p>هیچ گزارشی با فیلترهای انتخاب شده مطابقت ندارد.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            reportsList.innerHTML = filteredReports.map(report => {
+                const status = report.status || 'pending';
+                const priority = report.priority || 'medium';
+                const priorityColor = getPriorityColor(priority);
+                
+                return `
+                <div class="report-item">
+                    <div class="report-info">
+                        <div class="report-icon" style="background: ${priorityColor}">
+                            <i class="fas fa-clipboard-check"></i>
+                        </div>
+                        <div class="report-content">
+                            <div class="report-title">${report.machine_name || 'بدون عنوان'}</div>
+                            <div class="report-desc">${report.problem_description || 'بدون توضیحات'}</div>
+                            <div style="display: flex; gap: 10px; margin-top: 6px; font-size: 11px; color: #666; flex-wrap: wrap;">
+                                <span><strong>گزارش‌دهنده:</strong> ${report.reporter_name || 'نامشخص'}</span>
+                                <span><strong>وضعیت:</strong> ${getStatusText(status)}</span>
+                                <span><strong>اولویت:</strong> ${getPriorityText(priority)}</span>
+                                <span><strong>تاریخ:</strong> ${new Date(report.created_at).toLocaleDateString('fa-IR')}</span>
+                            </div>
+                            ${report.manager_message ? `
+                                <div style="margin-top: 6px; padding: 6px; background: #fff3cd; border-radius: 4px; font-size: 11px;">
+                                    <strong>یادداشت مدیر:</strong> ${report.manager_message}
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="download-btn" onclick="downloadSingleReport('${report.id}')" title="دانلود این گزارش">
+                            <i class="fas fa-download"></i>
+                            دانلود
+                        </button>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        // فیلتر کردن گزارشات
+        function filterReports() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            const priorityFilter = document.getElementById('priorityFilter').value;
+
+            filteredReports = allReports.filter(report => {
+                const matchesSearch = 
+                    (report.machine_name && report.machine_name.toLowerCase().includes(searchTerm)) || 
+                    (report.problem_description && report.problem_description.toLowerCase().includes(searchTerm)) ||
+                    (report.reporter_name && report.reporter_name.toLowerCase().includes(searchTerm));
+                
+                const reportStatus = report.status || 'pending';
+                const matchesStatus = statusFilter === 'all' || reportStatus === statusFilter;
+                
+                const reportPriority = report.priority || 'medium';
+                const matchesPriority = priorityFilter === 'all' || reportPriority === priorityFilter;
+                
+                return matchesSearch && matchesStatus && matchesPriority;
+            });
+
+            renderReports();
+            updateStats();
+        }
+
+        // بررسی هشدار پاک‌سازی
+        function checkCleanupAlert() {
+            const now = new Date();
+            const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+            const daysUntilCleanup = Math.ceil((nextMonth - now) / (1000 * 60 * 60 * 24));
+            
+            if (daysUntilCleanup <= 1) {
+                const alertElement = document.getElementById('cleanupAlert');
+                const messageElement = document.getElementById('cleanupMessage');
+                
+                messageElement.textContent = 
+                    `داده‌های جدول مدیریت تا ${daysUntilCleanup} روز دیگر پاک خواهند شد. لطفاً از اطلاعات بکاپ بگیرید.`;
+                
+                alertElement.style.display = 'block';
+            }
+        }
+
+        // بستن هشدار
+        function dismissAlert() {
+            document.getElementById('cleanupAlert').style.display = 'none';
+        }
+
+        // دانلود تمام داده‌ها
+        async function downloadAllData() {
+            await downloadData(allReports, 'همه_گزارشات_مدیریتی');
+        }
+
+        // دانلود داده‌های فیلتر شده
+        async function downloadFilteredData() {
+            await downloadData(filteredReports, 'گزارشات_فیلتر_شده');
+        }
+
+        // دانلود یک گزارش خاص
+        async function downloadSingleReport(reportId) {
+            const report = allReports.find(r => r.id === reportId);
+            if (report) {
+                await downloadData([report], `گزارش_${report.machine_name || report.id}`);
+            }
+        }
+
+        // تابع اصلی برای دانلود داده‌ها
+        async function downloadData(data, filename) {
+            try {
+                // فرمت‌های مختلف برای دانلود
+                const csvData = convertToCSV(data);
+                const jsonData = JSON.stringify(data, null, 2);
+
+                // ایجاد لینک‌های دانلود
+                createDownloadLink(csvData, `${filename}.csv`, 'text/csv');
+                createDownloadLink(jsonData, `${filename}.json`, 'application/json');
+
+                alert(`داده‌ها با موفقیت آماده شدند. فرمت‌های CSV و JSON در دسترس هستند.`);
+                
+            } catch (error) {
+                console.error('خطا در تولید فایل:', error);
+                alert('خطا در تولید فایل دانلودی');
+            }
+        }
+
+        // تبدیل به CSV
+        function convertToCSV(data) {
+            if (!data.length) return '';
+            
+            const headers = Object.keys(data[0]);
+            const csvRows = [headers.join(',')];
+            
+            for (const row of data) {
+                const values = headers.map(header => {
+                    const value = row[header];
+                    // مدیریت مقادیر null/undefined
+                    if (value === null || value === undefined) return '';
+                    // مدیریت رشته‌ها با کاما
+                    return typeof value === 'string' ? `"${value.replace(/"/g, '""')}"` : value;
+                });
+                csvRows.push(values.join(','));
+            }
+            
+            return csvRows.join('\n');
+        }
+
+        // ایجاد لینک دانلود
+        function createDownloadLink(data, filename, mimeType) {
+            const blob = new Blob([data], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>

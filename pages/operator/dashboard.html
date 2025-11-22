@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#2c3e50">
+    <title>TMP</title>
+    <link rel="icon" href="icons/icon-192x192.png">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="../../manifest.json">
+<link rel="icon" href="../../icons/icon-192x192.png">
+    
+    <!-- <script src="../../auth.js"></script> -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Vazirmatn', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-text-size-adjust: 100%;
+            touch-action: manipulation;
+        }
+
+        html {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            width: 100%;
+            height: 100vh;
+            height: -webkit-fill-available;
+            overflow: hidden;
+            background: #f8f9fa;
+            color: var(--dark);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        :root {
+            --primary: #2c3e50;
+            --primary-light: #34495e;
+            --accent: #e74c3c;
+            --accent-light: #ff6b6b;
+            --secondary: #3498db;
+            --dark: #1a252f;
+            --light: #ecf0f1;
+            --gray: #95a5a6;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+        }
+
+        /* نویگیشن */
+        .navbar {
+            background: var(--primary);
+            color: white;
+            padding: 0 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            width: 100%;
+            height: 60px;
+            flex-shrink: 0;
+        }
+
+        .nav-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            background: transparent;
+            width: 35px;
+            height: 35px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .logo-text {
+            font-size: 16px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .nav-link.active {
+            background: rgba(255,255,255,0.15);
+        }
+
+        .nav-link:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .nav-link.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .nav-link.disabled:hover {
+            background: transparent;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-details {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 2px;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .login-time {
+            font-size: 11px;
+            opacity: 0.8;
+            color: #ecf0f1;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            border: 2px solid rgba(255,255,255,0.2);
+            flex-shrink: 0;
+        }
+
+        /* محتوای اصلی */
+        .main-wrapper {
+            height: calc(100vh - 60px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 20px 15px;
+            width: 100%;
+        }
+
+        .header-card {
+            background: var(--primary);
+            color: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: 100%;
+        }
+
+        .page-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .page-subtitle {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .login-info {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .login-info i {
+            font-size: 11px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border: 1px solid #eaeaea;
+            width: 100%;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title i {
+            color: var(--accent);
+        }
+
+        /* آمار سریع */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            border: 1px solid #eaeaea;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .stat-number {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .stat-label {
+            color: var(--gray);
+            font-size: 12px;
+        }
+
+        /* چک لیست اقدامات اولیه */
+        .checklist-container {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 2px solid #e9ecef;
+            width: 100%;
+        }
+
+        .checklist-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e9ecef;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .checklist-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .checklist-progress {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .progress-text {
+            font-size: 12px;
+            color: var(--gray);
+            white-space: nowrap;
+        }
+
+        .progress-bar {
+            width: 120px;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--success);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .checklist-items {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #eaeaea;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .checklist-item.completed {
+            background: #f0f9ff;
+            border-color: var(--secondary);
+        }
+
+        .checklist-item.critical {
+            border-right: 4px solid var(--danger);
+        }
+
+        .checklist-checkbox {
+            width: 22px;
+            height: 22px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+            font-size: 12px;
+            touch-action: manipulation;
+        }
+
+        .checklist-item.completed .checklist-checkbox {
+            background: var(--success);
+            border-color: var(--success);
+            color: white;
+        }
+
+        .checklist-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .checklist-item-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+
+        .checklist-item-desc {
+            font-size: 12px;
+            color: var(--gray);
+            line-height: 1.4;
+        }
+
+        .checklist-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .badge-critical {
+            background: #ffebee;
+            color: var(--danger);
+        }
+
+        .badge-normal {
+            background: #f0f9ff;
+            color: var(--secondary);
+        }
+
+        /* دستگاه‌ها */
+        .machines-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .machine-card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border: 1px solid #eaeaea;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-right: 4px solid var(--secondary);
+            width: 100%;
+        }
+
+        .machine-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .machine-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            gap: 10px;
+        }
+
+        .machine-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .machine-type {
+            font-size: 12px;
+            color: var(--gray);
+            margin-top: 4px;
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .status-operational {
+            background: #e8f5e8;
+            color: var(--success);
+        }
+
+        .status-maintenance {
+            background: #fff8e1;
+            color: var(--warning);
+        }
+
+        .status-down {
+            background: #ffebee;
+            color: var(--danger);
+        }
+
+        .machine-metrics {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .metric {
+            text-align: center;
+            flex: 1;
+        }
+
+        .metric-value {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .metric-label {
+            font-size: 10px;
+            color: var(--gray);
+            margin-top: 2px;
+        }
+
+        .machine-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 12px;
+            min-height: 40px;
+            touch-action: manipulation;
+        }
+
+        .report-btn {
+            background: var(--accent);
+            color: white;
+        }
+
+        .report-btn:hover {
+            background: var(--accent-light);
+        }
+
+        .report-btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .checklist-btn {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .checklist-btn:hover {
+            background: #2980b9;
+        }
+
+        /* پاپاپ گزارش */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 15px;
+        }
+
+        .popup-content {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .popup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .popup-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--gray);
+            padding: 5px;
+            touch-action: manipulation;
+        }
+
+        .close-btn:hover {
+            color: var(--danger);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 14px;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+            background: #f8f9fa;
+            -webkit-appearance: none;
+            touch-action: manipulation;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--secondary);
+            background: white;
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 20px;
+        }
+
+        .submit-btn {
+            flex: 1;
+            padding: 12px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-size: 14px;
+            touch-action: manipulation;
+        }
+
+        .submit-btn:hover {
+            background: var(--accent-light);
+        }
+
+        .cancel-btn {
+            flex: 1;
+            padding: 12px;
+            background: #f8f9fa;
+            color: var(--dark);
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            touch-action: manipulation;
+        }
+
+        .cancel-btn:hover {
+            background: #e9ecef;
+        }
+
+        /* هشدار */
+        .alert {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+
+        .alert-warning {
+            background: #fff8e1;
+            border: 1px solid #ffd54f;
+            color: #e65100;
+        }
+
+        .alert-success {
+            background: #f0f9ff;
+            border: 1px solid var(--secondary);
+            color: var(--primary);
+        }
+
+        /* رسپانسیو */
+        @media (max-width: 768px) {
+            .stats-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .nav-links {
+                gap: 8px;
+            }
+            
+            .nav-link span {
+                display: none;
+            }
+            
+            .user-details {
+                display: none;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .navbar {
+                padding: 0 10px;
+            }
+            
+            .nav-container {
+                height: 50px;
+            }
+            
+            .logo-icon {
+                width: 30px;
+                height: 30px;
+                font-size: 14px;
+            }
+            
+            .user-avatar {
+                width: 35px;
+                height: 35px;
+                font-size: 12px;
+            }
+            
+            .container {
+                padding: 15px 10px;
+            }
+            
+            .header-card {
+                padding: 15px;
+            }
+            
+            .page-title {
+                font-size: 18px;
+            }
+            
+            .card {
+                padding: 15px;
+            }
+            
+            .section-title {
+                font-size: 16px;
+            }
+            
+            .stat-number {
+                font-size: 18px;
+            }
+            
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* جلوگیری از زوم و انتخاب متن */
+        @media (hover: none) and (pointer: coarse) {
+            * {
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+            }
+
+            input, textarea, select {
+                -webkit-user-select: text;
+                -moz-user-select: text;
+                -ms-user-select: text;
+                user-select: text;
+            }
+        }
+
+        /* مخفی کردن اسکرولبار در موبایل */
+        .container::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .container::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 2px;
+        }
+
+        .container::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+    </style>
+</head>
+<body>
+    <!-- نویگیشن -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <div class="logo-icon">
+                    <img src="../../Logo.png" style="max-block-size:100% ;" >
+                </div>
+                <div class="logo-text">TPM PRO</div>
+            </div>
+            
+            <div class="nav-links">
+                <a href="dashboard.html" class="nav-link active">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>داشبورد</span>
+                </a>
+                <a href="troubleshooting.html" class="nav-link disabled" id="troubleshootingLink">
+                    <i class="fas fa-tools"></i>
+                    <span>عیب‌یابی</span>
+                </a>
+            </div>
+            
+            <div class="user-info">
+                <div class="user-details">
+                    <div class="user-name" id="userName">اپراتور</div>
+                    <div class="login-time" id="loginTime">در حال بارگذاری...</div>
+                </div>
+                <div class="user-avatar" id="userAvatar">اپ</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- محتوای اصلی -->
+    <div class="main-wrapper">
+        <div class="container" id="mainContainer">
+            <!-- هدر صفحه -->
+            <div class="header-card">
+                <h1 class="page-title">داشبورد اپراتور</h1>
+                <p class="page-subtitle">لطفاً اقدامات اولیه را قبل از شروع کار تکمیل کنید</p>
+                <div class="login-info">
+                    <i class="fas fa-clock"></i>
+                    آخرین ورود: <span id="lastLoginTime">در حال بارگذاری...</span>
+                </div>
+            </div>
+
+            <!-- آمار سریع -->
+            <div class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-number">۶</div>
+                    <div class="stat-label">اقدامات اولیه</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" style="color: var(--success);">۰</div>
+                    <div class="stat-label">تکمیل شده</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" style="color: var(--danger);">۴</div>
+                    <div class="stat-label">اقدامات حیاتی</div>
+                </div>
+            </div>
+
+            <!-- هشدار اقدامات اولیه -->
+            <div class="alert alert-warning" id="checklistAlert">
+                <i class="fas fa-exclamation-triangle"></i>
+                <div>
+                    <strong>توجه:</strong> برای دسترسی به سیستم عیب‌یابی، لطفاً تمام اقدامات حیاتی اولیه را تکمیل کنید.
+                </div>
+            </div>
+
+            <!-- چک لیست اقدامات اولیه -->
+            <div class="card">
+                <div class="checklist-container">
+                    <div class="checklist-header">
+                        <h3 class="checklist-title">📋 چک لیست اقدامات اولیه قبل از کار</h3>
+                        <div class="checklist-progress">
+                            <span class="progress-text" id="progressText">۰ از ۶ تکمیل شده</span>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="checklist-items" id="checklistItems">
+                        <!-- آیتم‌های چک لیست به صورت داینامیک لود می‌شوند -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- دستگاه‌ها -->
+            
+        </div>
+    </div>
+
+    <!-- پاپاپ گزارش مشکل -->
+    <div class="popup-overlay" id="reportPopup">
+        <div class="popup-content">
+            <div class="popup-header">
+                <h3 class="popup-title">گزارش مشکل دستگاه</h3>
+                <button class="close-btn" onclick="closeReportPopup()">&times;</button>
+            </div>
+            
+            <form id="reportForm">
+                <div class="form-group">
+                    <label class="form-label" for="reporterName">نام گزارش‌دهنده</label>
+                    <input type="text" id="reporterName" class="form-input" placeholder="نام خود را وارد کنید" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="machineName">نام دستگاه</label>
+                    <input type="text" id="machineName" class="form-input" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="machineStatus">وضعیت دستگاه</label>
+                    <select id="machineStatus" class="form-select" required>
+                        <option value="">انتخاب وضعیت</option>
+                        <option value="سالم">سالم</option>
+                        <option value="در دست تعمیر">در دست تعمیر</option>
+                        <option value="خراب">خراب</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="problemDescription">شرح مشکل / توضیحات</label>
+                    <textarea id="problemDescription" class="form-textarea" placeholder="شرح کامل مشکل را بنویسید..."></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="cancel-btn" onclick="closeReportPopup()">انصراف</button>
+                    <button type="submit" class="submit-btn">ارسال گزارش</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // تابع برای فرمت کردن تاریخ و زمان به فارسی
+        function formatPersianDateTime(date) {
+            const options = {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            };
+            return new Intl.DateTimeFormat('fa-IR', options).format(date);
+        }
+
+        // تابع برای محاسبه زمان گذشته از ورود
+        function getTimeSinceLogin(loginTime) {
+            const now = new Date();
+            const diff = now - loginTime;
+            const minutes = Math.floor(diff / 60000);
+            const hours = Math.floor(minutes / 60);
+            
+            if (hours > 0) {
+                return `${hours} ساعت و ${minutes % 60} دقیقه قبل`;
+            } else {
+                return `${minutes} دقیقه قبل`;
+            }
+        }
+
+        // تابع برای به روز رسانی زمان آنلاین
+        function updateOnlineTime() {
+            const loginTimeElement = document.getElementById('loginTime');
+            if (loginTimeElement && window.loginTime) {
+                loginTimeElement.textContent = getTimeSinceLogin(window.loginTime);
+            }
+        }
+
+        // جلوگیری از زوم در دستگاه‌های موبایل و مدیریت زمان ورود
+        document.addEventListener('DOMContentLoaded', function() {
+            // جلوگیری از زوم با حرکات چندلمسی
+            document.addEventListener('touchstart', function(e) {
+                if (e.touches.length > 1) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+
+            let lastTouchEnd = 0;
+            document.addEventListener('touchend', function(e) {
+                const now = (new Date()).getTime();
+                if (now - lastTouchEnd <= 300) {
+                    e.preventDefault();
+                }
+                lastTouchEnd = now;
+            }, false);
+
+            document.addEventListener('gesturestart', function(e) {
+                e.preventDefault();
+            });
+
+            document.addEventListener('gesturechange', function(e) {
+                e.preventDefault();
+            });
+
+            document.addEventListener('gestureend', function(e) {
+                e.preventDefault();
+            });
+
+            // مدیریت زمان ورود کاربر
+            const now = new Date();
+            window.loginTime = now;
+            
+            // نمایش زمان ورود
+            const loginTimeElement = document.getElementById('loginTime');
+            const lastLoginTimeElement = document.getElementById('lastLoginTime');
+            const userNameElement = document.getElementById('userName');
+            const userAvatarElement = document.getElementById('userAvatar');
+            
+            if (loginTimeElement) {
+                loginTimeElement.textContent = formatPersianDateTime(now);
+            }
+            
+            if (lastLoginTimeElement) {
+                lastLoginTimeElement.textContent = formatPersianDateTime(now);
+            }
+
+            // به روز رسانی زمان آنلاین هر دقیقه
+            setInterval(updateOnlineTime, 60000);
+
+            // تغییر وضعیت فعال در نویگیشن
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    if (this.classList.contains('disabled')) {
+                        e.preventDefault();
+                        return;
+                    }
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+
+            // لود اولیه چک لیست
+            loadChecklist();
+
+            // محافظت از صفحه و نمایش اطلاعات کاربر
+            if (typeof auth !== 'undefined') {
+                if (auth.protectPageByRole('operator')) {
+                    // نمایش اطلاعات کاربر
+                    if (userNameElement) {
+                        userNameElement.textContent = auth.getUsername() || 'اپراتور';
+                    }
+                    if (userAvatarElement) {
+                        userAvatarElement.textContent = auth.getUsername() ? auth.getUsername().charAt(0) : 'O';
+                    }
+                }
+            } else {
+                // حالت توسعه - وقتی auth.js وجود ندارد
+                console.log('حالت توسعه: فایل auth.js یافت نشد');
+                if (userNameElement) {
+                    userNameElement.textContent = 'اپراتور (توسعه)';
+                }
+                if (userAvatarElement) {
+                    userAvatarElement.textContent = 'O';
+                }
+            }
+        });
+
+        // جلوگیری از اسکرول هنگام زوم در iOS
+        document.addEventListener('touchmove', function(e) {
+            if(e.scale !== 1) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        // داده‌های چک لیست اقدامات اولیه
+        const initialChecklist = [
+            {
+                id: 1,
+                title: "تنظیم عرض",
+                description: "اطمینان از تنظیم بودن عرض برای پارچه مربوطه قبل از شروع",
+                critical: true,
+                completed: false
+            },
+            {
+                id: 2,
+                title: "چک کردن محلول ",
+                description: "چک کردن محلول و تنظیم میزان رطوبت آن",
+                critical: true,
+                completed: false
+            },
+            {
+                id: 3,
+                title: "بررسی سیستم روغن‌کاری",
+                description: "بررسی سطح و کیفیت روغن",
+                critical: true,
+                completed: false
+            },
+            {
+                id: 4,
+                title: "بررسی ابزار و یراق آلات",
+                description: "مراقبت از خشک نبودن بلبرینگ",
+                critical: false,
+                completed: false
+            },
+            {
+                id: 5,
+                title: "بررسی سیستم خنک‌ کننده",
+                description: "اطمینان از عملکرد صحیح سیستم خنک‌کننده",
+                critical: true,
+                completed: false
+            },
+            {
+                id: 6,
+                title: "تست اولیه دستگاه",
+                description: "گرم کردن دستگاه به مدت 20 دقیقه",
+                critical: false,
+                completed: false
+            }
+        ];
+
+        let checklist = JSON.parse(JSON.stringify(initialChecklist));
+
+        // لود چک لیست
+        function loadChecklist() {
+            const checklistItems = document.getElementById('checklistItems');
+            checklistItems.innerHTML = '';
+
+            checklist.forEach(item => {
+                const itemElement = document.createElement('div');
+                itemElement.className = `checklist-item ${item.completed ? 'completed' : ''} ${item.critical ? 'critical' : ''}`;
+                
+                itemElement.innerHTML = `
+                    <div class="checklist-checkbox" onclick="toggleChecklistItem(${item.id})">
+                        ${item.completed ? '✓' : ''}
+                    </div>
+                    <div class="checklist-content">
+                        <div class="checklist-item-title">${item.title}</div>
+                        <div class="checklist-item-desc">${item.description}</div>
+                    </div>
+                    <div class="checklist-badge ${item.critical ? 'badge-critical' : 'badge-normal'}">
+                        ${item.critical ? 'حیاتی' : 'عادی'}
+                    </div>
+                `;
+                
+                checklistItems.appendChild(itemElement);
+            });
+
+            updateProgress();
+            updateUIState();
+        }
+
+        // تغییر وضعیت آیتم چک لیست
+        function toggleChecklistItem(itemId) {
+            const item = checklist.find(i => i.id === itemId);
+            if (item) {
+                item.completed = !item.completed;
+                loadChecklist();
+            }
+        }
+
+        // آپدیت پیشرفت
+        function updateProgress() {
+            const completed = checklist.filter(item => item.completed).length;
+            const total = checklist.length;
+            const percentage = (completed / total) * 100;
+
+            document.getElementById('progressText').textContent = `${completed} از ${total} تکمیل شده`;
+            document.getElementById('progressFill').style.width = `${percentage}%`;
+
+            // تغییر رنگ پیشرفت
+            const progressFill = document.getElementById('progressFill');
+            if (percentage === 100) {
+                progressFill.style.background = 'var(--success)';
+            } else if (percentage >= 50) {
+                progressFill.style.background = 'var(--warning)';
+            } else {
+                progressFill.style.background = 'var(--danger)';
+            }
+        }
+
+        // آپدیت وضعیت UI
+        function updateUIState() {
+            const allCriticalCompleted = checklist.filter(item => item.critical).every(item => item.completed);
+            const troubleshootingLink = document.getElementById('troubleshootingLink');
+            const reportButtons = document.querySelectorAll('.report-btn');
+            const checklistAlert = document.getElementById('checklistAlert');
+
+            if (allCriticalCompleted) {
+                // فعال کردن لینک عیب‌یابی
+                troubleshootingLink.classList.remove('disabled');
+                troubleshootingLink.href = 'troubleshooting.html';
+                
+                // فعال کردن دکمه‌های گزارش
+                reportButtons.forEach(btn => {
+                    btn.disabled = false;
+                });
+
+                // تغییر هشدار به موفقیت
+                checklistAlert.className = 'alert alert-success';
+                checklistAlert.innerHTML = `
+                    <i class="fas fa-check-circle"></i>
+                    <div>
+                        <strong>تبریک!</strong> تمام اقدامات حیاتی تکمیل شده‌اند. اکنون می‌توانید از سیستم عیب‌یابی استفاده کنید.
+                    </div>
+                `;
+            } else {
+                // غیرفعال کردن لینک عیب‌یابی
+                troubleshootingLink.classList.add('disabled');
+                troubleshootingLink.removeAttribute('href');
+                
+                // غیرفعال کردن دکمه‌های گزارش
+                reportButtons.forEach(btn => {
+                    btn.disabled = true;
+                });
+
+                // نمایش هشدار
+                checklistAlert.className = 'alert alert-warning';
+                checklistAlert.innerHTML = `
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <div>
+                        <strong>توجه:</strong> برای دسترسی به سیستم عیب‌یابی، لطفاً تمام اقدامات حیاتی اولیه را تکمیل کنید.
+                    </div>
+                `;
+            }
+        }
+
+        // مدیریت پاپاپ گزارش
+        function openReportPopup(machineName) {
+            const allCriticalCompleted = checklist.filter(item => item.critical).every(item => item.completed);
+            if (!allCriticalCompleted) {
+                alert('لطفاً ابتدا اقدامات حیاتی اولیه را تکمیل کنید.');
+                return;
+            }
+
+            document.getElementById('machineName').value = machineName;
+            document.getElementById('reportPopup').style.display = 'flex';
+            document.getElementById('reporterName').focus();
+        }
+
+        function closeReportPopup() {
+            document.getElementById('reportPopup').style.display = 'none';
+            document.getElementById('reportForm').reset();
+        }
+
+        // مدیریت ارسال فرم
+        document.getElementById('reportForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                reporterName: document.getElementById('reporterName').value,
+                machineName: document.getElementById('machineName').value,
+                machineStatus: document.getElementById('machineStatus').value,
+                problemDescription: document.getElementById('problemDescription').value,
+                timestamp: new Date().toLocaleString('fa-IR')
+            };
+            
+            // اینجا می‌توانید داده‌ها را به بکند ارسال کنید
+            console.log('داده‌های گزارش:', formData);
+            
+            // شبیه‌سازی ارسال به بکند
+            alert(`گزارش برای دستگاه "${formData.machineName}" با موفقیت ارسال شد!\n\nوضعیت: ${formData.machineStatus}`);
+            
+            closeReportPopup();
+        });
+
+        // نمایش چک لیست دستگاه
+        function showMachineChecklist(machineName) {
+            alert(`چک لیست دستگاه "${machineName}" در حال بارگذاری...`);
+        }
+
+        // بستن پاپاپ با کلیک خارج از آن
+        document.getElementById('reportPopup').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeReportPopup();
+            }
+        });
+
+        // فعال کردن اسکرول فقط در container اصلی
+        const container = document.getElementById('mainContainer');
+        container.addEventListener('touchmove', function(e) {
+            e.stopPropagation();
+        }, { passive: true });
+
+        // جلوگیری از اسکرول در body
+        document.body.addEventListener('touchmove', function(e) {
+            if (e.target === document.body) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+
+
+        
+if (window.matchMedia('(display-mode: standalone)').matches) {
+    document.body.style.overscrollBehavior = 'none';
+}
+
+    </script>
+</body>
+</html>
