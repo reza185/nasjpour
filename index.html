@@ -21,29 +21,20 @@
     <!-- Icons -->
     <link rel="icon" href="icons/icon-192x192.png">
     <link rel="apple-touch-icon" href="icons/icon-192x192.png">
-    <!-- قبل از </body> -->
-<div id="customAlert" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 1000; min-width: 300px; text-align: center;">
-    <div id="alertMessage" style="font-size: 16px; margin-bottom: 15px;"></div>
-    <button onclick="hideCustomAlert()" style="padding: 8px 20px; background: #2c3e50; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px;">باشه</button>
-</div>
-<div id="overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999;"></div>
+   <script>
+// ذخیره alert اصلی
+const originalAlert = window.alert;
 
-<script>
-function showCustomAlert(message) {
-    document.getElementById('alertMessage').textContent = message;
-    document.getElementById('customAlert').style.display = 'block';
-    document.getElementById('overlay').style.display = 'block';
-}
-
-function hideCustomAlert() {
-    document.getElementById('customAlert').style.display = 'none';
-    document.getElementById('overlay').style.display = 'none';
-}
-
-// جایگزین کردن alert اصلی
-window.originalAlert = window.alert;
+// جایگزین کردن alert
 window.alert = function(message) {
-    showCustomAlert(message);
+    // اگر روی PWA نصب شده هستیم، از confirm استفاده کن
+    if (window.matchMedia('(display-mode: standalone)').matches || 
+        window.navigator.standalone === true) {
+        confirm(message);
+    } else {
+        // در حالت عادی از alert اصلی استفاده کن
+        originalAlert(message);
+    }
 };
 </script>
     <style>
