@@ -451,10 +451,10 @@
                 </div>
                 <div class="logo-text">
                     <div class="logo-main">TPM PRO</div>
-                    <div class="logo-sub">سیستم مدیریت تولید کارخانه رنگین چاپ سپاهان</div>
+                    <div class="logo-sub">سیستم مدیریت تولید شرکت رنگیم چاپ سپاهان</div>
                 </div>
             </div>
-            <p class="tagline">بهترین راهکار برای مدیریت نگهداری و تعمیرات در محیط‌های صنعتی</p>
+            <p class="tagline">بهترین راهکار برای مدیریت نگهداری و تعمیرات تولید در محیط‌های صنعتی</p>
         </div>
         
         <div class="main-content">
@@ -526,111 +526,101 @@
         </div>
     </div>
 
-   <script>
-// فقط این کد رو نگه دار و بقیه alert ها رو پاک کن
-
-// حذف alert اصلی
-delete window.alert;
-
-// ساخت alert با توقف واقعی
-window.alert = function(message) {
-    return new Promise((resolve) => {
-        // ساخت overlay
-        const overlay = document.createElement('div');
-        overlay.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 10000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        `;
+    <script>
+        // فقط این کد رو نگه دار و بقیه alert ها رو پاک کن
         
-        // ساخت dialog
-        const dialog = document.createElement('div');
-        dialog.style.cssText = `
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-            text-align: center;
-            min-width: 300px;
-            max-width: 90%;
-            font-family: Vazirmatn, sans-serif;
-            border: 2px solid #2c3e50;
-        `;
+        // حذف alert اصلی
+        delete window.alert;
         
-        // ایجاد یک ID منحصربه‌فرد برای این آلرت
-        const alertId = 'alert-' + Date.now();
-        
-        dialog.innerHTML = `
-            <div style="margin-bottom: 20px; font-size: 16px; color: #2c3e50; line-height: 1.5;">${message}</div>
-            <button id="${alertId}-confirm" 
-                    style="padding: 10px 25px; background: #2c3e50; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
-                تأیید
-            </button>
-        `;
-        
-        overlay.appendChild(dialog);
-        document.body.appendChild(overlay);
-        
-        // تابع بستن
-        const closeAlert = function() {
-            if (document.body.contains(overlay)) {
-                document.body.removeChild(overlay);
-            }
-            resolve();
+        // ساخت alert با توقف واقعی
+        window.alert = function(message) {
+            return new Promise((resolve) => {
+                // ساخت overlay
+                const overlay = document.createElement('div');
+                overlay.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0,0,0,0.5);
+                    z-index: 10000;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                `;
+                
+                // ساخت dialog
+                const dialog = document.createElement('div');
+                dialog.style.cssText = `
+                    background: white;
+                    padding: 25px;
+                    border-radius: 12px;
+                    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+                    text-align: center;
+                    min-width: 300px;
+                    max-width: 90%;
+                    font-family: Vazirmatn, sans-serif;
+                    border: 2px solid #2c3e50;
+                `;
+                
+                dialog.innerHTML = `
+                    <div style="margin-bottom: 20px; font-size: 16px; color: #2c3e50; line-height: 1.5;">${message}</div>
+                    <button onclick="closeCurrentAlert()" 
+                            style="padding: 10px 25px; background: #2c3e50; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                        تأیید
+                    </button>
+                `;
+                
+                overlay.appendChild(dialog);
+                document.body.appendChild(overlay);
+                
+                // تابع بستن
+                window.closeCurrentAlert = function() {
+                    document.body.removeChild(overlay);
+                    resolve();
+                };
+                
+                // با کلیک روی overlay هم بسته نشه (مثل alert اصلی)
+                overlay.onclick = function(e) {
+                    if (e.target === overlay) {
+                        // کاری نکن - مثل alert اصلی که با کلیک خارج بسته نمیشه
+                    }
+                };
+            });
         };
         
-        // اضافه کردن event listener برای دکمه
-        document.getElementById(alertId + '-confirm').addEventListener('click', closeAlert);
+        // حالا در کد لاگین از await استفاده کن
+        async function handleLogin() {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
         
-        // با کلیک روی overlay هم بسته نشه (مثل alert اصلی)
-        overlay.onclick = function(e) {
-            if (e.target === overlay) {
-                // کاری نکن - مثل alert اصلی که با کلیک خارج بسته نمیشه
+            if (username === 'nasajpour' && password === '09131182533') {
+                await alert('ورود موفق! در حال انتقال به صفحه مدیر...');
+                window.location.href = './pages/manager/dashboard.html';
+            } else if (username === 'norozi' && password === '09138650762') {
+                await alert('ورود موفق! در حال انتقال به صفحه اپراتور...');
+                window.location.href = './pages/operator/dashboard.html';
+            } else if (username === 'broumand' && password === '123456') {
+                await alert('ورود موفق! در حال انتقال به صفحه سرپرست...');
+                window.location.href = './pages/superviser/dashboard.html';
+            } else if (username === 'anbar' && password === '123456') {
+                await alert('ورود موفق! در حال انتقال به صفحه انبار...');
+                window.location.href = './pages/anbar/dashboard.html';
+            } else {
+                errorMessage.style.display = 'block';
+                loginForm.style.animation = 'shake 0.5s';
+                setTimeout(() => {
+                    loginForm.style.animation = '';
+                }, 500);
             }
-        };
-    });
-};
-
-// حالا در کد لاگین از await استفاده کن
-async function handleLogin() {
-    const username = document.getElementById('username').value.trim();
-    const password = document.getElementById('password').value.trim();
-    const errorMessage = document.getElementById('errorMessage');
-    const loginForm = document.getElementById('loginForm');
-
-    if (username === 'nasajpour' && password === '09131182533') {
-        await alert('ورود موفق! در حال انتقال به صفحه مدیر...');
-        window.location.href = './pages/manager/dashboard.html';
-    } else if (username === 'norozi' && password === '09138650762') {
-        await alert('ورود موفق! در حال انتقال به صفحه اپراتور...');
-        window.location.href = './pages/operator/dashboard.html';
-    } else if (username === 'broumand' && password === '123456') {
-        await alert('ورود موفق! در حال انتقال به صفحه سرپرست...');
-        window.location.href = './pages/superviser/dashboard.html';
-    } else if (username === 'anbar' && password === '123456') {
-        await alert('ورود موفق! در حال انتقال به صفحه انبار...');
-        window.location.href = './pages/anbar/dashboard.html';
-    } else {
-        errorMessage.style.display = 'block';
-        loginForm.style.animation = 'shake 0.5s';
-        setTimeout(() => {
-            loginForm.style.animation = '';
-        }, 500);
-    }
-}
-
-// در event listener فرم
-document.getElementById('loginForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    await handleLogin();
-});
-   </script>
+        }
+        
+        // در event listener فرم
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            await handleLogin();
+        });
+        </script>
 </body>
 </html>
