@@ -50,6 +50,7 @@
             z-index: 100;
             width: 100%;
             height: 60px;
+            flex-shrink: 0;
         }
 
         .nav-container {
@@ -67,7 +68,7 @@
         }
 
         .logo-icon {
-            background: var(--accent);
+            background: transparent;
             width: 35px;
             height: 35px;
             border-radius: 8px;
@@ -75,11 +76,13 @@
             align-items: center;
             justify-content: center;
             font-size: 16px;
+            flex-shrink: 0;
         }
 
         .logo-text {
             font-size: 16px;
             font-weight: 700;
+            white-space: nowrap;
         }
 
         .nav-links {
@@ -102,6 +105,10 @@
 
         .nav-link.active {
             background: rgba(255,255,255,0.15);
+        }
+
+        .nav-link:hover {
+            background: rgba(255,255,255,0.1);
         }
 
         .user-info {
@@ -139,8 +146,8 @@
             font-weight: bold;
             font-size: 14px;
             border: 2px solid rgba(255,255,255,0.2);
+            flex-shrink: 0;
         }
-
         .main-wrapper {
             height: calc(100vh - 60px);
             display: flex;
@@ -402,6 +409,142 @@
             z-index: 1000;
             font-size: 12px;
         }
+        @media (max-width: 768px) {
+            .stats-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .nav-links {
+                gap: 8px;
+            }
+            
+            .nav-link span {
+                display: none;
+            }
+            
+            .user-details {
+                display: none;
+            }
+
+            .report-header {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .status-container {
+                align-self: flex-start;
+            }
+            
+            .report-details {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .filter-row {
+                flex-direction: column;
+            }
+
+            .filter-select {
+                min-width: auto;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .navbar {
+                padding: 0 10px;
+            }
+            
+            .nav-container {
+                height: 50px;
+            }
+            
+            .logo-icon {
+                width: 30px;
+                height: 30px;
+                font-size: 14px;
+            }
+            
+            .user-avatar {
+                width: 35px;
+                height: 35px;
+                font-size: 12px;
+            }
+            
+            .container {
+                padding: 15px 10px;
+            }
+            
+            .header-card {
+                padding: 15px;
+            }
+            
+            .page-title {
+                font-size: 18px;
+            }
+            
+            .card {
+                padding: 15px;
+            }
+            
+            .section-title {
+                font-size: 16px;
+            }
+            
+            .stat-number {
+                font-size: 18px;
+            }
+            
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+
+            .popup-content {
+                padding: 15px;
+                margin: 10px;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+        }
+
+        /* جلوگیری از زوم و انتخاب متن */
+        @media (hover: none) and (pointer: coarse) {
+            * {
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+            }
+
+            input, textarea, select {
+                -webkit-user-select: text;
+                -moz-user-select: text;
+                -ms-user-select: text;
+                user-select: text;
+            }
+        }
+
+        /* مخفی کردن اسکرولبار در موبایل */
+        .container::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .container::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 2px;
+        }
+
+        .container::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
     </style>
 </head>
 <body>
@@ -423,16 +566,20 @@
                 <a href="RequestsScreen.html" class="nav-link ">
                     <i class="fas fa-clipboard-list"></i>
                     <span>گزارشات دریافتی</span>
-                    <a href="warehouse.html" class="nav-link">
-                        <i class="fas fa-warehouse"></i>
-                        <span>انبار</span>
-                    </a>
+                </a>
+                <a href="warehouse.html" class="nav-link">
+                    <i class="fas fa-warehouse"></i>
+                    <span>انبار</span>
+                </a>
+                <a href="troubleshooting.html" class="nav-link" id="troubleshootingLink">
+                    <i class="fas fa-tools"></i>
+                    <span>عیب‌یابی</span>
                 </a>
             </div>
             
             <div class="user-info">
                 <div class="user-details">
-                    <div class="user-name" id="userName">سرپرست</div>
+                    <div class="user-name" id="userName">سرپرست (توسعه)</div>
                     <div class="login-time" id="loginTime">در حال بارگذاری...</div>
                 </div>
                 <div class="user-avatar" id="userAvatar">S</div>
