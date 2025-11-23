@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-   
+    
     <style>
         * {
             margin: 0;
@@ -381,23 +381,23 @@
         <div class="nav-container">
             <div class="logo">
                 <div class="logo-icon">
-                    <i class="fas fa-industry"></i>
+                    <img src="../../Logo.png" style="max-block-size:100% ;" >
                 </div>
                 <div class="logo-text">TPM PRO</div>
             </div>
             
             <div class="nav-links">
-                <a href="dashboard.html" class="nav-link">
+                <a href="dashboard.html" class="nav-link active">
                     <i class="fas fa-tachometer-alt"></i>
                     <span>داشبورد</span>
                 </a>
-                <a href="RequestsScreen.html" class="nav-link">
+                <a href="RequestsScreen.html" class="nav-link ">
                     <i class="fas fa-clipboard-list"></i>
                     <span>گزارشات دریافتی</span>
-                </a>
-                <a href="warehouse.html" class="nav-link active">
-                    <i class="fas fa-warehouse"></i>
-                    <span>انبار</span>
+                    <a href="warehouse.html" class="nav-link">
+                        <i class="fas fa-warehouse"></i>
+                        <span>انبار</span>
+                    </a>
                 </a>
             </div>
             
@@ -642,12 +642,5 @@
             }
         }, { passive: false });
     </script>
-    <script>
-// این رو دقیقاً قبل از </body> بذار
-window.alert = function(message) {
-    // ساده‌ترین راه - همیشه از confirm استفاده کن
-    confirm(message);
-};
-</script>
 </body>
 </html>
