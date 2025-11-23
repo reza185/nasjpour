@@ -1,0 +1,1706 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#2c3e50">
+    <title>TMP</title>
+    <link rel="icon" href="icons/icon-192x192.png">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* استایل‌های اصلی با قابلیت‌های جدید */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Vazirmatn', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-text-size-adjust: 100%;
+            touch-action: manipulation;
+        }
+
+        html {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            width: 100%;
+            height: 100vh;
+            height: -webkit-fill-available;
+            overflow: hidden;
+            background: #f8f9fa;
+            color: var(--dark);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        :root {
+            --primary: #2c3e50;
+            --primary-light: #34495e;
+            --accent: #e74c3c;
+            --accent-light: #ff6b6b;
+            --secondary: #3498db;
+            --dark: #1a252f;
+            --light: #ecf0f1;
+            --gray: #95a5a6;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --electrical: #9b59b6;
+            --mechanical: #e67e22;
+            --pneumatic: #3498db;
+        }
+
+        /* نویگیشن */
+        .navbar {
+            background: var(--primary);
+            color: white;
+            padding: 0 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            width: 100%;
+            height: 60px;
+            flex-shrink: 0;
+        }
+
+        .nav-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            background: transparent;
+            width: 35px;
+            height: 35px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .logo-text {
+            font-size: 16px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .nav-link.active {
+            background: rgba(255,255,255,0.15);
+        }
+
+        .nav-link:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-details {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 2px;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .login-time {
+            font-size: 11px;
+            opacity: 0.8;
+            color: #ecf0f1;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            border: 2px solid rgba(255,255,255,0.2);
+            flex-shrink: 0;
+        }
+
+        /* محتوای اصلی */
+        .main-wrapper {
+            height: calc(100vh - 60px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 20px 15px;
+            width: 100%;
+        }
+
+        .header-card {
+            background: var( --secondary);
+            color: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: 100%;
+        }
+
+        .page-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .page-subtitle {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .login-info {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .login-info i {
+            font-size: 11px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border: 1px solid #eaeaea;
+            width: 100%;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title i {
+            color: var(--accent);
+        }
+
+        /* دستگاه‌ها */
+        .machines-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .machine-card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border: 1px solid #eaeaea;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-right: 4px solid var(--secondary);
+            width: 100%;
+        }
+
+        .machine-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .machine-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            gap: 10px;
+        }
+
+        .machine-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .machine-type {
+            font-size: 12px;
+            color: var(--gray);
+            margin-top: 4px;
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .status-operational {
+            background: #e8f5e8;
+            color: var(--success);
+        }
+
+        .status-maintenance {
+            background: #fff8e1;
+            color: var(--warning);
+        }
+
+        .status-down {
+            background: #ffebee;
+            color: var(--danger);
+        }
+
+        .machine-metrics {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .metric {
+            text-align: center;
+            flex: 1;
+        }
+
+        .metric-value {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .metric-label {
+            font-size: 10px;
+            color: var(--gray);
+            margin-top: 2px;
+        }
+
+        .machine-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 12px;
+            min-height: 40px;
+            touch-action: manipulation;
+        }
+
+        .report-btn {
+            background: var(--accent);
+            color: white;
+        }
+
+        .report-btn:hover {
+            background: var(--accent-light);
+        }
+
+        .troubleshoot-btn {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .troubleshoot-btn:hover {
+            background: #2980b9;
+        }
+
+        /* سیستم عیب‌یابی هوشمند */
+        .troubleshooting-container {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 2px solid #e9ecef;
+            width: 100%;
+        }
+
+        .troubleshooting-steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            position: relative;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .troubleshooting-steps::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            right: 0;
+            left: 0;
+            height: 3px;
+            background: #e0e0e0;
+            z-index: 1;
+        }
+
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+            flex: 1;
+            min-width: 80px;
+        }
+
+        .step-number {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-bottom: 8px;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .step.active .step-number {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .step.completed .step-number {
+            background: var(--success);
+            color: white;
+        }
+
+        .step-label {
+            font-size: 12px;
+            color: var(--gray);
+            text-align: center;
+            line-height: 1.3;
+        }
+
+        .step.active .step-label {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .step-content {
+            display: none;
+        }
+
+        .step-content.active {
+            display: block;
+        }
+
+        /* دسته‌بندی عیب‌ها */
+        .category-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .category-tab {
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            flex: 1;
+            min-width: 120px;
+            justify-content: center;
+            text-align: center;
+            touch-action: manipulation;
+        }
+
+        .category-tab.active {
+            border-color: var(--secondary);
+            background: var(--secondary);
+            color: white;
+        }
+
+        .category-tab.electrical {
+            border-color: var(--electrical);
+        }
+
+        .category-tab.mechanical {
+            border-color: var(--mechanical);
+        }
+
+        .category-tab.pneumatic {
+            border-color: var(--pneumatic);
+        }
+
+        .category-tab.electrical.active {
+            background: var(--electrical);
+        }
+
+        .category-tab.mechanical.active {
+            background: var(--mechanical);
+        }
+
+        .category-tab.pneumatic.active {
+            background: var(--pneumatic);
+        }
+
+        /* مشکلات */
+        .faults-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .fault-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px solid #eaeaea;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .fault-card:hover {
+            transform: translateX(-3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .fault-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+            gap: 10px;
+        }
+
+        .fault-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--primary);
+            flex: 1;
+        }
+
+        .fault-category {
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .category-electrical {
+            background: #f3e8fd;
+            color: var(--electrical);
+        }
+
+        .category-mechanical {
+            background: #fef5e7;
+            color: var(--mechanical);
+        }
+
+        .category-pneumatic {
+            background: #e8f4fd;
+            color: var(--pneumatic);
+        }
+
+        .fault-code {
+            font-size: 11px;
+            color: var(--gray);
+            margin-bottom: 6px;
+        }
+
+        .fault-description {
+            font-size: 12px;
+            color: var(--dark);
+            line-height: 1.5;
+        }
+
+        /* راه حل‌ها */
+        .solutions-container {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px solid #eaeaea;
+            width: 100%;
+        }
+
+        .solution-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-right: 4px solid var(--secondary);
+            width: 100%;
+        }
+
+        .solution-number {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: var(--secondary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-left: 12px;
+            flex-shrink: 0;
+            font-size: 12px;
+        }
+
+        .solution-text {
+            flex: 1;
+            font-size: 13px;
+            line-height: 1.5;
+            color: var(--dark);
+        }
+
+        /* دکمه‌های اقدام */
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 20px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            min-height: 40px;
+            touch-action: manipulation;
+        }
+
+        .btn-primary {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: var(--dark);
+            border: 2px solid #e0e0e0;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+        }
+
+        /* پاپاپ گزارش */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 15px;
+        }
+
+        .popup-content {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .popup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .popup-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--gray);
+            padding: 5px;
+            touch-action: manipulation;
+        }
+
+        .close-btn:hover {
+            color: var(--danger);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 14px;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+            background: #f8f9fa;
+            -webkit-appearance: none;
+            touch-action: manipulation;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--secondary);
+            background: white;
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 20px;
+        }
+
+        .submit-btn {
+            flex: 1;
+            padding: 12px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-size: 14px;
+            touch-action: manipulation;
+        }
+
+        .submit-btn:hover {
+            background: var(--accent-light);
+        }
+
+        .cancel-btn {
+            flex: 1;
+            padding: 12px;
+            background: #f8f9fa;
+            color: var(--dark);
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            touch-action: manipulation;
+        }
+
+        .cancel-btn:hover {
+            background: #e9ecef;
+        }
+
+        /* استایل‌های جدید برای مدیریت گزارش‌ها */
+        .reports-section {
+            margin-top: 25px;
+        }
+
+        .reports-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .reports-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            font-size: 12px;
+        }
+
+        .reports-table th,
+        .reports-table td {
+            padding: 10px 12px;
+            text-align: right;
+            border-bottom: 1px solid #eaeaea;
+        }
+
+        .reports-table th {
+            background: var(--primary-light);
+            color: white;
+            font-weight: 600;
+            font-size: 11px;
+        }
+
+        .reports-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .delete-btn {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            touch-action: manipulation;
+        }
+
+        .delete-btn:hover {
+            background: #c0392b;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: var(--gray);
+        }
+
+        .empty-state i {
+            font-size: 36px;
+            margin-bottom: 10px;
+            color: #e0e0e0;
+        }
+
+        /* استایل‌های جدید برای نمایش نوع ایراد */
+        .issue-type-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-block;
+            text-align: center;
+            min-width: 60px;
+        }
+
+        .electrical-badge {
+            background: #f3e8fd;
+            color: #9b59b6;
+            border: 1px solid #9b59b6;
+        }
+
+        .technical-badge {
+            background: #fef5e7;
+            color: #e67e22;
+            border: 1px solid #e67e22;
+        }
+
+        .combined-badge {
+            background: #e8f4fd;
+            color: #3498db;
+            border: 1px solid #3498db;
+        }
+
+        /* هشدار */
+        .alert {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+        }
+
+        .alert-warning {
+            background: #fff8e1;
+            border: 1px solid #ffd54f;
+            color: #e65100;
+        }
+
+        .alert-success {
+            background: #f0f9ff;
+            border: 1px solid var(--secondary);
+            color: var(--primary);
+        }
+
+        /* رسپانسیو */
+        @media (max-width: 768px) {
+            .nav-links {
+                gap: 8px;
+            }
+            
+            .nav-link span {
+                display: none;
+            }
+            
+            .user-details {
+                display: none;
+            }
+
+            .troubleshooting-steps::before {
+                display: none;
+            }
+
+            .troubleshooting-steps {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .step {
+                flex-direction: row;
+                gap: 12px;
+                align-items: center;
+                width: 100%;
+            }
+
+            .step-label {
+                text-align: right;
+                flex: 1;
+            }
+
+            .category-tabs {
+                flex-direction: column;
+            }
+
+            .category-tab {
+                min-width: auto;
+            }
+
+            .reports-table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+
+            .action-buttons {
+                justify-content: stretch;
+            }
+
+            .btn {
+                flex: 1;
+                min-width: 120px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .navbar {
+                padding: 0 10px;
+            }
+            
+            .nav-container {
+                height: 50px;
+            }
+            
+            .logo-icon {
+                width: 30px;
+                height: 30px;
+                font-size: 14px;
+            }
+            
+            .user-avatar {
+                width: 35px;
+                height: 35px;
+                font-size: 12px;
+            }
+            
+            .container {
+                padding: 15px 10px;
+            }
+            
+            .header-card {
+                padding: 15px;
+            }
+            
+            .page-title {
+                font-size: 18px;
+            }
+            
+            .card {
+                padding: 15px;
+            }
+            
+            .section-title {
+                font-size: 16px;
+            }
+
+            .troubleshooting-container {
+                padding: 15px;
+            }
+
+            .popup-content {
+                padding: 15px;
+                margin: 10px;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .machine-actions {
+                flex-direction: column;
+            }
+        }
+
+        /* جلوگیری از زوم و انتخاب متن */
+        @media (hover: none) and (pointer: coarse) {
+            * {
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+            }
+
+            input, textarea, select {
+                -webkit-user-select: text;
+                -moz-user-select: text;
+                -ms-user-select: text;
+                user-select: text;
+            }
+        }
+
+        /* مخفی کردن اسکرولبار در موبایل */
+        .container::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .container::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 2px;
+        }
+
+        .container::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+    </style>
+</head>
+<body>
+    <!-- نویگیشن -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <div class="logo-icon">
+                    <img src="../../Logo.png" style="max-block-size:100% ;" >
+                </div>
+                <div class="logo-text">TPM PRO</div>
+            </div>
+            
+            <div class="nav-links">
+                <a href="dashboard.html" class="nav-link">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>داشبورد</span>
+                </a>
+                <a href="RequestsScreen.html" class="nav-link ">
+                    <i class="fas fa-clipboard-list"></i>
+                    <span>گزارشات دریافتی</span>
+                </a>
+                <a href="warehouse.html" class="nav-link">
+                    <i class="fas fa-warehouse"></i>
+                    <span>انبار</span>
+                </a>
+                <a href="troubleshooting.html" class="nav-link active" id="troubleshootingLink">
+                    <i class="fas fa-tools"></i>
+                    <span>عیب‌یابی</span>
+                </a>
+            </div>
+            
+            <div class="user-info">
+                <div class="user-details">
+                    <div class="user-name" id="userName">سرپرست (توسعه)</div>
+                    <div class="login-time" id="loginTime">در حال بارگذاری...</div>
+                </div>
+                <div class="user-avatar" id="userAvatar">S</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- محتوای اصلی -->
+    <div class="main-wrapper">
+        <div class="container" id="mainContainer">
+            <!-- هدر صفحه -->
+            <div class="header-card">
+                <h1 class="page-title">گزارشات دریافتی</h1>
+                <p class="page-subtitle">مدیریت و رسیدگی به گزارشات ارسالی کاربران</p>
+                <div class="login-info">
+                    <i class="fas fa-clock"></i>
+                    آخرین ورود: <span id="lastLoginTime">در حال بارگذاری...</span>
+                </div>
+            <!-- هدر صفحه -->
+            <div class="header-card">
+                <h1 class="page-title">سیستم عیب‌یابی هوشمند استنتر</h1>
+                <p class="page-subtitle">عیب‌یابی تخصصی دستگاه استنتر بر اساس بخش‌های مختلف</p>
+            </div>
+
+            <!-- دستگاه‌ها -->
+            <div class="card">
+                <h2 class="section-title">
+                    <i class="fas fa-cogs"></i>
+                    دستگاه استنتر
+                </h2>
+                
+                <div class="machines-grid">
+                    <!-- دستگاه استنتر -->
+                    <div class="machine-card">
+                        <div class="machine-header">
+                            <div>
+                                <div class="machine-name">دستگاه استنتر</div>
+                                <div class="machine-type">سیستم تکمیل پارچه</div>
+                            </div>
+                        </div>
+                        
+                        <div class="machine-actions">
+                            <button class="action-btn troubleshoot-btn" onclick="startTroubleshooting('استنتر')">
+                                <i class="fas fa-search"></i>
+                                شروع عیب‌یابی
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- سیستم عیب‌یابی هوشمند -->
+            <div class="troubleshooting-container" id="troubleshootingSection" style="display: none;">
+                <h2 class="section-title">
+                    <i class="fas fa-wrench"></i>
+                    سیستم عیب‌یابی استنتر
+                </h2>
+                
+                <div class="troubleshooting-steps">
+                    <div class="step active" id="step1">
+                        <div class="step-number">۱</div>
+                        <div class="step-label">انتخاب بخش</div>
+                    </div>
+                    <div class="step" id="step2">
+                        <div class="step-number">۲</div>
+                        <div class="step-label">تشخیص مشکل</div>
+                    </div>
+                    <div class="step" id="step3">
+                        <div class="step-number">۳</div>
+                        <div class="step-label">راه حل‌ها</div>
+                    </div>
+                </div>
+
+                <!-- مرحله ۱: انتخاب بخش -->
+                <div class="step-content active" id="step1Content">
+                    <h3 class="section-title">
+                        <i class="fas fa-cogs"></i>
+                        بخش مورد نظر را انتخاب کنید
+                    </h3>
+                    <p id="selectedMachineInfo" class="machine-type" style="margin-bottom: 15px;"></p>
+                    
+                    <div class="category-tabs">
+                        <div class="category-tab active" onclick="selectSection('ورودی')">
+                            <i class="fas fa-sign-in-alt"></i>
+                            قسمت ورودی (فولارد)
+                        </div>
+                        <div class="category-tab" onclick="selectSection('خشک کن')">
+                            <i class="fas fa-fire"></i>
+                            قسمت خشک کن (اتاقک‌ها)
+                        </div>
+                        <div class="category-tab" onclick="selectSection('انتهایی')">
+                            <i class="fas fa-sign-out-alt"></i>
+                            قسمت انتهایی (بچ)
+                        </div>
+                    </div>
+                </div>
+
+                <!-- مرحله ۲: تشخیص مشکل -->
+                <div class="step-content" id="step2Content">
+                    <h3 class="section-title">
+                        <i class="fas fa-search"></i>
+                        مشکل مشاهده شده را انتخاب کنید
+                    </h3>
+                    <p id="selectedSectionInfo" class="machine-type" style="margin-bottom: 15px;"></p>
+                    
+                    <div class="category-tabs" id="categoryTabs">
+                        <!-- دسته‌بندی‌ها به صورت داینامیک لود می‌شوند -->
+                    </div>
+                    
+                    <div class="faults-list" id="faultsList">
+                        <!-- مشکلات به صورت داینامیک لود می‌شوند -->
+                    </div>
+                </div>
+
+                <!-- مرحله ۳: راه حل‌ها -->
+                <div class="step-content" id="step3Content">
+                    <h3 class="section-title">
+                        <i class="fas fa-lightbulb"></i>
+                        راه حل‌های پیشنهادی
+                    </h3>
+                    <p id="selectedFaultInfo" class="machine-type" style="margin-bottom: 15px;"></p>
+                    
+                    <div class="solutions-container" id="solutionsContainer">
+                        <!-- راه حل‌ها به صورت داینامیک لود می‌شوند -->
+                    </div>
+                </div>
+
+                <div class="action-buttons" id="troubleshootingActions">
+                    <button class="btn btn-secondary" onclick="backToStep1()" id="backToStep1Btn" style="display: none;">
+                        <i class="fas fa-arrow-right"></i>
+                        بازگشت
+                    </button>
+                    <button class="btn btn-secondary" onclick="backToStep2()" id="backToStep2Btn" style="display: none;">
+                        <i class="fas fa-arrow-right"></i>
+                        بازگشت
+                    </button>
+                    <button class="btn btn-primary" onclick="resetTroubleshooting()" id="resetBtn" style="display: none;">
+                        <i class="fas fa-redo"></i>
+                        شروع مجدد
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // داده‌های کامل عیب‌های دستگاه استنتر
+        const stenterFaults = {
+            // قسمت ورودی (فولارد)
+            "ورودی": {
+                "برقی": [
+                    {
+                        id: 'input-elec-001',
+                        title: 'دستگاه خاموش می‌شود - ایرادات دنسر',
+                        code: 'STN-INPUT-001',
+                        description: 'دستگاه به طور کامل خاموش شده و روشن نمی‌شود',
+                        solutions: [
+                            'بررسی وارم دنسر از نظر معیوب بودن',
+                            'کنترل زنجیر یا کوپلینگ بین قسمت مکانیکال و ولدم',
+                            'بررسی قسمت مکانیکال دنسر',
+                            'تنظیم میکروسوییچ‌های حد بالا و حد پایین'
+                        ],
+                        category: 'electrical'
+                    },
+                    {
+                        id: 'input-elec-002',
+                        title: 'اینورتر قطع کرده و آمپر کشی رخ داده',
+                        code: 'STN-INPUT-002',
+                        description: 'اینورتر خطا داده و دستگاه قطع شده است',
+                        solutions: [
+                            'بررسی کوپلینگ بین موتور و قسمت مکانیکی',
+                            'کنترل اینورتر مربوط به موتور در داخل تابلو',
+                            'بررسی خطاهای ثبت شده در اینورتر',
+                            'کنترل اتصالات برق موتور'
+                        ],
+                        category: 'electrical'
+                    }
+                ],
+                "مکانیکی": [
+                    {
+                        id: 'input-mech-001',
+                        title: 'اینورتر قطع کرده و آمپر کشی رخ داده',
+                        code: 'STN-INPUT-003',
+                        description: 'مصرف آمپر بالا و قطع شدن اینورتر',
+                        solutions: [
+                            'بررسی کوپلینگ بین موتور و قسمت مکانیکی',
+                            'کنترل اینورتر مربوط به موتور',
+                            'بررسی بار مکانیکی روی موتور'
+                        ],
+                        category: 'mechanical'
+                    },
+                    {
+                        id: 'input-mech-002',
+                        title: 'دستگاه کار می‌کند ولی استپ دارد',
+                        code: 'STN-INPUT-004',
+                        description: 'دستگاه به صورت متناوب متوقف می‌شود',
+                        solutions: [
+                            'بررسی تسمه‌های بین موتور و گیربکس',
+                            'کنترل گیربکس از نظر دمای بالا',
+                            'بررسی کوپلینگ بین گیربکس و غلطک',
+                            'کنترل بلبرینگ قطعات',
+                            'بررسی لاستیک روکش غلطک',
+                            'کنترل بلبرینگ قطعات راهنما'
+                        ],
+                        category: 'mechanical'
+                    }
+                ],
+                "پنوماتیک": [
+                    {
+                        id: 'input-pneu-001',
+                        title: 'دستگاه کار می‌کند ولی استپ دارد',
+                        code: 'STN-INPUT-005',
+                        description: 'توقف‌های متناوب در حین کار',
+                        solutions: [
+                            'کنترل فشار باد اصلی',
+                            'بررسی تجهیزات پنوماتیک ورودی جک‌ها',
+                            'کنترل جک‌ها از نظر معیوب بودن'
+                        ],
+                        category: 'pneumatic'
+                    }
+                ]
+            },
+        
+            // قسمت خشک کن (اتاقک‌ها)
+            "خشک کن": {
+                "برقی": [
+                    {
+                        id: 'dryer-elec-001',
+                        title: 'اورفید نمی‌دهد',
+                        code: 'STN-DRYER-001',
+                        description: 'سیستم اورفید عملکرد صحیح ندارد',
+                        solutions: [
+                            'تنظیم سرعت موتور اورفید',
+                            'تنظیم موتور فرچه‌ها'
+                        ],
+                        category: 'electrical'
+                    },
+                    {
+                        id: 'dryer-elec-002',
+                        title: 'درست کار نکردن غلطک‌های ورودی',
+                        code: 'STN-DRYER-002',
+                        description: 'غلطک‌ها به درستی باز و بسته نمی‌شوند',
+                        solutions: [
+                            'بررسی چشم‌های الکترونیکی',
+                            'کنترل موتورهای مربوط به چشم‌ها',
+                            'بررسی میکروسوییچ‌ها یا جای جک‌ها'
+                        ],
+                        category: 'electrical'
+                    },
+                    {
+                        id: 'dryer-elec-003',
+                        title: 'دما بالا می‌رود',
+                        code: 'STN-DRYER-003',
+                        description: 'دمای سیستم بیش از حد مجاز افزایش می‌یابد',
+                        solutions: [
+                            'بررسی موتور شیر برقی',
+                            'کنترل درخواست دما در PLC',
+                            'بررسی سنسورهای دما',
+                            'کنترل وضعیت فن‌ها',
+                            'بررسی اینورتر فن‌ها'
+                        ],
+                        category: 'electrical'
+                    }
+                ],
+                "مکانیکی": [
+                    {
+                        id: 'dryer-mech-001',
+                        title: 'اورفید نمی‌دهد',
+                        code: 'STN-DRYER-007',
+                        description: 'سیستم اورفید عملکرد مکانیکی ندارد',
+                        solutions: [
+                            'بررسی گیربکس موتور اورفید',
+                            'کنترل گیربکس موتور فرچه‌ها',
+                            'بررسی تسمه‌های زیر فرچه‌ها',
+                            'کنترل غلطک‌های اورفید'
+                        ],
+                        category: 'mechanical'
+                    },
+                    {
+                        id: 'dryer-mech-002',
+                        title: 'درست کار نکردن غلطک‌های ورودی',
+                        code: 'STN-DRYER-008',
+                        description: 'مشکلات مکانیکی در غلطک‌های ورودی',
+                        solutions: [
+                            'بررسی گیرکردن گیربکس یا شانه‌ای جک‌ها',
+                            'کنترل گیرکردن بلبرینگ‌های جای جایی غلطک‌ها'
+                        ],
+                        category: 'mechanical'
+                    }
+                ]
+            },
+        
+            // قسمت انتهایی (بچ)
+            "انتهایی": {
+                "برقی": [
+                    {
+                        id: 'output-elec-001',
+                        title: 'بچ کار نمی‌کند',
+                        code: 'STN-OUTPUT-001',
+                        description: 'سیستم بچ عملکرد ندارد',
+                        solutions: [
+                            'بررسی اینورتر',
+                            'کنترل موتورهای مربوطه'
+                        ],
+                        category: 'electrical'
+                    }
+                ],
+                "مکانیکی": [
+                    {
+                        id: 'output-mech-001',
+                        title: 'بچ کار نمی‌کند',
+                        code: 'STN-OUTPUT-004',
+                        description: 'مشکلات مکانیکی در سیستم بچ',
+                        solutions: [
+                            'بررسی گیربکس',
+                            'کنترل بلبرینگ غلطک‌ها'
+                        ],
+                        category: 'mechanical'
+                    }
+                ]
+            }
+        };
+        
+        let selectedMachine = null;
+        let selectedSection = null;
+        let selectedCategory = null;
+        let selectedFault = null;
+        
+        // شروع عیب‌یابی
+        function startTroubleshooting(machine_name) {
+            selectedMachine = { name: machine_name };
+            
+            // نمایش بخش عیب‌یابی
+            document.getElementById('troubleshootingSection').style.display = 'block';
+            
+            // آپدیت مرحله ۱
+            document.getElementById('selectedMachineInfo').textContent = `دستگاه انتخاب شده: ${machine_name}`;
+            
+            // اسکرول به بخش عیب‌یابی
+            document.getElementById('troubleshootingSection').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // انتخاب بخش دستگاه
+        function selectSection(section) {
+            selectedSection = section;
+            
+            // آپدیت مرحله
+            document.getElementById('step1').classList.remove('active');
+            document.getElementById('step2').classList.add('active');
+            document.getElementById('step1Content').classList.remove('active');
+            document.getElementById('step2Content').classList.add('active');
+            
+            document.getElementById('selectedSectionInfo').textContent = `بخش: ${section} | دستگاه: ${selectedMachine.name}`;
+            
+            // لود دسته‌بندی‌ها
+            loadCategories(section);
+            
+            // نمایش دکمه‌ها
+            document.getElementById('backToStep1Btn').style.display = 'flex';
+        }
+        
+        // لود دسته‌بندی‌ها
+        function loadCategories(section) {
+            const categoryTabs = document.getElementById('categoryTabs');
+            categoryTabs.innerHTML = '';
+            
+            const categories = Object.keys(stenterFaults[section] || {});
+            let firstCategory = null;
+            
+            categories.forEach(category => {
+                if (!firstCategory) firstCategory = category;
+                
+                const tab = document.createElement('div');
+                tab.className = `category-tab ${category === 'برقی' ? 'electrical' : category === 'مکانیکی' ? 'mechanical' : 'pneumatic'} ${category === firstCategory ? 'active' : ''}`;
+                tab.onclick = () => selectCategory(category);
+                
+                let icon = 'fas fa-bolt';
+                if (category === 'مکانیکی') icon = 'fas fa-cog';
+                if (category === 'پنوماتیک') icon = 'fas fa-wind';
+                
+                tab.innerHTML = `
+                    <i class="${icon}"></i>
+                    ${category}
+                `;
+                
+                categoryTabs.appendChild(tab);
+            });
+            
+            // لود اولین دسته‌بندی به صورت پیش‌فرض
+            if (firstCategory) {
+                selectCategory(firstCategory);
+            }
+        }
+        
+        // انتخاب دسته‌بندی
+        function selectCategory(category) {
+            selectedCategory = category;
+            
+            // آپدیت تب‌های فعال
+            document.querySelectorAll('#categoryTabs .category-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // لود مشکلات
+            loadFaults(selectedSection, category);
+        }
+        
+        // لود مشکلات
+        function loadFaults(section, category) {
+            const faultsList = document.getElementById('faultsList');
+            faultsList.innerHTML = '';
+            
+            const faults = stenterFaults[section]?.[category] || [];
+            
+            faults.forEach(fault => {
+                const faultCard = document.createElement('div');
+                faultCard.className = 'fault-card';
+                faultCard.onclick = () => selectFault(fault);
+                
+                const categoryClass = `category-${fault.category}`;
+                const categoryText = fault.category === 'electrical' ? 'برقی' : 
+                                   fault.category === 'mechanical' ? 'مکانیکی' : 'پنوماتیک';
+                
+                faultCard.innerHTML = `
+                    <div class="fault-header">
+                        <div class="fault-title">${fault.title}</div>
+                        <div class="fault-category ${categoryClass}">
+                            ${categoryText}
+                        </div>
+                    </div>
+                    <div class="fault-code">${fault.code}</div>
+                    <div class="fault-description">${fault.description}</div>
+                `;
+                
+                faultsList.appendChild(faultCard);
+            });
+        }
+        
+        // انتخاب مشکل
+        function selectFault(fault) {
+            selectedFault = fault;
+            
+            // آپدیت مرحله
+            document.getElementById('step2').classList.remove('active');
+            document.getElementById('step3').classList.add('active');
+            document.getElementById('step2Content').classList.remove('active');
+            document.getElementById('step3Content').classList.add('active');
+            
+            // نمایش اطلاعات مشکل انتخاب شده
+            document.getElementById('selectedFaultInfo').textContent = 
+                `مشکل: ${fault.title} | بخش: ${selectedSection} | دسته: ${selectedCategory}`;
+            
+            // لود راه حل‌ها
+            loadSolutions(fault);
+            
+            // نمایش دکمه‌ها
+            document.getElementById('backToStep1Btn').style.display = 'none';
+            document.getElementById('backToStep2Btn').style.display = 'flex';
+            document.getElementById('resetBtn').style.display = 'flex';
+        }
+        
+        // لود راه حل‌ها
+        function loadSolutions(fault) {
+            const solutionsContainer = document.getElementById('solutionsContainer');
+            solutionsContainer.innerHTML = '';
+            
+            fault.solutions.forEach((solution, index) => {
+                const solutionItem = document.createElement('div');
+                solutionItem.className = 'solution-item';
+                
+                solutionItem.innerHTML = `
+                    <div class="solution-number">${index + 1}</div>
+                    <div class="solution-text">${solution}</div>
+                `;
+                
+                solutionsContainer.appendChild(solutionItem);
+            });
+        }
+        
+        // بازگشت به مرحله ۱
+        function backToStep1() {
+            document.getElementById('step2').classList.remove('active');
+            document.getElementById('step1').classList.add('active');
+            document.getElementById('step2Content').classList.remove('active');
+            document.getElementById('step1Content').classList.add('active');
+            
+            document.getElementById('backToStep1Btn').style.display = 'none';
+        }
+        
+        // بازگشت به مرحله ۲
+        function backToStep2() {
+            document.getElementById('step3').classList.remove('active');
+            document.getElementById('step2').classList.add('active');
+            document.getElementById('step3Content').classList.remove('active');
+            document.getElementById('step2Content').classList.add('active');
+            
+            document.getElementById('backToStep2Btn').style.display = 'none';
+            document.getElementById('resetBtn').style.display = 'none';
+            document.getElementById('backToStep1Btn').style.display = 'flex';
+        }
+        
+        // شروع مجدد
+        function resetTroubleshooting() {
+            selectedMachine = null;
+            selectedSection = null;
+            selectedCategory = null;
+            selectedFault = null;
+            
+            document.getElementById('step3').classList.remove('active');
+            document.getElementById('step2').classList.remove('active');
+            document.getElementById('step1').classList.add('active');
+            
+            document.getElementById('step3Content').classList.remove('active');
+            document.getElementById('step2Content').classList.remove('active');
+            document.getElementById('step1Content').classList.add('active');
+            
+            document.getElementById('troubleshootingSection').style.display = 'none';
+            document.getElementById('backToStep1Btn').style.display = 'none';
+            document.getElementById('backToStep2Btn').style.display = 'none';
+            document.getElementById('resetBtn').style.display = 'none';
+        }
+          // اجرا پس از لود صفحه
+          document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 صفحه لود شد');
+            
+            // مدیریت زمان ورود کاربر
+            const now = new Date();
+            window.loginTime = now;
+            
+            // نمایش زمان ورود
+            const loginTimeElement = document.getElementById('loginTime');
+            const lastLoginTimeElement = document.getElementById('lastLoginTime');
+            
+            if (loginTimeElement) {
+                loginTimeElement.textContent = formatPersianDateTime(now);
+            }
+            
+            if (lastLoginTimeElement) {
+                lastLoginTimeElement.textContent = formatPersianDateTime(now);
+            }
+
+            // به روز رسانی زمان آنلاین هر دقیقه
+            setInterval(updateOnlineTime, 60000);
+
+            // دریافت وضعیت دستگاه استنتر
+            console.log('🔄 شروع دریافت وضعیت دستگاه...');
+            getLatestMachineStatus();
+            
+            // به روز رسانی خودکار وضعیت دستگاه هر 30 ثانیه
+            setInterval(getLatestMachineStatus, 30000);
+        });
+        function formatPersianDateTime(date) {
+            const options = {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            };
+            return new Intl.DateTimeFormat('fa-IR', options).format(date);
+        }
+
+        // تابع برای محاسبه زمان گذشته از ورود
+        function getTimeSinceLogin(loginTime) {
+            const now = new Date();
+            const diff = now - loginTime;
+            const minutes = Math.floor(diff / 60000);
+            const hours = Math.floor(minutes / 60);
+            
+            if (hours > 0) {
+                return `${hours} ساعت و ${minutes % 60} دقیقه قبل`;
+            } else {
+                return `${minutes} دقیقه قبل`;
+            }
+        }
+
+        // تابع برای به روز رسانی زمان آنلاین
+        function updateOnlineTime() {
+            const loginTimeElement = document.getElementById('loginTime');
+            if (loginTimeElement && window.loginTime) {
+                loginTimeElement.textContent = getTimeSinceLogin(window.loginTime);
+            }
+        }
+    </script>
+</body>
+</html>
