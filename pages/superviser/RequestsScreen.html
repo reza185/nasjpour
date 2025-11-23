@@ -6,15 +6,15 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#2c3e50">
-    <title>TMP</title>
+    <title>گزارشات دریافتی - TPM PRO</title>
     <link rel="icon" href="icons/icon-192x192.png">
     <link rel="apple-touch-icon" href="icons/icon-192x192.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="manifest" href="../../manifest.json">
-<link rel="icon" href="../../icons/icon-192x192.png">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="../../manifest.json">
+    <link rel="icon" href="../../icons/icon-192x192.png">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
@@ -65,7 +65,7 @@
             --broken: #e74c3c;
         }
 
-        /* نویگیشن */
+        /* استایل‌های موجود (همانند قبل) */
         .navbar {
             background: var(--primary);
             color: white;
@@ -363,7 +363,7 @@
             flex-shrink: 0;
         }
 
-        .status-badge, .priority-badge {
+        .status-badge, .priority-badge, .issue-type-badge {
             padding: 4px 8px;
             border-radius: 20px;
             font-size: 10px;
@@ -382,6 +382,25 @@
         .priority-medium { border-color: #FF9800; color: #FF9800; background: #FFF3E0; }
         .priority-high { border-color: #F44336; color: #F44336; background: #FFEBEE; }
         .priority-critical { border-color: #D32F2F; color: #D32F2F; background: #FFCDD2; }
+
+        /* استایل‌های جدید برای نوع ایراد */
+        .electrical-badge {
+            background: #f3e8fd;
+            color: #9b59b6;
+            border: 1px solid #9b59b6;
+        }
+
+        .technical-badge {
+            background: #fef5e7;
+            color: #e67e22;
+            border: 1px solid #e67e22;
+        }
+
+        .combined-badge {
+            background: #e8f4fd;
+            color: #3498db;
+            border: 1px solid #3498db;
+        }
 
         .report-description {
             color: #666;
@@ -805,16 +824,20 @@
                 <a href="RequestsScreen.html" class="nav-link active">
                     <i class="fas fa-clipboard-list"></i>
                     <span>گزارشات دریافتی</span>
-                    <a href="warehouse.html" class="nav-link">
-                        <i class="fas fa-warehouse"></i>
-                        <span>انبار</span>
-                    </a>
+                </a>
+                <a href="warehouse.html" class="nav-link">
+                    <i class="fas fa-warehouse"></i>
+                    <span>انبار</span>
+                </a>
+                <a href="troubleshooting.html" class="nav-link" id="troubleshootingLink">
+                    <i class="fas fa-tools"></i>
+                    <span>عیب‌یابی</span>
                 </a>
             </div>
             
             <div class="user-info">
                 <div class="user-details">
-                    <div class="user-name" id="userName">سرپرست</div>
+                    <div class="user-name" id="userName">سرپرست (توسعه)</div>
                     <div class="login-time" id="loginTime">در حال بارگذاری...</div>
                 </div>
                 <div class="user-avatar" id="userAvatar">S</div>
@@ -868,6 +891,7 @@
                         <option value="rejected">رد شده</option>
                         <option value="in-progress">در دست اقدام</option>
                         <option value="completed">تکمیل شده</option>
+                        <option value="referred_to_manager">ارجاع به مدیر</option>
                     </select>
                     
                     <select class="filter-select" id="priorityFilter">
@@ -876,6 +900,13 @@
                         <option value="medium">متوسط</option>
                         <option value="high">بالا</option>
                         <option value="critical">بحرانی</option>
+                    </select>
+
+                    <select class="filter-select" id="issueTypeFilter">
+                        <option value="all">همه نوع ایرادها</option>
+                        <option value="برق">برق</option>
+                        <option value="فنی">فنی</option>
+                        <option value="ترکیبی">ترکیبی</option>
                     </select>
                 </div>
             </div>
@@ -914,11 +945,11 @@
                     <label class="form-label" for="actionType">نوع اقدام درخواستی</label>
                     <select id="actionType" class="form-select" required>
                         <option value="">انتخاب کنید</option>
-                        <option value="approval"> تأیید شده توسط سرپرست</option>
-                        <option value="budget">درخواست بودجه برای رسیدگی به مشکل پیش آمده</option>
-                        <option value="resources">درخواست منابع</option>
-                        <option value="decision">درخواست تصمیم‌گیری از سوی مدیریت</option>
-                        <option value="other">سایر</option>
+                        <option value="تأیید شده توسط سرپرست">تأیید شده توسط سرپرست</option>
+                        <option value="درخواست بودجه">درخواست بودجه برای رسیدگی به مشکل پیش آمده</option>
+                        <option value="درخواست منابع">درخواست منابع</option>
+                        <option value="درخواست تصمیم‌گیری">درخواست تصمیم‌گیری از سوی مدیریت</option>
+                        <option value="سایر">سایر</option>
                     </select>
                 </div>
                 
@@ -971,7 +1002,6 @@
         
         window.alert = function(message) {
             return new Promise((resolve) => {
-                // ساخت overlay
                 const overlay = document.createElement('div');
                 overlay.style.cssText = `
                     position: fixed;
@@ -986,7 +1016,6 @@
                     justify-content: center;
                 `;
                 
-                // ساخت dialog
                 const dialog = document.createElement('div');
                 dialog.style.cssText = `
                     background: white;
@@ -1011,7 +1040,6 @@
                 overlay.appendChild(dialog);
                 document.body.appendChild(overlay);
                 
-                // تابع بستن
                 const closeAlert = function() {
                     if (document.body.contains(overlay)) {
                         document.body.removeChild(overlay);
@@ -1019,14 +1047,12 @@
                     resolve();
                 };
                 
-                // اضافه کردن event listener برای دکمه
                 const confirmBtn = document.getElementById('customAlertConfirm');
                 confirmBtn.addEventListener('click', closeAlert);
                 
-                // با کلیک روی overlay هم بسته نشه (مثل alert اصلی)
                 overlay.onclick = function(e) {
                     if (e.target === overlay) {
-                        // کاری نکن - مثل alert اصلی که با کلیک خارج بسته نمیشه
+                        // کاری نکن
                     }
                 };
             });
@@ -1037,7 +1063,6 @@
         
         window.confirm = function(message) {
             return new Promise((resolve) => {
-                // ساخت overlay
                 const overlay = document.createElement('div');
                 overlay.style.cssText = `
                     position: fixed;
@@ -1052,7 +1077,6 @@
                     justify-content: center;
                 `;
                 
-                // ساخت dialog
                 const dialog = document.createElement('div');
                 dialog.style.cssText = `
                     background: white;
@@ -1083,7 +1107,6 @@
                 overlay.appendChild(dialog);
                 document.body.appendChild(overlay);
                 
-                // تابع بستن
                 const closeConfirm = function(result) {
                     if (document.body.contains(overlay)) {
                         document.body.removeChild(overlay);
@@ -1091,14 +1114,12 @@
                     resolve(result);
                 };
                 
-                // اضافه کردن event listener برای دکمه‌ها
                 document.getElementById('customConfirmYes').addEventListener('click', () => closeConfirm(true));
                 document.getElementById('customConfirmNo').addEventListener('click', () => closeConfirm(false));
                 
-                // با کلیک روی overlay هم بسته نشه (مثل confirm اصلی)
                 overlay.onclick = function(e) {
                     if (e.target === overlay) {
-                        // کاری نکن - مثل confirm اصلی که با کلیک خارج بسته نمیشه
+                        // کاری نکن
                     }
                 };
             });
@@ -1265,6 +1286,52 @@
             };
             return priorityMap[priority] || priority;
         }
+
+        // تابع تشخیص نوع ایراد
+        function determineIssueType(problemDescription) {
+            if (!problemDescription) return 'فنی';
+            
+            const problem = problemDescription.toLowerCase();
+            
+            const electricalKeywords = [
+                'برق', 'الکتریک', 'سیم', 'کابل', 'فیوز', 'کلید', 'مدار', 
+                'ولتاژ', 'جریان', 'موتور', 'کنترل', 'تابلو', 'دستگاه اندازه گیری',
+                'اینورتر', 'میکروسوییچ', 'کنتاکتور', 'شاسی', 'چشم الکترونیکی',
+                'سنسور', 'پی‌ال‌سی', 'ال‌سی‌دی', 'کنترل پنل', 'رله', 'ترانس',
+                'الکترونیک', 'برقی', 'ولت', 'آمپر', 'وات', 'برق رسانی'
+            ];
+            
+            const technicalKeywords = [
+                'روغن', 'گیربکس', 'بلبرینگ', 'یاتاقان', 'شفت', 'گشتاور',
+                'مکانیک', 'سرویس', 'تعویض', 'بازبینی', 'قطعه', 'جوش',
+                'لاستیک', 'غلطک', 'زنجیر', 'چرخ دنده', 'تسمه', 'کوپلینگ',
+                'فن', 'رادیاتور', 'دمای روغن', 'بالانس', 'گیرکردن',
+                'اسپیندل', 'ریل', 'جک', 'پنوماتیک', 'باد', 'فشار',
+                'مکانیکی', 'فنی', 'تعمیر', 'نصب', 'سرویس', 'نگهداری',
+                'صدا', 'لرزش', 'نشت', 'فرسودگی', 'خرابی مکانیکی'
+            ];
+            
+            let electricalCount = 0;
+            let technicalCount = 0;
+            
+            electricalKeywords.forEach(keyword => {
+                if (problem.includes(keyword)) electricalCount++;
+            });
+            
+            technicalKeywords.forEach(keyword => {
+                if (problem.includes(keyword)) technicalCount++;
+            });
+            
+            if (electricalCount > technicalCount) {
+                return 'برق';
+            } else if (technicalCount > electricalCount) {
+                return 'فنی';
+            } else if (electricalCount === technicalCount && electricalCount > 0) {
+                return 'ترکیبی';
+            }
+            
+            return 'فنی';
+        }
         
         // لود گزارشات از Supabase
         async function loadReports() {
@@ -1282,12 +1349,7 @@
                 
             } catch (error) {
                 console.error('خطا در دریافت گزارشات:', error);
-                // اگر خطای ستون بود، فقط پیام نشان بده
-                if (error.code === 'PGRST204') {
-                    alert('ساختار دیتابیس نیاز به آپدیت دارد. لطفاً با مدیر سیستم تماس بگیرید.');
-                } else {
-                    alert('خطا در دریافت گزارشات از سرور');
-                }
+                alert('خطا در دریافت گزارشات از سرور');
             }
         }
         
@@ -1323,41 +1385,45 @@
             reportList.innerHTML = reports.map(report => {
                 const displayStatus = report.status || 'pending';
                 const displayPriority = report.priority || 'medium';
+                const issueType = report.action_type || determineIssueType(report.problem_description);
+                
+                const issueTypeBadge = issueType === 'برق' ? 
+                    '<span class="issue-type-badge electrical-badge">⚡ برق</span>' : 
+                    issueType === 'فنی' ? 
+                    '<span class="issue-type-badge technical-badge">🔧 فنی</span>' :
+                    '<span class="issue-type-badge combined-badge">🔰 ترکیبی</span>';
                 
                 return `
-                <div class="report-item" data-status="${displayStatus}" data-priority="${displayPriority}">
+                <div class="report-item" data-status="${displayStatus}" data-priority="${displayPriority}" data-issue-type="${issueType}">
                     <div class="report-header">
-                        <h3 class="report-title">${report.machine_name || report.machineName || 'بدون عنوان'}</h3>
+                        <h3 class="report-title">${report.machine_name || 'بدون عنوان'}</h3>
                         <div class="status-container">
+                            ${issueTypeBadge}
                             <span class="status-badge status-${displayStatus}">${getStatusText(displayStatus)}</span>
                             <span class="priority-badge priority-${displayPriority}">${getPriorityText(displayPriority)}</span>
                         </div>
                     </div>
                     
-                    <p class="report-description">${report.problem_description || report.problemDescription || 'بدون توضیحات'}</p>
+                    <p class="report-description">${report.problem_description || 'بدون توضیحات'}</p>
                     
                     <div class="report-details">
-                        <div class="detail-item"><strong>گزارش‌دهنده:</strong> ${report.reporter_name || report.reporterName || 'نامشخص'}</div>
-                        <div class="detail-item"><strong>وضعیت دستگاه:</strong> ${report.machine_status || report.machineStatus || 'نامشخص'}</div>
-                        <div class="detail-item"><strong>تاریخ ایجاد:</strong> ${new Date(report.created_at || report.createdAt).toLocaleDateString('fa-IR')}</div>
+                        <div class="detail-item"><strong>گزارش‌دهنده:</strong> ${report.reporter_name || 'نامشخص'}</div>
+                        <div class="detail-item"><strong>وضعیت دستگاه:</strong> ${report.machine_status || 'نامشخص'}</div>
+                        <div class="detail-item"><strong>تاریخ ایجاد:</strong> ${new Date(report.created_at).toLocaleDateString('fa-IR')}</div>
                         <div class="detail-item"><strong>کد گزارش:</strong> ${report.id.substring(0, 8)}</div>
                     </div>
                     
-                    ${report.actions_taken || report.actionsTaken ? `
+                    ${report.actions_taken ? `
                         <div class="actions-section">
                             <div class="section-title-small">اقدامات انجام شده:</div>
-                            <ul class="action-list">
-                                ${Array.isArray(report.actions_taken || report.actionsTaken) ? 
-                                    (report.actions_taken || report.actionsTaken).map(action => `<li>${action}</li>`).join('') : 
-                                    `<li>${report.actions_taken || report.actionsTaken}</li>`}
-                            </ul>
+                            <p>${report.actions_taken}</p>
                         </div>
                     ` : ''}
                     
-                    ${report.manager_note || report.managerNote ? `
+                    ${report.manager_message ? `
                         <div class="actions-section" style="border-right-color: #FF9800;">
                             <div class="section-title-small">یادداشت مدیر:</div>
-                            <p>${report.manager_note || report.managerNote}</p>
+                            <p>${report.manager_message}</p>
                         </div>
                     ` : ''}
                     
@@ -1455,40 +1521,46 @@
             }
         
             try {
-                // انتقال به جدول مدیران
                 const report = currentReports.find(r => r.id === reportId);
                 if (report) {
+                    // آپدیت وضعیت در جدول اصلی
+                    const { error: updateError } = await supabase
+                        .from('operatourreports')
+                        .update({ 
+                            status: 'completed',
+                            completed_at: new Date().toISOString(),
+                            updated_at: new Date().toISOString()
+                        })
+                        .eq('id', reportId);
+
+                    if (updateError) throw updateError;
+
+                    // ارسال به جدول مدیران
                     const reportData = {
-                        reporter_name: report.reporter_name || report.reporterName,
-                        machine_name: report.machine_name || report.machineName,
-                        machine_status: report.machine_status || report.machineStatus,
-                        problem_description: report.problem_description || report.problemDescription,
+                        reporter_name: report.reporter_name,
+                        machine_name: report.machine_name,
+                        machine_status: report.machine_status,
+                        problem_description: report.problem_description,
                         status: 'completed',
-                        priority: report.priority || 'medium',
-                        actions_taken: report.actions_taken || report.actionsTaken,
-                        manager_message: report.manager_note || report.managerNote,
-                        technician_name: report.technician_name || report.technicianName,
-                        estimated_time: report.estimated_time || report.estimatedTime,
-                        created_at: report.created_at || report.createdAt,
+                        priority: report.priority,
+                        actions_taken: report.actions_taken,
+                        manager_message: report.manager_message,
+                        action_type: report.action_type,
+                        technician_name: report.technician_name,
+                        estimated_time: report.estimated_time,
+                        supervisor_note: 'تکمیل شده توسط سرپرست',
+                        created_at: report.created_at,
                         completed_at: new Date().toISOString()
                     };
-        
+
                     const { error: insertError } = await supabase
                         .from('managerreports')
                         .insert([reportData]);
-        
+
                     if (insertError) throw insertError;
-        
-                    // حذف از جدول اصلی
-                    const { error: deleteError } = await supabase
-                        .from('operatourreports')
-                        .delete()
-                        .eq('id', reportId);
-        
-                    if (deleteError) throw deleteError;
                 }
                 
-                alert('گزارش تکمیل و به آرشیو مدیران انتقال داده شد.');
+                alert('گزارش تکمیل و به مدیر ارسال شد.');
                 loadReports();
                 
             } catch (error) {
@@ -1530,42 +1602,45 @@
             const actionType = document.getElementById('actionType').value;
         
             try {
-                // انتقال به جدول مدیران
                 const report = currentReports.find(r => r.id === reportId);
                 if (report) {
-                    const reportData = {
-                        reporter_name: report.reporter_name || report.reporterName,
-                        machine_name: report.machine_name || report.machineName,
-                        machine_status: report.machine_status || report.machineStatus,
-                        problem_description: report.problem_description || report.problemDescription,
-                        status: 'referred_to_manager',
-                        priority: report.priority || 'medium',
-                        actions_taken: report.actions_taken || report.actionsTaken,
-                        manager_message: message,
-                        action_type: actionType,
-                        technician_name: report.technician_name || report.technicianName,
-                        estimated_time: report.estimated_time || report.estimatedTime,
-                        created_at: report.created_at || report.createdAt,
-                        referred_at: new Date().toISOString()
-                    };
-        
-                    const { error } = await supabase
-                        .from('managerreports')
-                        .insert([reportData]);
-        
-                    if (error) throw error;
-        
                     // آپدیت وضعیت در جدول اصلی
                     const { error: updateError } = await supabase
                         .from('operatourreports')
                         .update({ 
                             status: 'referred_to_manager',
-                            manager_note: message,
+                            manager_message: message,
+                            action_type: actionType,
+                            referred_at: new Date().toISOString(),
                             updated_at: new Date().toISOString()
                         })
                         .eq('id', reportId);
-        
+
                     if (updateError) throw updateError;
+
+                    // ارسال به جدول مدیران
+                    const reportData = {
+                        reporter_name: report.reporter_name,
+                        machine_name: report.machine_name,
+                        machine_status: report.machine_status,
+                        problem_description: report.problem_description,
+                        status: 'referred_to_manager',
+                        priority: report.priority,
+                        actions_taken: report.actions_taken,
+                        manager_message: message,
+                        action_type: actionType,
+                        technician_name: report.technician_name,
+                        estimated_time: report.estimated_time,
+                        supervisor_note: 'ارجاع شده توسط سرپرست',
+                        created_at: report.created_at,
+                        referred_at: new Date().toISOString()
+                    };
+
+                    const { error: insertError } = await supabase
+                        .from('managerreports')
+                        .insert([reportData]);
+
+                    if (insertError) throw insertError;
                 }
                 
                 alert('گزارش با موفقیت به مدیر ارسال شد.');
@@ -1590,18 +1665,15 @@
         
             try {
                 const report = currentReports.find(r => r.id === reportId);
-                const currentActions = (report.actions_taken || report.actionsTaken) ? 
-                    (Array.isArray(report.actions_taken || report.actionsTaken) ? 
-                        (report.actions_taken || report.actionsTaken) : 
-                        [report.actions_taken || report.actionsTaken]) : [];
-        
-                const newAction = `ارجاع به ${technician} - زمان تخمینی: ${estimatedTime} ساعت - ${description}`;
+                const currentActions = report.actions_taken ? 
+                    `${report.actions_taken}\nارجاع به ${technician} - زمان تخمینی: ${estimatedTime} ساعت - ${description}` :
+                    `ارجاع به ${technician} - زمان تخمینی: ${estimatedTime} ساعت - ${description}`;
                 
                 const { error } = await supabase
                     .from('operatourreports')
                     .update({ 
                         status: 'in-progress',
-                        actions_taken: [...currentActions, newAction],
+                        actions_taken: currentActions,
                         technician_name: technician,
                         estimated_time: parseInt(estimatedTime),
                         updated_at: new Date().toISOString()
@@ -1625,11 +1697,12 @@
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const statusFilter = document.getElementById('statusFilter').value;
             const priorityFilter = document.getElementById('priorityFilter').value;
+            const issueTypeFilter = document.getElementById('issueTypeFilter').value;
         
             const filtered = currentReports.filter(report => {
-                const machineName = report.machine_name || report.machineName || '';
-                const problemDescription = report.problem_description || report.problemDescription || '';
-                const reporterName = report.reporter_name || report.reporterName || '';
+                const machineName = report.machine_name || '';
+                const problemDescription = report.problem_description || '';
+                const reporterName = report.reporter_name || '';
                 
                 const matchesSearch = 
                     machineName.toLowerCase().includes(searchTerm) || 
@@ -1642,7 +1715,10 @@
                 const reportPriority = report.priority || 'medium';
                 const matchesPriority = priorityFilter === 'all' || reportPriority === priorityFilter;
                 
-                return matchesSearch && matchesStatus && matchesPriority;
+                const issueType = report.action_type || determineIssueType(report.problem_description);
+                const matchesIssueType = issueTypeFilter === 'all' || issueType === issueTypeFilter;
+                
+                return matchesSearch && matchesStatus && matchesPriority && matchesIssueType;
             });
         
             renderReports(filtered);
@@ -1652,6 +1728,7 @@
         document.getElementById('searchInput').addEventListener('input', filterReports);
         document.getElementById('statusFilter').addEventListener('change', filterReports);
         document.getElementById('priorityFilter').addEventListener('change', filterReports);
+        document.getElementById('issueTypeFilter').addEventListener('change', filterReports);
         
         // فعال کردن اسکرول فقط در container اصلی
         const container = document.getElementById('mainContainer');
@@ -1670,9 +1747,5 @@
             document.body.style.overscrollBehavior = 'none';
         }
         </script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="/assets/js/supabase.js"></script>
-    <script src="/assets/js/auth.js"></script>
-    <script src="/assets/js/app.js"></script>
 </body>
 </html>
