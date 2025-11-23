@@ -884,6 +884,35 @@
             color: #e0e0e0;
         }
 
+        /* استایل‌های جدید برای نمایش نوع ایراد */
+        .issue-type-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-block;
+            text-align: center;
+            min-width: 60px;
+        }
+
+        .electrical-badge {
+            background: #f3e8fd;
+            color: #9b59b6;
+            border: 1px solid #9b59b6;
+        }
+
+        .technical-badge {
+            background: #fef5e7;
+            color: #e67e22;
+            border: 1px solid #e67e22;
+        }
+
+        .combined-badge {
+            background: #e8f4fd;
+            color: #3498db;
+            border: 1px solid #3498db;
+        }
+
         /* هشدار */
         .alert {
             padding: 12px;
@@ -1121,10 +1150,10 @@
                                 <div class="machine-name">دستگاه استنتر</div>
                                 <div class="machine-type">سیستم تکمیل پارچه</div>
                             </div>
-                            <span class="status-badge status-operational">عملیاتی</span>
+                            <!-- <span class="status-badge status-operational">عملیاتی</span> -->
                         </div>
                         
-                        <div class="machine-metrics">
+                        <!-- <div class="machine-metrics">
                             <div class="metric">
                                 <div class="metric-value">۸۵%</div>
                                 <div class="metric-label">کارایی</div>
@@ -1137,7 +1166,7 @@
                                 <div class="metric-value">۲۸°C</div>
                                 <div class="metric-label">دما</div>
                             </div>
-                        </div>
+                        </div> -->
                         
                         <div class="machine-actions">
                             <button class="action-btn report-btn" onclick="event.stopPropagation(); openReportPopup('استنتر')">
@@ -1460,7 +1489,57 @@
             });
         };
         
-        // داده‌های کامل عیب‌های دستگاه استنتر (همان داده‌های قبلی)
+        // ==================== تابع تشخیص نوع ایراد ====================
+        function determineIssueType(problemDescription) {
+            if (!problemDescription) return 'فنی';
+            
+            const problem = problemDescription.toLowerCase();
+            
+            // کلمات کلیدی مربوط به ایرادات برقی
+            const electricalKeywords = [
+                'برق', 'الکتریک', 'سیم', 'کابل', 'فیوز', 'کلید', 'مدار', 
+                'ولتاژ', 'جریان', 'موتور', 'کنترل', 'تابلو', 'دستگاه اندازه گیری',
+                'اینورتر', 'میکروسوییچ', 'کنتاکتور', 'شاسی', 'چشم الکترونیکی',
+                'سنسور', 'پی‌ال‌سی', 'ال‌سی‌دی', 'کنترل پنل', 'رله', 'ترانس',
+                'الکترونیک', 'برقی', 'ولت', 'آمپر', 'وات', 'برق رسانی'
+            ];
+            
+            // کلمات کلیدی مربوط به ایرادات فنی/مکانیکی
+            const technicalKeywords = [
+                'روغن', 'گیربکس', 'بلبرینگ', 'یاتاقان', 'شفت', 'گشتاور',
+                'مکانیک', 'سرویس', 'تعویض', 'بازبینی', 'قطعه', 'جوش',
+                'لاستیک', 'غلطک', 'زنجیر', 'چرخ دنده', 'تسمه', 'کوپلینگ',
+                'فن', 'رادیاتور', 'دمای روغن', 'بالانس', 'گیرکردن',
+                'اسپیندل', 'ریل', 'جک', 'پنوماتیک', 'باد', 'فشار',
+                'مکانیکی', 'فنی', 'تعمیر', 'نصب', 'سرویس', 'نگهداری',
+                'صدا', 'لرزش', 'نشت', 'فرسودگی', 'خرابی مکانیکی'
+            ];
+            
+            // شمارش کلمات کلیدی
+            let electricalCount = 0;
+            let technicalCount = 0;
+            
+            electricalKeywords.forEach(keyword => {
+                if (problem.includes(keyword)) electricalCount++;
+            });
+            
+            technicalKeywords.forEach(keyword => {
+                if (problem.includes(keyword)) technicalCount++;
+            });
+            
+            // تصمیم‌گیری بر اساس تعداد کلمات کلیدی
+            if (electricalCount > technicalCount) {
+                return 'برق';
+            } else if (technicalCount > electricalCount) {
+                return 'فنی';
+            } else if (electricalCount === technicalCount && electricalCount > 0) {
+                return 'ترکیبی';
+            }
+            
+            return 'فنی';
+        }
+        
+        // داده‌های کامل عیب‌های دستگاه استنتر
         const stenterFaults = {
             // قسمت ورودی (فولارد)
             "ورودی": {
@@ -1542,11 +1621,11 @@
                 "برقی": [
                     {
                         id: 'dryer-elec-001',
-                        title: 'اورخیه نمی‌دهد',
+                        title: 'اورفید نمی‌دهد',
                         code: 'STN-DRYER-001',
-                        description: 'سیستم اورخیه عملکرد صحیح ندارد',
+                        description: 'سیستم اورفید عملکرد صحیح ندارد',
                         solutions: [
-                            'تنظیم سرعت موتور اورخیه',
+                            'تنظیم سرعت موتور اورفید',
                             'تنظیم موتور فرچه‌ها'
                         ],
                         category: 'electrical'
@@ -1617,14 +1696,14 @@
                 "مکانیکی": [
                     {
                         id: 'dryer-mech-001',
-                        title: 'اورخیه نمی‌دهد',
+                        title: 'اورفید نمی‌دهد',
                         code: 'STN-DRYER-007',
-                        description: 'سیستم اورخیه عملکرد مکانیکی ندارد',
+                        description: 'سیستم اورفید عملکرد مکانیکی ندارد',
                         solutions: [
-                            'بررسی گیربکس موتور اورخیه',
+                            'بررسی گیربکس موتور اورفید',
                             'کنترل گیربکس موتور فرچه‌ها',
                             'بررسی تسمه‌های زیر فرچه‌ها',
-                            'کنترل غلطک‌های اورخیه'
+                            'کنترل غلطک‌های اورفید'
                         ],
                         category: 'mechanical'
                     },
@@ -2112,23 +2191,26 @@
             document.getElementById('resetBtn').style.display = 'none';
         }
         
-        // مدیریت ارسال فرم
+        // ==================== آپدیت تابع ارسال گزارش ====================
         document.getElementById('reportForm').addEventListener('submit', async function(e) {
             e.preventDefault();
+            
+            const problemDescription = document.getElementById('problem_description').value;
+            const issueType = determineIssueType(problemDescription);
             
             const formData = {
                 reporter_name: document.getElementById('reporter_name').value,
                 machine_name: document.getElementById('machine_name').value,
                 machine_status: document.getElementById('machine_status').value,
-                problem_description: document.getElementById('problem_description').value,
+                problem_description: problemDescription,
                 priority: document.getElementById('priority').value,
+                action_type: issueType, // اضافه کردن نوع ایراد
                 status: 'جدید',
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString()
             };
             
             try {
-                // ذخیره گزارش در Supabase
                 const { data, error } = await supabase
                     .from('operatourreports')
                     .insert([formData]);
@@ -2137,39 +2219,17 @@
                     throw error;
                 }
                 
-                alert(`گزارش برای دستگاه "${formData.machine_name}" با موفقیت ارسال شد!\n\nوضعیت: ${formData.machine_status}`);
+                alert(`✅ گزارش با موفقیت ارسال شد!\n\n📋 دستگاه: ${formData.machine_name}\n⚡ نوع ایراد: ${issueType}\n📊 وضعیت: ${formData.machine_status}`);
                 closeReportPopup();
-                
-                // بروزرسانی لیست گزارش‌ها
                 loadReports();
                 
             } catch (error) {
                 console.error('خطا در ارسال گزارش:', error);
-                alert('خطا در ارسال گزارش. لطفاً دوباره تلاش کنید.');
+                alert('❌ خطا در ارسال گزارش. لطفاً دوباره تلاش کنید.');
             }
         });
         
-        // لود گزارش‌ها از Supabase
-        async function loadReports() {
-            try {
-                const { data: reports, error } = await supabase
-                    .from('operatourreports')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-                
-                if (error) {
-                    throw error;
-                }
-                
-                displayReports(reports);
-                
-            } catch (error) {
-                console.error('خطا در دریافت گزارش‌ها:', error);
-                alert('خطا در دریافت گزارش‌ها');
-            }
-        }
-        
-        // نمایش گزارش‌ها در جدول
+        // ==================== آپدیت تابع نمایش گزارش‌ها ====================
         function displayReports(reports) {
             const container = document.getElementById('reportsTableContainer');
             
@@ -2190,6 +2250,7 @@
                             <th>نام گزارش‌دهنده</th>
                             <th>دستگاه</th>
                             <th>وضعیت دستگاه</th>
+                            <th>نوع ایراد</th>
                             <th>اولویت</th>
                             <th>وضعیت گزارش</th>
                             <th>شرح مشکل</th>
@@ -2202,14 +2263,27 @@
             
             reports.forEach(report => {
                 const date = new Date(report.created_at).toLocaleDateString('fa-IR');
+                const issueType = report.action_type || determineIssueType(report.problem_description);
+                
+                // ایجاد بج برای نوع ایراد
+                let issueTypeBadge;
+                if (issueType === 'برق') {
+                    issueTypeBadge = '<span class="issue-type-badge electrical-badge">⚡ برق</span>';
+                } else if (issueType === 'فنی') {
+                    issueTypeBadge = '<span class="issue-type-badge technical-badge">🔧 فنی</span>';
+                } else {
+                    issueTypeBadge = '<span class="issue-type-badge combined-badge">🔰 ترکیبی</span>';
+                }
+                
                 tableHTML += `
                     <tr>
                         <td>${report.reporter_name}</td>
                         <td>${report.machine_name}</td>
                         <td>${report.machine_status}</td>
+                        <td>${issueTypeBadge}</td>
                         <td>${report.priority || '-'}</td>
                         <td>${report.status || 'جدید'}</td>
-                        <td>${report.problem_description || '-'}</td>
+                        <td style="max-width: 200px; word-wrap: break-word;">${report.problem_description || '-'}</td>
                         <td>${date}</td>
                         <td>
                             <button class="delete-btn" onclick="deleteReport('${report.id}')">
@@ -2227,6 +2301,26 @@
             `;
             
             container.innerHTML = tableHTML;
+        }
+        
+        // لود گزارش‌ها از Supabase
+        async function loadReports() {
+            try {
+                const { data: reports, error } = await supabase
+                    .from('operatourreports')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                
+                if (error) {
+                    throw error;
+                }
+                
+                displayReports(reports);
+                
+            } catch (error) {
+                console.error('خطا در دریافت گزارش‌ها:', error);
+                alert('خطا در دریافت گزارش‌ها');
+            }
         }
         
         // حذف گزارش
