@@ -21,7 +21,33 @@
     <!-- Icons -->
     <link rel="icon" href="icons/icon-192x192.png">
     <link rel="apple-touch-icon" href="icons/icon-192x192.png">
-    
+     <script>// در فایل index.html یا main.js
+        // جلوگیری از نمایش badge مرورگر
+        window.addEventListener('beforeinstallprompt', (e) => {
+          e.preventDefault();
+          
+          // همچنین به Service Worker بگو badge رو پاک کنه
+          if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+            navigator.serviceWorker.controller.postMessage({
+              type: 'CLEAR_BADGE'
+            });
+          }
+          
+          return false;
+        });
+        
+        // ثبت Service Worker
+        if ('serviceWorker' in navigator) {
+          window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js')
+              .then(registration => {
+                console.log('✅ Service Worker ثبت شد');
+              })
+              .catch(error => {
+                console.error('❌ خطا در ثبت:', error);
+              });
+          });
+        }</script>
     <style>
         * {
             margin: 0;
