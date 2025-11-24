@@ -6,18 +6,18 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#2c3e50">
-    <title>TMP</title>
+    <title>TPM PRO - عیب‌یابی</title>
     <link rel="icon" href="icons/icon-192x192.png">
     <link rel="apple-touch-icon" href="icons/icon-192x192.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
     <style>
         /* استایل‌های اصلی با قابلیت‌های جدید */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Vazirmatn', sans-serif;
+            font-family: Vazirmatn, sans-serif;
             -webkit-tap-highlight-color: transparent;
             -webkit-text-size-adjust: 100%;
             touch-action: manipulation;
@@ -41,6 +41,7 @@
             right: 0;
             bottom: 0;
             -webkit-overflow-scrolling: touch;
+            font-weight: 400; /* تنظیم وزن فونت پیش‌فرض */
         }
 
         :root {
@@ -186,7 +187,7 @@
         }
 
         .header-card {
-            background: var( --secondary);
+            background: var(--secondary);
             color: white;
             border-radius: 12px;
             padding: 20px;
@@ -1100,7 +1101,7 @@
                     <i class="fas fa-tachometer-alt"></i>
                     <span>داشبورد</span>
                 </a>
-                <a href="RequestsScreen.html" class="nav-link ">
+                <a href="RequestsScreen.html" class="nav-link">
                     <i class="fas fa-clipboard-list"></i>
                     <span>گزارشات دریافتی</span>
                 </a>
@@ -1129,16 +1130,12 @@
         <div class="container" id="mainContainer">
             <!-- هدر صفحه -->
             <div class="header-card">
-                <h1 class="page-title">گزارشات دریافتی</h1>
-                <p class="page-subtitle">مدیریت و رسیدگی به گزارشات ارسالی کاربران</p>
+                <h1 class="page-title">سیستم عیب‌یابی هوشمند استنتر</h1>
+                <p class="page-subtitle">عیب‌یابی تخصصی دستگاه استنتر بر اساس بخش‌های مختلف</p>
                 <div class="login-info">
                     <i class="fas fa-clock"></i>
                     آخرین ورود: <span id="lastLoginTime">در حال بارگذاری...</span>
                 </div>
-            <!-- هدر صفحه -->
-            <div class="header-card">
-                <h1 class="page-title">سیستم عیب‌یابی هوشمند استنتر</h1>
-                <p class="page-subtitle">عیب‌یابی تخصصی دستگاه استنتر بر اساس بخش‌های مختلف</p>
             </div>
 
             <!-- دستگاه‌ها -->
@@ -1490,7 +1487,7 @@
                 if (!firstCategory) firstCategory = category;
                 
                 const tab = document.createElement('div');
-                tab.className = `category-tab ${category === 'برقی' ? 'electrical' : category === 'مکانیکی' ? 'mechanical' : 'pneumatic'} ${category === firstCategory ? 'active' : ''}`;
+                tab.className = `category-tab ${category === 'برقی' ? 'electrical' : category === 'مکانیکی' ? 'mechanical' : 'pneumatic'}`;
                 tab.onclick = () => selectCategory(category);
                 
                 let icon = 'fas fa-bolt';
@@ -1519,7 +1516,7 @@
             document.querySelectorAll('#categoryTabs .category-tab').forEach(tab => {
                 tab.classList.remove('active');
             });
-            event.target.classList.add('active');
+            event.currentTarget.classList.add('active');
             
             // لود مشکلات
             loadFaults(selectedSection, category);
@@ -1639,8 +1636,9 @@
             document.getElementById('backToStep2Btn').style.display = 'none';
             document.getElementById('resetBtn').style.display = 'none';
         }
-          // اجرا پس از لود صفحه
-          document.addEventListener('DOMContentLoaded', function() {
+        
+        // اجرا پس از لود صفحه
+        document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 صفحه لود شد');
             
             // مدیریت زمان ورود کاربر
@@ -1661,14 +1659,8 @@
 
             // به روز رسانی زمان آنلاین هر دقیقه
             setInterval(updateOnlineTime, 60000);
-
-            // دریافت وضعیت دستگاه استنتر
-            console.log('🔄 شروع دریافت وضعیت دستگاه...');
-            getLatestMachineStatus();
-            
-            // به روز رسانی خودکار وضعیت دستگاه هر 30 ثانیه
-            setInterval(getLatestMachineStatus, 30000);
         });
+        
         function formatPersianDateTime(date) {
             const options = {
                 year: 'numeric',
