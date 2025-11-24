@@ -11,13 +11,16 @@ const urlsToCache = [
 // نصب و کش کردن منابع
 self.addEventListener('install', event => {
   console.log('Service Worker installing...');
-  self.skipWaiting(); // مهم برای فعال شدن فوری
   
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
         console.log('Opened cache');
         return cache.addAll(urlsToCache);
+      })
+      .then(() => {
+        console.log('All resources cached');
+        return self.skipWaiting(); // اینجا باید باشه
       })
       .catch(error => {
         console.error('Cache addAll error:', error);
@@ -28,6 +31,7 @@ self.addEventListener('install', event => {
 // فعال شدن
 self.addEventListener('activate', event => {
   console.log('Service Worker activated');
+  
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
@@ -38,30 +42,32 @@ self.addEventListener('activate', event => {
           }
         })
       );
+    }).then(() => {
+      return self.clients.claim(); // کنترل فوری کلیه کلاینت‌ها
     })
   );
-  
-  // غیرفعال کردن badgeهای ناخواسته
-  if ('setAppBadge' in self.registration) {
-    self.registration.setAppBadge(0);
-  }
 });
 
 // مدیریت درخواست‌ها
 self.addEventListener('fetch', event => {
+  // فقط GET رو مدیریت کن
+  if (event.request.method !== 'GET') return;
+  
   event.respondWith(
     caches.match(event.request)
       .then(response => {
         // اگر در کش پیدا شد برگردان
         if (response) {
+          console.log('Serving from cache:', event.request.url);
           return response;
         }
         
         // در غیر این صورت از شبکه بگیر
+        console.log('Fetching from network:', event.request.url);
         return fetch(event.request)
           .then(response => {
-            // فقط پاسخ‌های معتبر را کش کن
-            if (!response || response.status !== 200 || response.type !== 'basic') {
+            // بررسی پاسخ معتبر
+            if (!response || response.status !== 200 || !response.type === 'basic') {
               return response;
             }
             
@@ -70,22 +76,39 @@ self.addEventListener('fetch', event => {
             caches.open(CACHE_NAME)
               .then(cache => {
                 cache.put(event.request, responseToCache);
+                console.log('Cached new resource:', event.request.url);
               });
               
             return response;
           })
-          .catch(() => {
-            // اگر آفلاین هستی و فایل پیدا نشد
-            if (event.request.destination === 'document') {
+          .catch(error => {
+            console.error('Fetch failed:', error);
+            
+            // اگر صفحه اصلی درخواست شده
+            if (event.request.destination === 'document' || 
+                event.request.url.includes('/index.html')) {
               return caches.match('./index.html');
             }
+            
+            // برای تصاویر، لوگو پیشفرض برگردون
+            if (event.request.destination === 'image') {
+              return caches.match('./Logo.png');
+            }
+            
+            return new Response('دسترسی آفلاین', {
+              status: 408,
+              headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+            });
           });
       })
   );
 });
 
-// جلوگیری از نمایش badge مرورگر
-self.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  return false;
+// مدیریت پیام از صفحه اصلی برای badge
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'CLEAR_BADGE') {
+    if ('clearAppBadge' in self.registration) {
+      self.registration.clearAppBadge();
+    }
+  }
 });
