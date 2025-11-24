@@ -48,6 +48,47 @@
               });
           });
         }</script>
+    <script>// این کد رو به فایل JS اصلی اضافه کن
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  
+  // نمایش دکمه نصب خودمان
+  showInstallButton();
+});
+
+function showInstallButton() {
+  // ایجاد دکمه نصب
+  const installBtn = document.createElement('button');
+  installBtn.textContent = 'نصب برنامه';
+  installBtn.style.cssText = `
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    z-index: 1000;
+  `;
+  
+  installBtn.onclick = () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then((choiceResult) => {
+        if (choiceResult.outcome === 'accepted') {
+          console.log('✅ کاربر نصب را پذیرفت');
+        }
+        deferredPrompt = null;
+        installBtn.remove();
+      });
+    }
+  };
+  
+  document.body.appendChild(installBtn);
+}</script>
     <style>
         * {
             margin: 0;
