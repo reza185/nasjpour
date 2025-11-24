@@ -771,488 +771,604 @@
 
       
 
-    <script>
-        // ==================== CUSTOM ALERT SYSTEM ====================
-        delete window.alert;
-
-        window.alert = function(message) {
-            return new Promise((resolve) => {
-                const overlay = document.createElement('div');
-                overlay.style.cssText = `
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    background: rgba(0,0,0,0.5);
-                    z-index: 10000;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    padding: 20px;
-                `;
-                
-                const dialog = document.createElement('div');
-                dialog.style.cssText = `
-                    background: white;
-                    padding: 25px;
-                    border-radius: 12px;
-                    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-                    text-align: center;
-                    min-width: 300px;
-                    max-width: 90%;
-                    font-family: Vazirmatn, sans-serif;
-                    border: 2px solid #2c3e50;
-                `;
-                
-                dialog.innerHTML = `
-                    <div style="margin-bottom: 20px; font-size: 16px; color: #2c3e50; line-height: 1.5;">${message}</div>
-                    <button onclick="closeCustomAlert()" 
-                            style="padding: 10px 25px; background: #2c3e50; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
-                        تأیید
-                    </button>
-                `;
-                
-                overlay.appendChild(dialog);
-                document.body.appendChild(overlay);
-                
-                window.closeCustomAlert = function() {
-                    document.body.removeChild(overlay);
-                    resolve();
-                };
-            });
-        };
-
-        // ==================== ORIGINAL CODE (ONLY ALERT MODIFIED) ====================
-        // تابع برای فرمت کردن تاریخ و زمان به فارسی
-        function formatPersianDateTime(date) {
-            const options = {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
+        <script>
+            // ==================== CUSTOM ALERT SYSTEM ====================
+            delete window.alert;
+        
+            window.alert = function(message) {
+                return new Promise((resolve) => {
+                    const overlay = document.createElement('div');
+                    overlay.style.cssText = `
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: rgba(0,0,0,0.5);
+                        z-index: 10000;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        padding: 20px;
+                    `;
+                    
+                    const dialog = document.createElement('div');
+                    dialog.style.cssText = `
+                        background: white;
+                        padding: 25px;
+                        border-radius: 12px;
+                        box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+                        text-align: center;
+                        min-width: 300px;
+                        max-width: 90%;
+                        font-family: Vazirmatn, sans-serif;
+                        border: 2px solid #2c3e50;
+                    `;
+                    
+                    dialog.innerHTML = `
+                        <div style="margin-bottom: 20px; font-size: 16px; color: #2c3e50; line-height: 1.5;">${message}</div>
+                        <button onclick="closeCustomAlert()" 
+                                style="padding: 10px 25px; background: #2c3e50; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                            تأیید
+                        </button>
+                    `;
+                    
+                    overlay.appendChild(dialog);
+                    document.body.appendChild(overlay);
+                    
+                    window.closeCustomAlert = function() {
+                        document.body.removeChild(overlay);
+                        resolve();
+                    };
+                });
             };
-            return new Intl.DateTimeFormat('fa-IR', options).format(date);
-        }
-
-        // تابع برای محاسبه زمان گذشته از ورود
-        function getTimeSinceLogin(loginTime) {
-            const now = new Date();
-            const diff = now - loginTime;
-            const minutes = Math.floor(diff / 60000);
-            const hours = Math.floor(minutes / 60);
-            
-            if (hours > 0) {
-                return `${hours} ساعت و ${minutes % 60} دقیقه قبل`;
-            } else {
-                return `${minutes} دقیقه قبل`;
+        
+            // ==================== REAL-TIME UPDATES ====================
+            // اتصال به Supabase
+            const SUPABASE_URL = 'https://kalykylvjqigqlaprlca.supabase.co';
+            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImthbHlreWx2anFpZ3FsYXBybGNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM1NjI1OTcsImV4cCI6MjA3OTEzODU5N30.S8YtogVrxkqYjkgfkGpy4_mS6mqaNxmsHjxnhyBPwEY';
+            const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+            let allReports = [];
+            let filteredReports = [];
+        
+            // تابع برای فرمت کردن تاریخ و زمان به فارسی
+            function formatPersianDateTime(date) {
+                const options = {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                };
+                return new Intl.DateTimeFormat('fa-IR', options).format(date);
             }
-        }
-
-        // تابع برای به روز رسانی زمان آنلاین
-        function updateOnlineTime() {
-            const loginTimeElement = document.getElementById('loginTime');
-            if (loginTimeElement && window.loginTime) {
-                loginTimeElement.textContent = getTimeSinceLogin(window.loginTime);
+        
+            // تابع برای محاسبه زمان گذشته از ورود
+            function getTimeSinceLogin(loginTime) {
+                const now = new Date();
+                const diff = now - loginTime;
+                const minutes = Math.floor(diff / 60000);
+                const hours = Math.floor(minutes / 60);
+                
+                if (hours > 0) {
+                    return `${hours} ساعت و ${minutes % 60} دقیقه قبل`;
+                } else {
+                    return `${minutes} دقیقه قبل`;
+                }
             }
-        }
-
-        // جلوگیری از زوم در دستگاه‌های موبایل و مدیریت زمان ورود
-        document.addEventListener('DOMContentLoaded', function() {
-            // جلوگیری از زوم با حرکات چندلمسی
-            document.addEventListener('touchstart', function(e) {
-                if (e.touches.length > 1) {
+        
+            // تابع برای به روز رسانی زمان آنلاین
+            function updateOnlineTime() {
+                const loginTimeElement = document.getElementById('loginTime');
+                if (loginTimeElement && window.loginTime) {
+                    loginTimeElement.textContent = getTimeSinceLogin(window.loginTime);
+                }
+            }
+        
+            // تنظیم Real-time updates
+            function setupRealTimeUpdates() {
+                window.reportsSubscription = supabase
+                    .channel('managerreports-changes')
+                    .on(
+                        'postgres_changes',
+                        {
+                            event: '*', // INSERT, UPDATE, DELETE
+                            schema: 'public',
+                            table: 'managerreports'
+                        },
+                        (payload) => {
+                            console.log('تغییر Real-time در گزارشات مدیریتی:', payload);
+                            
+                            // نمایش نوتیفیکیشن برای کاربر
+                            showUpdateNotification(payload.eventType);
+                            
+                            // بارگذاری مجدد لیست
+                            loadManagerReports();
+                        }
+                    )
+                    .subscribe((status) => {
+                        if (status === 'SUBSCRIBED') {
+                            console.log('✅ Real-time updates برای گزارشات مدیریتی فعال شد');
+                        } else if (status === 'CHANNEL_ERROR') {
+                            console.error('❌ خطا در اتصال Real-time');
+                        } else if (status === 'TIMED_OUT') {
+                            console.warn('اتصال Real-time timeout خورد');
+                            // تلاش مجدد
+                            setTimeout(setupRealTimeUpdates, 5000);
+                        }
+                    });
+            }
+        
+            // نمایش نوتیفیکیشن برای تغییرات
+            function showUpdateNotification(eventType) {
+                const messages = {
+                    'INSERT': '📋 گزارش مدیریتی جدید دریافت شد',
+                    'UPDATE': '✏️ گزارش مدیریتی به‌روزرسانی شد', 
+                    'DELETE': '🗑️ گزارش مدیریتی حذف شد'
+                };
+                
+                const message = messages[eventType] || 'تغییراتی در لیست گزارشات مدیریتی ایجاد شد';
+                
+                // ایجاد نوتیفیکیشن موقت
+                const notification = document.createElement('div');
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 70px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: var(--secondary);
+                    color: white;
+                    padding: 12px 20px;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                    z-index: 1001;
+                    font-size: 14px;
+                    font-weight: 500;
+                    animation: slideDown 0.3s ease;
+                `;
+                
+                notification.innerHTML = `
+                    <i class="fas fa-sync-alt"></i>
+                    ${message}
+                `;
+                
+                document.body.appendChild(notification);
+                
+                // حذف خودکار پس از 3 ثانیه
+                setTimeout(() => {
+                    if (document.body.contains(notification)) {
+                        document.body.removeChild(notification);
+                    }
+                }, 3000);
+            }
+        
+            // اضافه کردن animation برای نوتیفیکیشن
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideDown {
+                    from {
+                        opacity: 0;
+                        transform: translateX(-50%) translateY(-20px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateX(-50%) translateY(0);
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        
+            // جلوگیری از زوم در دستگاه‌های موبایل و مدیریت زمان ورود
+            document.addEventListener('DOMContentLoaded', function() {
+                // جلوگیری از زوم با حرکات چندلمسی
+                document.addEventListener('touchstart', function(e) {
+                    if (e.touches.length > 1) {
+                        e.preventDefault();
+                    }
+                }, { passive: false });
+        
+                let lastTouchEnd = 0;
+                document.addEventListener('touchend', function(e) {
+                    const now = (new Date()).getTime();
+                    if (now - lastTouchEnd <= 300) {
+                        e.preventDefault();
+                    }
+                    lastTouchEnd = now;
+                }, false);
+        
+                document.addEventListener('gesturestart', function(e) {
+                    e.preventDefault();
+                });
+        
+                document.addEventListener('gesturechange', function(e) {
+                    e.preventDefault();
+                });
+        
+                document.addEventListener('gestureend', function(e) {
+                    e.preventDefault();
+                });
+        
+                // مدیریت زمان ورود کاربر
+                const now = new Date();
+                window.loginTime = now;
+                
+                // نمایش زمان ورود
+                const loginTimeElement = document.getElementById('loginTime');
+                const lastLoginTimeElement = document.getElementById('lastLoginTime');
+                const userNameElement = document.getElementById('userName');
+                const userAvatarElement = document.getElementById('userAvatar');
+                
+                if (loginTimeElement) {
+                    loginTimeElement.textContent = formatPersianDateTime(now);
+                }
+                
+                if (lastLoginTimeElement) {
+                    lastLoginTimeElement.textContent = formatPersianDateTime(now);
+                }
+        
+                // به روز رسانی زمان آنلاین هر دقیقه
+                setInterval(updateOnlineTime, 60000);
+        
+                // اتصال به Supabase و لود داده‌ها
+                loadManagerReports();
+                
+                // رویدادهای فیلتر
+                document.getElementById('searchInput').addEventListener('input', filterReports);
+                document.getElementById('statusFilter').addEventListener('change', filterReports);
+                document.getElementById('priorityFilter').addEventListener('change', filterReports);
+                
+                // تغییر وضعیت فعال در نویگیشن
+                const navLinks = document.querySelectorAll('.nav-link');
+                navLinks.forEach(link => {
+                    link.addEventListener('click', function() {
+                        navLinks.forEach(l => l.classList.remove('active'));
+                        this.classList.add('active');
+                    });
+                });
+        
+                // محافظت از صفحه و نمایش اطلاعات کاربر
+                if (typeof auth !== 'undefined') {
+                    if (auth.protectPageByRole('manager')) {
+                        // نمایش اطلاعات کاربر
+                        if (userNameElement) {
+                            userNameElement.textContent = auth.getUsername() || 'مدیر سیستم';
+                        }
+                        if (userAvatarElement) {
+                            userAvatarElement.textContent = auth.getUsername() ? auth.getUsername().charAt(0) : 'M';
+                        }
+                    }
+                } else {
+                    // حالت توسعه - وقتی auth.js وجود ندارد
+                    console.log('حالت توسعه: فایل auth.js یافت نشد');
+                    if (userNameElement) {
+                        userNameElement.textContent = 'مدیر  (توسعه)';
+                    }
+                    if (userAvatarElement) {
+                        userAvatarElement.textContent = 'M';
+                    }
+                }
+            });
+        
+            // جلوگیری از اسکرول هنگام زوم در iOS
+            document.addEventListener('touchmove', function(e) {
+                if(e.scale !== 1) {
                     e.preventDefault();
                 }
             }, { passive: false });
-
-            let lastTouchEnd = 0;
-            document.addEventListener('touchend', function(e) {
-                const now = (new Date()).getTime();
-                if (now - lastTouchEnd <= 300) {
-                    e.preventDefault();
-                }
-                lastTouchEnd = now;
-            }, false);
-
-            document.addEventListener('gesturestart', function(e) {
-                e.preventDefault();
-            });
-
-            document.addEventListener('gesturechange', function(e) {
-                e.preventDefault();
-            });
-
-            document.addEventListener('gestureend', function(e) {
-                e.preventDefault();
-            });
-
-            // مدیریت زمان ورود کاربر
-            const now = new Date();
-            window.loginTime = now;
-            
-            // نمایش زمان ورود
-            const loginTimeElement = document.getElementById('loginTime');
-            const lastLoginTimeElement = document.getElementById('lastLoginTime');
-            const userNameElement = document.getElementById('userName');
-            const userAvatarElement = document.getElementById('userAvatar');
-            
-            if (loginTimeElement) {
-                loginTimeElement.textContent = formatPersianDateTime(now);
+        
+            // توابع کمکی
+            function getStatusText(status) {
+                const statusMap = {
+                    'pending': 'در انتظار بررسی',
+                    'approved': 'تأیید شده',
+                    'rejected': 'رد شده',
+                    'in-progress': 'در دست اقدام',
+                    'completed': 'تکمیل شده',
+                    'referred_to_manager': 'ارجاع به مدیر'
+                };
+                return statusMap[status] || status;
             }
-            
-            if (lastLoginTimeElement) {
-                lastLoginTimeElement.textContent = formatPersianDateTime(now);
+        
+            function getPriorityText(priority) {
+                const priorityMap = {
+                    'low': 'کم',
+                    'medium': 'متوسط',
+                    'high': 'بالا',
+                    'critical': 'بحرانی'
+                };
+                return priorityMap[priority] || priority;
             }
-
-            // به روز رسانی زمان آنلاین هر دقیقه
-            setInterval(updateOnlineTime, 60000);
-
-            // اتصال به Supabase و لود داده‌ها
-            loadManagerReports();
-            
-            // رویدادهای فیلتر
-            document.getElementById('searchInput').addEventListener('input', filterReports);
-            document.getElementById('statusFilter').addEventListener('change', filterReports);
-            document.getElementById('priorityFilter').addEventListener('change', filterReports);
-            
-            // تغییر وضعیت فعال در نویگیشن
-            const navLinks = document.querySelectorAll('.nav-link');
-            navLinks.forEach(link => {
-                link.addEventListener('click', function() {
-                    navLinks.forEach(l => l.classList.remove('active'));
-                    this.classList.add('active');
-                });
-            });
-
-            // محافظت از صفحه و نمایش اطلاعات کاربر
-            if (typeof auth !== 'undefined') {
-                if (auth.protectPageByRole('manager')) {
-                    // نمایش اطلاعات کاربر
-                    if (userNameElement) {
-                        userNameElement.textContent = auth.getUsername() || 'مدیر سیستم';
+        
+            function getPriorityColor(priority) {
+                const colorMap = {
+                    'low': '#2ecc71',
+                    'medium': '#f39c12', 
+                    'high': '#e74c3c',
+                    'critical': '#c0392b'
+                };
+                return colorMap[priority] || '#3498db';
+            }
+        
+            // لود گزارشات از جدول managerreports
+            async function loadManagerReports() {
+                try {
+                    const { data: reports, error } = await supabase
+                        .from('managerreports')
+                        .select('*')
+                        .order('created_at', { ascending: false });
+        
+                    if (error) {
+                        console.error('خطا در دریافت داده‌ها:', error);
+                        // اگر جدول وجود ندارد، نمونه داده ایجاد کن
+                        if (error.code === 'PGRST204') {
+                            await createSampleData();
+                            return;
+                        }
+                        throw error;
                     }
-                    if (userAvatarElement) {
-                        userAvatarElement.textContent = auth.getUsername() ? auth.getUsername().charAt(0) : 'M';
+        
+                    allReports = reports || [];
+                    filteredReports = [...allReports];
+                    
+                    updateStats();
+                    renderReports();
+                    checkCleanupAlert();
+                    
+                    // فعال کردن Real-time updates (فقط یک بار)
+                    if (!window.reportsSubscription) {
+                        setupRealTimeUpdates();
                     }
-                }
-            } else {
-                // حالت توسعه - وقتی auth.js وجود ندارد
-                console.log('حالت توسعه: فایل auth.js یافت نشد');
-                if (userNameElement) {
-                    userNameElement.textContent = 'مدیر  (توسعه)';
-                }
-                if (userAvatarElement) {
-                    userAvatarElement.textContent = 'M';
+                    
+                } catch (error) {
+                    console.error('خطا در دریافت گزارشات مدیریتی:', error);
+                    await alert('خطا در دریافت گزارشات از سرور');
                 }
             }
-        });
-
-        // جلوگیری از اسکرول هنگام زوم در iOS
-        document.addEventListener('touchmove', function(e) {
-            if(e.scale !== 1) {
-                e.preventDefault();
-            }
-        }, { passive: false });
-
-        // اتصال به Supabase
-        const SUPABASE_URL = 'https://kalykylvjqigqlaprlca.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImthbHlreWx2anFpZ3FsYXBybGNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM1NjI1OTcsImV4cCI6MjA3OTEzODU5N30.S8YtogVrxkqYjkgfkGpy4_mS6mqaNxmsHjxnhyBPwEY';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        let allReports = [];
-        let filteredReports = [];
-
-        // توابع کمکی
-        function getStatusText(status) {
-            const statusMap = {
-                'pending': 'در انتظار بررسی',
-                'approved': 'تأیید شده',
-                'rejected': 'رد شده',
-                'in-progress': 'در دست اقدام',
-                'completed': 'تکمیل شده',
-                'referred_to_manager': 'ارجاع به مدیر'
-            };
-            return statusMap[status] || status;
-        }
-
-        function getPriorityText(priority) {
-            const priorityMap = {
-                'low': 'کم',
-                'medium': 'متوسط',
-                'high': 'بالا',
-                'critical': 'بحرانی'
-            };
-            return priorityMap[priority] || priority;
-        }
-
-        function getPriorityColor(priority) {
-            const colorMap = {
-                'low': '#2ecc71',
-                'medium': '#f39c12', 
-                'high': '#e74c3c',
-                'critical': '#c0392b'
-            };
-            return colorMap[priority] || '#3498db';
-        }
-
-        // لود گزارشات از جدول managerreports
-        async function loadManagerReports() {
-            try {
-                const { data: reports, error } = await supabase
-                    .from('managerreports')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-
-                if (error) {
-                    console.error('خطا در دریافت داده‌ها:', error);
-                    // اگر جدول وجود ندارد، نمونه داده ایجاد کن
-                    if (error.code === 'PGRST204') {
-                        await createSampleData();
-                        return;
-                    }
-                    throw error;
+        
+            // توقف Real-time updates هنگام خروج از صفحه
+            document.addEventListener('visibilitychange', function() {
+                if (document.visibilityState === 'hidden' && window.reportsSubscription) {
+                    // وقتی صفحه مخفی شد، subscription را متوقف کن
+                    supabase.removeChannel(window.reportsSubscription);
+                    window.reportsSubscription = null;
+                } else if (document.visibilityState === 'visible' && !window.reportsSubscription) {
+                    // وقتی صفحه مجدداً visible شد، subscription را راه‌اندازی کن
+                    setTimeout(loadManagerReports, 1000);
                 }
-
-                allReports = reports || [];
-                filteredReports = [...allReports];
-                
-                updateStats();
-                renderReports();
-                checkCleanupAlert();
-                
-            } catch (error) {
-                console.error('خطا در دریافت گزارشات مدیریتی:', error);
-                await alert('خطا در دریافت گزارشات از سرور');
-            }
-        }
-
-
-        // آپدیت آمار
-        function updateStats() {
-            const totalReports = allReports.length;
-            const pendingReports = allReports.filter(r => 
-                !r.status || r.status === 'pending' || r.status === 'in-progress'
-            ).length;
-            const completedReports = allReports.filter(r => r.status === 'completed').length;
-            const referredReports = allReports.filter(r => r.status === 'referred_to_manager').length;
-
-            document.getElementById('totalReports').textContent = totalReports;
-            document.getElementById('pendingReports').textContent = pendingReports;
-            document.getElementById('completedReports').textContent = completedReports;
-            document.getElementById('referredReports').textContent = referredReports;
-            document.getElementById('reportsCount').textContent = `(${filteredReports.length} گزارش)`;
-
-            // محاسبه معیارهای عملکرد
-            updatePerformanceMetrics();
-        }
-
-        // آپدیت معیارهای عملکرد
-        function updatePerformanceMetrics() {
-            const completedReports = allReports.filter(r => r.status === 'completed');
-            
-            if (completedReports.length > 0) {
-                // میانگین زمان پاسخگویی
-                const totalResponseTime = completedReports.reduce((sum, report) => {
-                    const createdAt = new Date(report.created_at);
-                    const completedAt = new Date(report.completed_at || report.updated_at || report.created_at);
-                    const diffHours = (completedAt - createdAt) / (1000 * 60 * 60);
-                    return sum + (isNaN(diffHours) ? 0 : diffHours);
-                }, 0);
-                
-                const avgResponseTime = (totalResponseTime / completedReports.length).toFixed(1);
-                document.getElementById('avgResponseTime').textContent = `${avgResponseTime} ساعت`;
-                document.getElementById('responseDeviation').textContent = `${(avgResponseTime - 4).toFixed(1)} ساعت`;
-
-                // نرخ تکمیل موفق
-                const successfulCompletions = completedReports.filter(r => 
-                    !r.decision_status || r.decision_status === 'approved'
+            });
+        
+            // توقف subscription هنگام بسته شدن صفحه
+            window.addEventListener('beforeunload', function() {
+                if (window.reportsSubscription) {
+                    supabase.removeChannel(window.reportsSubscription);
+                }
+            });
+        
+            // آپدیت آمار
+            function updateStats() {
+                const totalReports = allReports.length;
+                const pendingReports = allReports.filter(r => 
+                    !r.status || r.status === 'pending' || r.status === 'in-progress'
                 ).length;
-                const completionRate = ((successfulCompletions / completedReports.length) * 100).toFixed(1);
-                document.getElementById('completionRate').textContent = `${completionRate}%`;
-                document.getElementById('completionDeviation').textContent = `${(completionRate - 95).toFixed(1)}%`;
-            } else {
-                document.getElementById('avgResponseTime').textContent = '-';
-                document.getElementById('responseDeviation').textContent = '-';
-                document.getElementById('completionRate').textContent = '-';
-                document.getElementById('completionDeviation').textContent = '-';
+                const completedReports = allReports.filter(r => r.status === 'completed').length;
+                const referredReports = allReports.filter(r => r.status === 'referred_to_manager').length;
+        
+                document.getElementById('totalReports').textContent = totalReports;
+                document.getElementById('pendingReports').textContent = pendingReports;
+                document.getElementById('completedReports').textContent = completedReports;
+                document.getElementById('referredReports').textContent = referredReports;
+                document.getElementById('reportsCount').textContent = `(${filteredReports.length} گزارش)`;
+        
+                // محاسبه معیارهای عملکرد
+                updatePerformanceMetrics();
             }
-            
-            document.getElementById('avgRepairCost').textContent = '-';
-            document.getElementById('costDeviation').textContent = '-';
-        }
-
-        // نمایش گزارشات
-        function renderReports() {
-            const reportsList = document.getElementById('reportsList');
-            
-            if (!filteredReports || filteredReports.length === 0) {
-                reportsList.innerHTML = `
-                    <div style="text-align: center; padding: 40px; color: #666;">
-                        <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 16px; color: #ddd;"></i>
-                        <h3>گزارشی یافت نشد</h3>
-                        <p>هیچ گزارشی با فیلترهای انتخاب شده مطابقت ندارد.</p>
-                    </div>
-                `;
-                return;
-            }
-
-            reportsList.innerHTML = filteredReports.map(report => {
-                const status = report.status || 'pending';
-                const priority = report.priority || 'medium';
-                const priorityColor = getPriorityColor(priority);
+        
+            // آپدیت معیارهای عملکرد
+            function updatePerformanceMetrics() {
+                const completedReports = allReports.filter(r => r.status === 'completed');
                 
-                return `
-                <div class="report-item">
-                    <div class="report-info">
-                        <div class="report-icon" style="background: ${priorityColor}">
-                            <i class="fas fa-clipboard-check"></i>
+                if (completedReports.length > 0) {
+                    // میانگین زمان پاسخگویی
+                    const totalResponseTime = completedReports.reduce((sum, report) => {
+                        const createdAt = new Date(report.created_at);
+                        const completedAt = new Date(report.completed_at || report.updated_at || report.created_at);
+                        const diffHours = (completedAt - createdAt) / (1000 * 60 * 60);
+                        return sum + (isNaN(diffHours) ? 0 : diffHours);
+                    }, 0);
+                    
+                    const avgResponseTime = (totalResponseTime / completedReports.length).toFixed(1);
+                    document.getElementById('avgResponseTime').textContent = `${avgResponseTime} ساعت`;
+                    document.getElementById('responseDeviation').textContent = `${(avgResponseTime - 4).toFixed(1)} ساعت`;
+        
+                    // نرخ تکمیل موفق
+                    const successfulCompletions = completedReports.filter(r => 
+                        !r.decision_status || r.decision_status === 'approved'
+                    ).length;
+                    const completionRate = ((successfulCompletions / completedReports.length) * 100).toFixed(1);
+                    document.getElementById('completionRate').textContent = `${completionRate}%`;
+                    document.getElementById('completionDeviation').textContent = `${(completionRate - 95).toFixed(1)}%`;
+                } else {
+                    document.getElementById('avgResponseTime').textContent = '-';
+                    document.getElementById('responseDeviation').textContent = '-';
+                    document.getElementById('completionRate').textContent = '-';
+                    document.getElementById('completionDeviation').textContent = '-';
+                }
+                
+                document.getElementById('avgRepairCost').textContent = '-';
+                document.getElementById('costDeviation').textContent = '-';
+            }
+        
+            // نمایش گزارشات
+            function renderReports() {
+                const reportsList = document.getElementById('reportsList');
+                
+                if (!filteredReports || filteredReports.length === 0) {
+                    reportsList.innerHTML = `
+                        <div style="text-align: center; padding: 40px; color: #666;">
+                            <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 16px; color: #ddd;"></i>
+                            <h3>گزارشی یافت نشد</h3>
+                            <p>هیچ گزارشی با فیلترهای انتخاب شده مطابقت ندارد.</p>
                         </div>
-                        <div class="report-content">
-                            <div class="report-title">${report.machine_name || 'بدون عنوان'}</div>
-                            <div class="report-desc">${report.problem_description || 'بدون توضیحات'}</div>
-                            <div style="display: flex; gap: 10px; margin-top: 6px; font-size: 11px; color: #666; flex-wrap: wrap;">
-                                <span><strong>گزارش‌دهنده:</strong> ${report.reporter_name || 'نامشخص'}</span>
-                                <span><strong>وضعیت:</strong> ${getStatusText(status)}</span>
-                                <span><strong>اولویت:</strong> ${getPriorityText(priority)}</span>
-                                <span><strong>تاریخ:</strong> ${new Date(report.created_at).toLocaleDateString('fa-IR')}</span>
+                    `;
+                    return;
+                }
+        
+                reportsList.innerHTML = filteredReports.map(report => {
+                    const status = report.status || 'pending';
+                    const priority = report.priority || 'medium';
+                    const priorityColor = getPriorityColor(priority);
+                    
+                    return `
+                    <div class="report-item">
+                        <div class="report-info">
+                            <div class="report-icon" style="background: ${priorityColor}">
+                                <i class="fas fa-clipboard-check"></i>
                             </div>
-                            ${report.manager_message ? `
-                                <div style="margin-top: 6px; padding: 6px; background: #fff3cd; border-radius: 4px; font-size: 11px;">
-                                    <strong>یادداشت مدیر:</strong> ${report.manager_message}
+                            <div class="report-content">
+                                <div class="report-title">${report.machine_name || 'بدون عنوان'}</div>
+                                <div class="report-desc">${report.problem_description || 'بدون توضیحات'}</div>
+                                <div style="display: flex; gap: 10px; margin-top: 6px; font-size: 11px; color: #666; flex-wrap: wrap;">
+                                    <span><strong>گزارش‌دهنده:</strong> ${report.reporter_name || 'نامشخص'}</span>
+                                    <span><strong>وضعیت:</strong> ${getStatusText(status)}</span>
+                                    <span><strong>اولویت:</strong> ${getPriorityText(priority)}</span>
+                                    <span><strong>تاریخ:</strong> ${new Date(report.created_at).toLocaleDateString('fa-IR')}</span>
                                 </div>
-                            ` : ''}
+                                ${report.manager_message ? `
+                                    <div style="margin-top: 6px; padding: 6px; background: #fff3cd; border-radius: 4px; font-size: 11px;">
+                                        <strong>یادداشت مدیر:</strong> ${report.manager_message}
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="download-btn" onclick="downloadSingleReport('${report.id}')" title="دانلود این گزارش">
+                                <i class="fas fa-download"></i>
+                                دانلود
+                            </button>
                         </div>
                     </div>
-                    <div style="display: flex; gap: 8px;">
-                        <button class="download-btn" onclick="downloadSingleReport('${report.id}')" title="دانلود این گزارش">
-                            <i class="fas fa-download"></i>
-                            دانلود
-                        </button>
-                    </div>
-                </div>
-                `;
-            }).join('');
-        }
-
-        // فیلتر کردن گزارشات
-        function filterReports() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const statusFilter = document.getElementById('statusFilter').value;
-            const priorityFilter = document.getElementById('priorityFilter').value;
-
-            filteredReports = allReports.filter(report => {
-                const matchesSearch = 
-                    (report.machine_name && report.machine_name.toLowerCase().includes(searchTerm)) || 
-                    (report.problem_description && report.problem_description.toLowerCase().includes(searchTerm)) ||
-                    (report.reporter_name && report.reporter_name.toLowerCase().includes(searchTerm));
-                
-                const reportStatus = report.status || 'pending';
-                const matchesStatus = statusFilter === 'all' || reportStatus === statusFilter;
-                
-                const reportPriority = report.priority || 'medium';
-                const matchesPriority = priorityFilter === 'all' || reportPriority === priorityFilter;
-                
-                return matchesSearch && matchesStatus && matchesPriority;
-            });
-
-            renderReports();
-            updateStats();
-        }
-
-        // بررسی هشدار پاک‌سازی
-        function checkCleanupAlert() {
-            const now = new Date();
-            const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-            const daysUntilCleanup = Math.ceil((nextMonth - now) / (1000 * 60 * 60 * 24));
-            
-            if (daysUntilCleanup <= 1) {
-                const alertElement = document.getElementById('cleanupAlert');
-                const messageElement = document.getElementById('cleanupMessage');
-                
-                messageElement.textContent = 
-                    `داده‌های جدول مدیریت تا ${daysUntilCleanup} روز دیگر پاک خواهند شد. لطفاً از اطلاعات بکاپ بگیرید.`;
-                
-                alertElement.style.display = 'block';
+                    `;
+                }).join('');
             }
-        }
-
-        // بستن هشدار
-        function dismissAlert() {
-            document.getElementById('cleanupAlert').style.display = 'none';
-        }
-
-        // دانلود تمام داده‌ها
-        async function downloadAllData() {
-            await downloadData(allReports, 'همه_گزارشات_مدیریتی');
-        }
-
-        // دانلود داده‌های فیلتر شده
-        async function downloadFilteredData() {
-            await downloadData(filteredReports, 'گزارشات_فیلتر_شده');
-        }
-
-        // دانلود یک گزارش خاص
-        async function downloadSingleReport(reportId) {
-            const report = allReports.find(r => r.id === reportId);
-            if (report) {
-                await downloadData([report], `گزارش_${report.machine_name || report.id}`);
-            }
-        }
-
-        // تابع اصلی برای دانلود داده‌ها
-        async function downloadData(data, filename) {
-            try {
-                // فرمت‌های مختلف برای دانلود
-                const csvData = convertToCSV(data);
-                const jsonData = JSON.stringify(data, null, 2);
-
-                // ایجاد لینک‌های دانلود
-                createDownloadLink(csvData, `${filename}.csv`, 'text/csv');
-                createDownloadLink(jsonData, `${filename}.json`, 'application/json');
-
-                await alert(`داده‌ها با موفقیت آماده شدند. فرمت‌های CSV و JSON در دسترس هستند.`);
-                
-            } catch (error) {
-                console.error('خطا در تولید فایل:', error);
-                await alert('خطا در تولید فایل دانلودی');
-            }
-        }
-
-        // تبدیل به CSV
-        function convertToCSV(data) {
-            if (!data.length) return '';
-            
-            const headers = Object.keys(data[0]);
-            const csvRows = [headers.join(',')];
-            
-            for (const row of data) {
-                const values = headers.map(header => {
-                    const value = row[header];
-                    // مدیریت مقادیر null/undefined
-                    if (value === null || value === undefined) return '';
-                    // مدیریت رشته‌ها با کاما
-                    return typeof value === 'string' ? `"${value.replace(/"/g, '""')}"` : value;
+        
+            // فیلتر کردن گزارشات
+            function filterReports() {
+                const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+                const statusFilter = document.getElementById('statusFilter').value;
+                const priorityFilter = document.getElementById('priorityFilter').value;
+        
+                filteredReports = allReports.filter(report => {
+                    const matchesSearch = 
+                        (report.machine_name && report.machine_name.toLowerCase().includes(searchTerm)) || 
+                        (report.problem_description && report.problem_description.toLowerCase().includes(searchTerm)) ||
+                        (report.reporter_name && report.reporter_name.toLowerCase().includes(searchTerm));
+                    
+                    const reportStatus = report.status || 'pending';
+                    const matchesStatus = statusFilter === 'all' || reportStatus === statusFilter;
+                    
+                    const reportPriority = report.priority || 'medium';
+                    const matchesPriority = priorityFilter === 'all' || reportPriority === priorityFilter;
+                    
+                    return matchesSearch && matchesStatus && matchesPriority;
                 });
-                csvRows.push(values.join(','));
+        
+                renderReports();
+                updateStats();
             }
-            
-            return csvRows.join('\n');
-        }
-
-        // ایجاد لینک دانلود
-        function createDownloadLink(data, filename, mimeType) {
-            const blob = new Blob([data], { type: mimeType });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = filename;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-        }
-    </script>
+        
+            // بررسی هشدار پاک‌سازی
+            function checkCleanupAlert() {
+                const now = new Date();
+                const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+                const daysUntilCleanup = Math.ceil((nextMonth - now) / (1000 * 60 * 60 * 24));
+                
+                if (daysUntilCleanup <= 1) {
+                    const alertElement = document.getElementById('cleanupAlert');
+                    const messageElement = document.getElementById('cleanupMessage');
+                    
+                    messageElement.textContent = 
+                        `داده‌های جدول مدیریت تا ${daysUntilCleanup} روز دیگر پاک خواهند شد. لطفاً از اطلاعات بکاپ بگیرید.`;
+                    
+                    alertElement.style.display = 'block';
+                }
+            }
+        
+            // بستن هشدار
+            function dismissAlert() {
+                document.getElementById('cleanupAlert').style.display = 'none';
+            }
+        
+            // دانلود تمام داده‌ها
+            async function downloadAllData() {
+                await downloadData(allReports, 'همه_گزارشات_مدیریتی');
+            }
+        
+            // دانلود داده‌های فیلتر شده
+            async function downloadFilteredData() {
+                await downloadData(filteredReports, 'گزارشات_فیلتر_شده');
+            }
+        
+            // دانلود یک گزارش خاص
+            async function downloadSingleReport(reportId) {
+                const report = allReports.find(r => r.id === reportId);
+                if (report) {
+                    await downloadData([report], `گزارش_${report.machine_name || report.id}`);
+                }
+            }
+        
+            // تابع اصلی برای دانلود داده‌ها
+            async function downloadData(data, filename) {
+                try {
+                    // فرمت‌های مختلف برای دانلود
+                    const csvData = convertToCSV(data);
+                    // const jsonData = JSON.stringify(data, null, 2);
+        
+                    // ایجاد لینک‌های دانلود
+                    createDownloadLink(csvData, `${filename}.csv`, 'text/csv');
+                    // createDownloadLink(jsonData, `${filename}.json`, 'application/json');
+        
+                    await alert(`داده‌ها با موفقیت آماده شدند. فرمت‌های CSV  در دسترس هستند.`);
+                    
+                } catch (error) {
+                    console.error('خطا در تولید فایل:', error);
+                    await alert('خطا در تولید فایل دانلودی');
+                }
+            }
+        
+            // تبدیل به CSV
+            function convertToCSV(data) {
+                if (!data.length) return '';
+                
+                const headers = Object.keys(data[0]);
+                const csvRows = [headers.join(',')];
+                
+                for (const row of data) {
+                    const values = headers.map(header => {
+                        const value = row[header];
+                        // مدیریت مقادیر null/undefined
+                        if (value === null || value === undefined) return '';
+                        // مدیریت رشته‌ها با کاما
+                        return typeof value === 'string' ? `"${value.replace(/"/g, '""')}"` : value;
+                    });
+                    csvRows.push(values.join(','));
+                }
+                
+                return csvRows.join('\n');
+            }
+        
+            // ایجاد لینک دانلود
+            function createDownloadLink(data, filename, mimeType) {
+                const blob = new Blob([data], { type: mimeType });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            }
+        </script>
 </body>
 </html>
