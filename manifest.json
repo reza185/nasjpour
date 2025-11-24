@@ -1,6 +1,6 @@
 {
   "name": "TPM",
-  "short_name": "TPM",
+  "short_name": "TPM", 
   "description": "برنامه هوشمند میهن چاپ سپاهان",
   "start_url": "/nasjpour/",
   "scope": "/nasjpour/",
@@ -15,9 +15,10 @@
       "type": "image/png"
     },
     {
-      "src": "icons/icon-512x512.png", 
-      "sizes": "512x512",
+      "src": "icons/icon-512x512.png",
+      "sizes": "512x512", 
       "type": "image/png"
     }
-  ]
+  ],
+  "prefer_related_applications": false
 }
