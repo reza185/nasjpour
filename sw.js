@@ -2,8 +2,6 @@ const CACHE_NAME = 'tpm-v1.2';
 const urlsToCache = [
   './',
   './index.html',
-  './styles.css',
-  './app.js',
   './Logo.png',
   './icons/icon-192x192.png',
   './icons/icon-512x512.png',
