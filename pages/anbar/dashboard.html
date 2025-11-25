@@ -113,7 +113,7 @@
         }
 
         .logo-icon {
-            background: var(--accent);
+            background: transparent;
             width: 35px;
             height: 35px;
             border-radius: 8px;
@@ -826,7 +826,7 @@
             <div class="nav-container">
                 <div class="logo">
                     <div class="logo-icon">
-                        <i class="fas fa-warehouse"></i>
+                        <img src="../../Logo.png" style="max-block-size: 100%;">
                     </div>
                     <div class="logo-text">TPM PRO</div>
                 </div>
@@ -893,10 +893,7 @@
                             <label class="filter-label">دسته‌بندی</label>
                             <select class="filter-select" id="categoryFilter">
                                 <option value="">همه دسته‌ها</option>
-                                <option value="قطعات یدکی">قطعات یدکی</option>
-                                <option value="لوازم مصرفی">لوازم مصرفی</option>
-                                <option value="تجهیزات">تجهیزات</option>
-                                <option value="مواد اولیه">مواد اولیه</option>
+                                <!-- گزینه‌ها به صورت داینامیک اضافه می‌شوند -->
                             </select>
                         </div>
                         
@@ -937,7 +934,7 @@
                                 <th>واحد</th>
                                 <th>وضعیت</th>
                                 <th>محل نگهداری</th>
-                                <th>اقدامات</th>
+                                 <th>اقدامات</th> -->
                             </tr>
                         </thead>
                         <tbody id="inventoryTableBody">
@@ -1155,6 +1152,44 @@
             }
         }
 
+        // ==================== FILTER FUNCTIONS ====================
+        // تابع برای استخراج دسته‌بندی‌های منحصربه‌فرد از داده‌ها
+        function getUniqueCategories(data) {
+            const categories = new Set();
+            data.forEach(item => {
+                if (item.category && item.category.trim() !== '') {
+                    categories.add(item.category);
+                }
+            });
+            return Array.from(categories).sort();
+        }
+
+        // تابع برای پر کردن فیلتر دسته‌بندی
+        function populateCategoryFilter(categories) {
+            const categoryFilter = document.getElementById('categoryFilter');
+            
+            // حذف گزینه‌های قبلی (به جز گزینه اول)
+            while (categoryFilter.children.length > 1) {
+                categoryFilter.removeChild(categoryFilter.lastChild);
+            }
+            
+            // اضافه کردن گزینه‌های جدید
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category;
+                categoryFilter.appendChild(option);
+            });
+            
+            console.log(`✅ فیلتر دسته‌بندی با ${categories.length} گزینه به‌روز شد`);
+        }
+
+        // تابع برای به‌روزرسانی فیلترها
+        function updateFilters() {
+            const categories = getUniqueCategories(inventoryData);
+            populateCategoryFilter(categories);
+        }
+
         // ==================== SUPABASE INITIALIZATION ====================
         function initializeSupabase() {
             try {
@@ -1227,6 +1262,7 @@
             try {
                 console.log('🔄 لود داده‌های انبار...');
                 inventoryData = await fetchDataFromSupabase();
+                updateFilters(); // اضافه کردن این خط برای به‌روزرسانی فیلترها
                 renderInventoryTable();
                 updateStats();
             } catch (error) {
