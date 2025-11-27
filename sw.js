@@ -1,26 +1,29 @@
-// sw.js - نسخه اصلاح شده با مدیریت خطا
-const CACHE_NAME = 'tpm-v5';
+// sw.js - نسخه اصلاح شده
+const CACHE_NAME = 'tpm-v5'; // نسخه رو عوض کن
 
-// 🔥 فقط فایل‌هایی که مطمئنی وجود دارن رو اینجا قرار بده
 const urlsToCache = [
   './',
-  './index.html'
-  // فایل‌های دیگه رو بعداً اضافه می‌کنیم
+  './index.html',
+  './styles.css',
+  './app.js', 
+  './Logo.png',
+  './icons/icon-192x192.png',
+  './icons/icon-512x512.png',
+  './manifest.json'
 ];
 
-// 🔥 لیست صفحاتی که نباید کش بشن
+// 🔥 لیست صفحاتی که نباید کش بشن - نسخه اصلاح شده
 const NO_CACHE_PAGES = [
-  // آدرس صفحات گزارشات و APIهای خودت رو اینجا وارد کن
-  // مثال: '/reports', '/api/', '/data/'
-  './pages/anbar/dashboard.html',
-'./pages/manager/reports.html',
-'./pages/manager/warehouse.html',
-'./pages/operator/troubleshooting.html',
-'./pages/manager/dashboard.html',
-'./pages/superviser/dashboard.html',
-'./pages/superviser/RequestsScreen.html',
-'./pages/superviser/troubleshooting.html',
-'./pages/superviser/warehouse.html'
+  // از مسیر کامل استفاده کن
+  '/nasjpour/pages/anbar/dashboard.html',
+  '/nasjpour/pages/manager/reports.html',
+  '/nasjpour/pages/manager/warehouse.html',
+  '/nasjpour/pages/operator/troubleshooting.html',
+  '/nasjpour/pages/manager/dashboard.html',
+  '/nasjpour/pages/superviser/dashboard.html',
+  '/nasjpour/pages/superviser/RequestsScreen.html',
+  '/nasjpour/pages/superviser/troubleshooting.html',
+  '/nasjpour/pages/superviser/warehouse.html'
 ];
 
 self.addEventListener('install', event => {
@@ -30,28 +33,10 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('📦 Opening cache...');
-        
-        // 🔥 روش بهتر: فایل‌ها رو یکی یکی اضافه کن با مدیریت خطا
-        const cachePromises = urlsToCache.map(url => {
-          return fetch(url)
-            .then(response => {
-              if (response.ok) {
-                return cache.put(url, response);
-              }
-              console.log('⚠️ Failed to cache:', url);
-              return Promise.resolve(); // حتی اگر خطا داشت، ادامه بده
-            })
-            .catch(error => {
-              console.log('⚠️ Error caching:', url, error);
-              return Promise.resolve(); // حتی اگر خطا داشت، ادامه بده
-            });
+        console.log('📦 Caching app shell...');
+        return cache.addAll(urlsToCache).catch(error => {
+          console.log('⚠️ Some files failed to cache:', error);
         });
-        
-        return Promise.all(cachePromises);
-      })
-      .then(() => {
-        console.log('✅ Cache completed (with possible missing files)');
       })
   );
 });
@@ -76,49 +61,62 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-  // فقط درخواست‌های GET رو مدیریت کن
   if (event.request.method !== 'GET') return;
   
-  const url = event.request.url;
+  const url = new URL(event.request.url);
   
-  // چک کن آیا این درخواست نباید کش بشه
-  const shouldNotCache = NO_CACHE_PAGES.some(page => url.includes(page));
+  // 🔥 چک کن آیا این درخواست جزو صفحات بدون کش هست
+  const shouldNotCache = NO_CACHE_PAGES.some(page => 
+    url.pathname.includes(page) || 
+    url.pathname.endsWith(page.replace('./', '/'))
+  );
+  
+  console.log('🌐 Fetch:', url.pathname, shouldNotCache ? '(NO-CACHE)' : '(CACHE)');
   
   if (shouldNotCache) {
-    // 🔥 برای صفحات مهم: فقط از شبکه
-    event.respondWith(fetch(event.request));
+    // 🔥 برای صفحات گزارشات: فقط از شبکه - بدون کش
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          console.log('📡 Network response for:', url.pathname);
+          return response;
+        })
+        .catch(error => {
+          console.log('❌ Network failed for:', url.pathname);
+          // اگر شبکه در دسترس نبود، صفحه خطا نشون بده
+          return new Response('Network error', { status: 408 });
+        })
+    );
   } else {
-    // برای بقیه: کش اول
+    // برای فایل‌های استاتیک: کش اول
     event.respondWith(
       caches.match(event.request)
         .then(response => {
           if (response) {
+            console.log('📂 From cache:', url.pathname);
             return response;
           }
           
-          return fetch(event.request).then(fetchResponse => {
-            // فقط پاسخ‌های معتبر رو کش کن
-            if (!fetchResponse || fetchResponse.status !== 200) {
+          console.log('🌐 Fetching from network:', url.pathname);
+          return fetch(event.request)
+            .then(fetchResponse => {
+              // فقط پاسخ‌های موفق رو کش کن
+              if (fetchResponse && fetchResponse.status === 200) {
+                const responseToCache = fetchResponse.clone();
+                caches.open(CACHE_NAME)
+                  .then(cache => {
+                    cache.put(event.request, responseToCache);
+                  });
+              }
               return fetchResponse;
-            }
-            
-            const responseToCache = fetchResponse.clone();
-            caches.open(CACHE_NAME)
-              .then(cache => {
-                cache.put(event.request, responseToCache);
-              });
-              
-            return fetchResponse;
-          });
-        })
-        .catch(() => {
-          // اگر آفلاین هستی و فایل در کش نیست
-          if (event.request.destination === 'document') {
-            return caches.match('./index.html');
-          }
+            })
+            .catch(() => {
+              // اگر آفلاین هستی
+              if (event.request.destination === 'document') {
+                return caches.match('./index.html');
+              }
+            });
         })
     );
   }
 });
-
-
