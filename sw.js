@@ -1,29 +1,17 @@
-// sw.js - نسخه اصلاح شده
-const CACHE_NAME = 'tpm-v1.0.0';
+// sw.js - نسخه اصلاح شده با مدیریت خطا
+const CACHE_NAME = 'tpm-v5';
+
+// 🔥 فقط فایل‌هایی که مطمئنی وجود دارن رو اینجا قرار بده
 const urlsToCache = [
   './',
-  './index.html',
-  './styles.css',
-  './app.js',
-  './Logo.png',
-  './icons/icon-192x192.png',
-  './icons/icon-512x512.png',
-  './manifest.json'
+  './index.html'
+  // فایل‌های دیگه رو بعداً اضافه می‌کنیم
 ];
 
 // 🔥 لیست صفحاتی که نباید کش بشن
 const NO_CACHE_PAGES = [
   // آدرس صفحات گزارشات و APIهای خودت رو اینجا وارد کن
-  
-'./pages/anbar/dashboard.html',
-'./pages/manager/reports.html',
-'./pages/manager/warehouse.html',
-'./pages/operator/troubleshooting.html',
-'./pages/manager/dashboard.html',
-'./pages/superviser/dashboard.html',
-'./pages/superviser/RequestsScreen.html',
-'./pages/superviser/troubleshooting.html',
-'./pages/superviser/warehouse.html'
+  // مثال: '/reports', '/api/', '/data/'
 ];
 
 self.addEventListener('install', event => {
@@ -34,11 +22,27 @@ self.addEventListener('install', event => {
     caches.open(CACHE_NAME)
       .then(cache => {
         console.log('📦 Opening cache...');
-        // اضافه کردن فایل‌ها با مدیریت خطا
-        return cache.addAll(urlsToCache).catch(error => {
-          console.log('⚠️ Some files failed to cache:', error);
-          // حتی اگر بعضی فایل‌ها کش نشدن، ادامه بده
+        
+        // 🔥 روش بهتر: فایل‌ها رو یکی یکی اضافه کن با مدیریت خطا
+        const cachePromises = urlsToCache.map(url => {
+          return fetch(url)
+            .then(response => {
+              if (response.ok) {
+                return cache.put(url, response);
+              }
+              console.log('⚠️ Failed to cache:', url);
+              return Promise.resolve(); // حتی اگر خطا داشت، ادامه بده
+            })
+            .catch(error => {
+              console.log('⚠️ Error caching:', url, error);
+              return Promise.resolve(); // حتی اگر خطا داشت، ادامه بده
+            });
         });
+        
+        return Promise.all(cachePromises);
+      })
+      .then(() => {
+        console.log('✅ Cache completed (with possible missing files)');
       })
   );
 });
@@ -79,15 +83,13 @@ self.addEventListener('fetch', event => {
     event.respondWith(
       caches.match(event.request)
         .then(response => {
-          // اگر در کش پیدا شد برگردون
           if (response) {
             return response;
           }
           
-          // اگر در کش نبود از شبکه بگیر و کش کن
           return fetch(event.request).then(fetchResponse => {
             // فقط پاسخ‌های معتبر رو کش کن
-            if (!fetchResponse || fetchResponse.status !== 200 || fetchResponse.type !== 'basic') {
+            if (!fetchResponse || fetchResponse.status !== 200) {
               return fetchResponse;
             }
             
@@ -101,7 +103,7 @@ self.addEventListener('fetch', event => {
           });
         })
         .catch(() => {
-          // اگر آفلاین هستی و فایل در کش نیست، صفحه اصلی رو برگردون
+          // اگر آفلاین هستی و فایل در کش نیست
           if (event.request.destination === 'document') {
             return caches.match('./index.html');
           }
@@ -109,4 +111,3 @@ self.addEventListener('fetch', event => {
     );
   }
 });
-
