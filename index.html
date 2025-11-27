@@ -21,7 +21,7 @@
     <!-- Icons -->
     <link rel="icon" href="icons/icon-192x192.png">
     <link rel="apple-touch-icon" href="icons/icon-192x192.png">
-     <script>// در فایل index.html یا main.js
+    <script>// در فایل index.html یا main.js
         // جلوگیری از نمایش badge مرورگر
         window.addEventListener('beforeinstallprompt', (e) => {
           e.preventDefault();
@@ -48,47 +48,6 @@
               });
           });
         }</script>
-    <script>// این کد رو به فایل JS اصلی اضافه کن
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  
-  // نمایش دکمه نصب خودمان
-  showInstallButton();
-});
-
-function showInstallButton() {
-  // ایجاد دکمه نصب
-  const installBtn = document.createElement('button');
-  installBtn.textContent = 'نصب برنامه';
-  installBtn.style.cssText = `
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background: #007bff;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-    z-index: 1000;
-  `;
-  
-  installBtn.onclick = () => {
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      deferredPrompt.userChoice.then((choiceResult) => {
-        if (choiceResult.outcome === 'accepted') {
-          console.log('✅ کاربر نصب را پذیرفت');
-        }
-        deferredPrompt = null;
-        installBtn.remove();
-      });
-    }
-  };
-  
-  document.body.appendChild(installBtn);
-}</script>
     <style>
         * {
             margin: 0;
@@ -518,10 +477,10 @@ function showInstallButton() {
                 </div>
                 <div class="logo-text">
                     <div class="logo-main">TPM PRO</div>
-                    <div class="logo-sub">سیستم مدیریت تولید کارخانه رنگین چاپ سپاهان</div>
+                    <div class="logo-sub">سیستم مدیریت تولید شرکت رنگیم چاپ سپاهان</div>
                 </div>
             </div>
-            <p class="tagline">بهترین راهکار برای مدیریت نگهداری و تعمیرات در محیط‌های صنعتی</p>
+            <p class="tagline">بهترین راهکار برای مدیریت نگهداری و تعمیرات تولید در محیط‌های صنعتی</p>
         </div>
         
         <div class="main-content">
@@ -691,6 +650,116 @@ function showInstallButton() {
             e.preventDefault();
             await handleLogin();
         });
+
+
+        // 🔄 مدیریت آپدیت سرویس ورکر
+if ('serviceWorker' in navigator) {
+  let newServiceWorker;
+  
+  navigator.serviceWorker.register('/sw.js')
+    .then(registration => {
+      console.log('✅ Service Worker registered');
+      
+      // چک کردن آپدیت
+      registration.addEventListener('updatefound', () => {
+        newServiceWorker = registration.installing;
+        console.log('🔄 New Service Worker found');
+        
+        newServiceWorker.addEventListener('statechange', () => {
+          if (newServiceWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            // نمایش الرت آپدیت
+            showUpdateAlert();
+          }
+        });
+      });
+    })
+    .catch(error => {
+      console.error('❌ Service Worker registration failed:', error);
+    });
+
+  // چک کردن آپدیت در فواصل منظم
+  setInterval(() => {
+    navigator.serviceWorker.ready.then(registration => {
+      registration.update();
+    });
+  }, 2 * 60 * 60 * 1000); // هر 2 ساعت
+
+  // گوش دادن به تغییرات سرویس ورکر
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    console.log('🔄 Controller changed - reloading page');
+    window.location.reload();
+  });
+}
+
+// 🎨 نمایش الرت آپدیت زیباتر
+function showUpdateAlert() {
+  // ایجاد المان الرت
+  const updateAlert = document.createElement('div');
+  updateAlert.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #4CAF50;
+    color: white;
+    padding: 15px;
+    border-radius: 8px;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    font-family: Arial, sans-serif;
+    max-width: 300px;
+  `;
+  
+  updateAlert.innerHTML = `
+    <div style="display: flex; align-items: center; margin-bottom: 10px;">
+      <span style="font-size: 20px; margin-right: 10px;">🔄</span>
+      <strong>بروزرسانی موجود است!</strong>
+    </div>
+    <p style="margin: 0 0 15px 0; font-size: 14px;">نسخه جدید برنامه آماده است. برای دریافت آخرین ویژگی‌ها بروزرسانی کنید.</p>
+    <div style="display: flex; gap: 10px;">
+      <button onclick="updateApp()" style="
+        background: white; 
+        color: #4CAF50; 
+        border: none; 
+        padding: 8px 16px; 
+        border-radius: 4px; 
+        cursor: pointer;
+        font-weight: bold;
+        flex: 1;
+      ">بروزرسانی</button>
+      <button onclick="this.parentElement.parentElement.parentElement.remove()" style="
+        background: transparent; 
+        color: white; 
+        border: 1px solid white; 
+        padding: 8px 16px; 
+        border-radius: 4px; 
+        cursor: pointer;
+        flex: 1;
+      ">بعداً</button>
+    </div>
+  `;
+  
+  document.body.appendChild(updateAlert);
+}
+
+function updateApp() {
+  if (newServiceWorker) {
+    newServiceWorker.postMessage({ action: 'skipWaiting' });
+  }
+  setTimeout(() => {
+    window.location.reload();
+  }, 100);
+}
+
+// 📱 تشخیص آنلاین/آفلاین
+window.addEventListener('online', () => {
+  console.log('🌐 App is online');
+  // می‌تونی نوتیفیکیشن آنلاین بودن رو نشون بدی
+});
+
+window.addEventListener('offline', () => {
+  console.log('📴 App is offline');
+  // می‌تونی نوتیفیکیشن آفلاین بودن رو نشون بدی
+});
         </script>
 </body>
 </html>
