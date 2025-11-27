@@ -12,6 +12,15 @@ const urlsToCache = [
 const NO_CACHE_PAGES = [
   // آدرس صفحات گزارشات و APIهای خودت رو اینجا وارد کن
   // مثال: '/reports', '/api/', '/data/'
+  './pages/anbar/dashboard.html',
+'./pages/manager/reports.html',
+'./pages/manager/warehouse.html',
+'./pages/operator/troubleshooting.html',
+'./pages/manager/dashboard.html',
+'./pages/superviser/dashboard.html',
+'./pages/superviser/RequestsScreen.html',
+'./pages/superviser/troubleshooting.html',
+'./pages/superviser/warehouse.html'
 ];
 
 self.addEventListener('install', event => {
@@ -111,3 +120,5 @@ self.addEventListener('fetch', event => {
     );
   }
 });
+
+
