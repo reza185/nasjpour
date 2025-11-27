@@ -1,28 +1,28 @@
 const CACHE_NAME = 'tpm-v1.0.0';
 const urlsToCache = [
   './',
-  './index.html',
-  './styles.css',
-  './app.js',
-  './Logo.png',
-  './icons/icon-192x192.png',
-  './icons/icon-512x512.png',
-  './manifest.json'
+  './nasjpour/index.html',
+  './nasjpour/styles.css',
+  './nasjpour/app.js',
+  './nasjpour/Logo.png',
+  './nasjpour/icons/icon-192x192.png',
+  './nasjpour/icons/icon-512x512.png',
+  './nasjpour/manifest.json'
   // اینجا می‌تونی فایل‌های استاتیک دیگه رو اضافه کنی
 ];
 
 // 🔥 لیست صفحاتی که باید همیشه آنلاین باشن (اینجا رو پر کن)
 const DYNAMIC_PAGES = [
   // مثال:
-  './pages/anbar/dashboard.html',
-  './pages/manager/reports.html',
-  './pages/manager/warehouse.html',
-  './pages/operator/troubleshooting.html',
-  './pages/manager/dashboard.html',
-  './pages/superviser/dashboard.html',
-  './pages/superviser/RequestsScreen.html',
-  './pages/superviser/troubleshooting.html',
-  './pages/superviser/warehouse.html',
+  './nasjpour/pages/anbar/dashboard.html',
+  './nasjpour/pages/manager/reports.html',
+  './nasjpour/pages/manager/warehouse.html',
+  './nasjpour/pages/operator/troubleshooting.html',
+  './nasjpour/pages/manager/dashboard.html',
+  './nasjpour/pages/superviser/dashboard.html',
+  './nasjpour/pages/superviser/RequestsScreen.html',
+  './nasjpour/pages/superviser/troubleshooting.html',
+  './nasjpour/pages/superviser/warehouse.html',
   // '/dashboard', 
   // '/api/',
   // '/data/',
