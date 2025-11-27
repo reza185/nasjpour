@@ -1,95 +1,112 @@
+// sw.js - نسخه اصلاح شده
 const CACHE_NAME = 'tpm-v1.0.0';
 const urlsToCache = [
   './',
-  './nasjpour/index.html',
-  './nasjpour/styles.css',
-  './nasjpour/app.js',
-  './nasjpour/Logo.png',
-  './nasjpour/icons/icon-192x192.png',
-  './nasjpour/icons/icon-512x512.png',
-  './nasjpour/manifest.json'
-  // اینجا می‌تونی فایل‌های استاتیک دیگه رو اضافه کنی
+  './index.html',
+  './styles.css',
+  './app.js',
+  './Logo.png',
+  './icons/icon-192x192.png',
+  './icons/icon-512x512.png',
+  './manifest.json'
 ];
 
-// 🔥 لیست صفحاتی که باید همیشه آنلاین باشن (اینجا رو پر کن)
-const DYNAMIC_PAGES = [
-  // مثال:
-  './nasjpour/pages/anbar/dashboard.html',
-  './nasjpour/pages/manager/reports.html',
-  './nasjpour/pages/manager/warehouse.html',
-  './nasjpour/pages/operator/troubleshooting.html',
-  './nasjpour/pages/manager/dashboard.html',
-  './nasjpour/pages/superviser/dashboard.html',
-  './nasjpour/pages/superviser/RequestsScreen.html',
-  './nasjpour/pages/superviser/troubleshooting.html',
-  './nasjpour/pages/superviser/warehouse.html',
-  // '/dashboard', 
-  // '/api/',
-  // '/data/',
-  // آدرس‌های دقیق صفحات گزارشات و آنلاین خودت رو اینجا اضافه کن
+// 🔥 لیست صفحاتی که نباید کش بشن
+const NO_CACHE_PAGES = [
+  // آدرس صفحات گزارشات و APIهای خودت رو اینجا وارد کن
+  
+'./pages/anbar/dashboard.html',
+'./pages/manager/reports.html',
+'./pages/manager/warehouse.html',
+'./pages/operator/troubleshooting.html',
+'./pages/manager/dashboard.html',
+'./pages/superviser/dashboard.html',
+'./pages/superviser/RequestsScreen.html',
+'./pages/superviser/troubleshooting.html',
+'./pages/superviser/warehouse.html'
 ];
 
 self.addEventListener('install', event => {
-  console.log('🔄 Service Worker installing...');
-  self.skipWaiting(); // فعال‌سازی فوری
+  console.log('🚀 Installing Service Worker...');
+  self.skipWaiting();
+  
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('📦 Caching app shell');
-        return cache.addAll(urlsToCache);
+        console.log('📦 Opening cache...');
+        // اضافه کردن فایل‌ها با مدیریت خطا
+        return cache.addAll(urlsToCache).catch(error => {
+          console.log('⚠️ Some files failed to cache:', error);
+          // حتی اگر بعضی فایل‌ها کش نشدن، ادامه بده
+        });
       })
   );
 });
 
 self.addEventListener('activate', event => {
-  console.log('🚀 Service Worker activating...');
+  console.log('✅ Activating Service Worker...');
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames.map(cacheName => {
           if (cacheName !== CACHE_NAME) {
-            console.log('🗑️ Removing old cache:', cacheName);
+            console.log('🗑️ Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
+    }).then(() => {
+      console.log('🔗 Claiming clients...');
+      return clients.claim();
     })
   );
-  clients.claim(); // کنترل فوری همه تب‌ها
 });
 
 self.addEventListener('fetch', event => {
-  const url = new URL(event.request.url);
+  // فقط درخواست‌های GET رو مدیریت کن
+  if (event.request.method !== 'GET') return;
   
-  // چک کن آیا صفحه جزو صفحات داینامیک هست
-  const isDynamicPage = DYNAMIC_PAGES.some(page => url.pathname.includes(page));
+  const url = event.request.url;
   
-  if (isDynamicPage) {
-    // 📡 برای صفحات داینامیک: فقط از شبکه بگیر (بدون کش)
-    console.log('🌐 Dynamic page - fetching from network:', url.pathname);
+  // چک کن آیا این درخواست نباید کش بشه
+  const shouldNotCache = NO_CACHE_PAGES.some(page => url.includes(page));
+  
+  if (shouldNotCache) {
+    // 🔥 برای صفحات مهم: فقط از شبکه
     event.respondWith(fetch(event.request));
-  } else if (url.origin === location.origin) {
-    // 💾 برای فایل‌های استاتیک: کش اول
+  } else {
+    // برای بقیه: کش اول
     event.respondWith(
       caches.match(event.request)
         .then(response => {
+          // اگر در کش پیدا شد برگردون
           if (response) {
-            console.log('📂 Serving from cache:', url.pathname);
             return response;
           }
-          console.log('🌐 Fetching from network:', url.pathname);
-          return fetch(event.request);
+          
+          // اگر در کش نبود از شبکه بگیر و کش کن
+          return fetch(event.request).then(fetchResponse => {
+            // فقط پاسخ‌های معتبر رو کش کن
+            if (!fetchResponse || fetchResponse.status !== 200 || fetchResponse.type !== 'basic') {
+              return fetchResponse;
+            }
+            
+            const responseToCache = fetchResponse.clone();
+            caches.open(CACHE_NAME)
+              .then(cache => {
+                cache.put(event.request, responseToCache);
+              });
+              
+            return fetchResponse;
+          });
+        })
+        .catch(() => {
+          // اگر آفلاین هستی و فایل در کش نیست، صفحه اصلی رو برگردون
+          if (event.request.destination === 'document') {
+            return caches.match('./index.html');
+          }
         })
     );
-  } else {
-    // برای درخواست‌های خارجی
-    event.respondWith(fetch(event.request));
   }
 });
 
-// 🔔 ارسال نوتیفیکیشن به همه تب‌ها
-self.addEventListener('message', event => {
-  if (event.data.action === 'skipWaiting') {
-    self.skipWaiting();
-  }
-});
