@@ -1551,11 +1551,7 @@ a {
         });
 
         // جلوگیری از اسکرول هنگام زوم در iOS
-        document.addEventListener('touchmove', function(e) {
-            if(e.scale !== 1) {
-                e.preventDefault();
-            }
-        }, { passive: false });
+        
 
 
         // سرویس ورکر
