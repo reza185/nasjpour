@@ -3,12 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="TPM">
     <title>TMP</title>
     <link rel="icon" href="icons/icon-192x192.png">
     <link rel="apple-touch-icon" href="icons/icon-192x192.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
+    <link rel="manifest" href="../../manifest.json">
+    <link rel="apple-touch-icon" href="../../icons/icon-192x192.png">
+    <link rel="apple-touch-startup-image" href="../../icons/icon-512x512.png">
     <!-- <script src="../../auth.js"></script> -->
     <style>
         * {
@@ -41,6 +47,9 @@
             min-height: 100vh;
             overflow-x: hidden;
             width: 100%;
+            -webkit-overflow-scrolling: touch;
+            padding-top: env(safe-area-inset-top, 0px);
+            padding-bottom: env(safe-area-inset-bottom, 0px);
         }
 
         /* نویگیشن */
@@ -819,6 +828,290 @@
         .machine-icon.pulse {
             animation: pulse 2s infinite;
         }
+        button, .btn {
+    -webkit-tap-highlight-color: rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
+}
+
+@media (max-width: 768px) {
+    button:active, .btn:active {
+        transform: scale(0.98);
+        opacity: 0.9;
+    }
+}
+/* بهبود نمایش در iOS */
+input, select, textarea {
+    font-size: 16px; /* جلوگیری از زوم خودکار در iOS */
+}
+
+/* بهبود اسکرول جدول */
+.table-container {
+    -webkit-overflow-scrolling: touch;
+    overflow-x: auto;
+}
+
+/* بهبود نمایش دکمه‌ها در iOS */
+button {
+    min-height: 44px; /* حداقل سایز لمسی در iOS */
+}
+
+/* ========== CSS های جدید برای iOS ========== */
+
+/* بهبود نمایش در iOS - جلوگیری از زوم خودکار */
+input, select, textarea {
+    font-size: 16px !important;
+    transform: translateZ(0);
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}
+
+/* بهبود نمایش select در iOS */
+select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: left 12px center;
+    background-size: 16px;
+    padding-left: 40px;
+}
+
+/* حداقل سایز لمسی برای تمام دکمه‌ها در iOS */
+button, .btn, .nav-link, .action-btn, .report-button {
+    min-height: 44px !important;
+    min-width: 44px !important;
+    cursor: pointer;
+}
+
+/* بهبود اسکرول در iOS */
+.table-container, .container {
+    -webkit-overflow-scrolling: touch !important;
+    overflow-x: auto;
+}
+
+/* جلوگیری از highlight آبی در iOS */
+* {
+    -webkit-tap-highlight-color: transparent !important;
+}
+
+/* بهبود نمایش tables در iOS */
+.data-table {
+    -webkit-overflow-scrolling: touch;
+}
+
+/* جلوگیری از bounce بیش از حد در iOS */
+body {
+    overscroll-behavior-y: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* بهبود نمایش inputهای عددی در iOS */
+input[type="number"] {
+    -webkit-appearance: none;
+    -moz-appearance: textfield;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* بهبود نمایش فرم‌ها در iOS */
+.form-input, .filter-input, .filter-select {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+    touch-action: manipulation;
+}
+
+/* بهبود نمایش modalها در iOS */
+.popup-overlay {
+    -webkit-overflow-scrolling: touch;
+    overflow-y: auto;
+}
+
+/* بهبود نمایش navigation در iOS */
+.navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+/* بهبود نمایش لیست‌ها در iOS */
+.action-list, .metrics-grid {
+    -webkit-overflow-scrolling: touch;
+}
+
+/* بهبود نمایش کارت‌ها در iOS */
+.card, .kpi-item, .metric-card, .performance-card {
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* بهبود نمایش آیکون‌ها در iOS */
+i, .fas, .far, .fab {
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* بهبود نمایش لینک‌ها در iOS */
+a {
+    -webkit-tap-highlight-color: rgba(0,0,0,0.1);
+}
+
+/* بهبود نمایش وضعیت‌ها در iOS */
+.status-badge, .machine-status {
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* بهبود نمایش progress bar در iOS */
+.progress-bar, .performance-bar {
+    -webkit-appearance: none;
+}
+
+.progress-bar::-webkit-progress-bar,
+.performance-bar::-webkit-progress-bar {
+    background-color: #ecf0f1;
+    border-radius: 4px;
+}
+
+.progress-bar::-webkit-progress-value,
+.performance-bar::-webkit-progress-value {
+    background-color: var(--success);
+    border-radius: 4px;
+    transition: width 0.5s ease;
+}
+
+/* بهبود نمایش loader در iOS */
+.loader-spinner {
+    -webkit-animation: spin 1s linear infinite;
+    animation: spin 1s linear infinite;
+}
+
+/* بهبود نمایش machine icon در iOS */
+.machine-icon, .machine-icon-small {
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+}
+
+/* بهبود نمایش جدول داده در iOS */
+.data-table th, .data-table td {
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.data-table th:active, .data-table td:active {
+    background-color: rgba(0,0,0,0.05);
+}
+
+/* بهبود نمایش دکمه‌های گزارش در iOS */
+.report-button:active {
+    transform: scale(0.98);
+    opacity: 0.9;
+}
+
+/* بهبود نمایش navigation links در iOS */
+.nav-link:active {
+    background: rgba(255,255,255,0.2) !important;
+}
+
+/* بهبود نمایش action items در iOS */
+.action-item:active {
+    transform: translateX(-5px) scale(0.98);
+}
+
+/* بهبود نمایش metric cards در iOS */
+.metric-card:active, .kpi-item:active {
+    transform: translateY(-2px) scale(0.98);
+}
+
+/* بهبود نمایش در دستگاه‌های بسیار کوچک */
+@media (max-width: 360px) {
+    .navbar {
+        padding: 0 8px;
+    }
+    
+    .nav-container {
+        height: 48px;
+    }
+    
+    .logo-icon {
+        width: 28px;
+        height: 28px;
+        font-size: 12px;
+    }
+    
+    .logo-text {
+        font-size: 12px;
+    }
+    
+    .user-avatar {
+        width: 32px;
+        height: 32px;
+        font-size: 11px;
+    }
+    
+    .container {
+        padding: 10px 8px;
+    }
+    
+    .header-card {
+        padding: 12px;
+    }
+    
+    .page-title {
+        font-size: 16px;
+    }
+    
+    .page-subtitle {
+        font-size: 12px;
+    }
+}
+
+/* بهبود نمایش در حالت landscape */
+@media (max-height: 500px) and (orientation: landscape) {
+    .navbar {
+        height: 48px;
+    }
+    
+    .nav-container {
+        height: 48px;
+    }
+    
+    .container {
+        padding: 10px 15px;
+    }
+    
+    .header-card {
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .card {
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+}
+
+/* بهبود نمایش در حالت PWA (نصب شده) */
+@media all and (display-mode: standalone) {
+    body {
+        height: 100vh;
+        height: -webkit-fill-available;
+        height: fill-available;
+    }
+    
+    .navbar {
+        padding-top: env(safe-area-inset-top);
+    }
+    
+    .container {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+}
     </style>
 </head>
 <body>
@@ -914,7 +1207,9 @@
         
 
        
-
+        <div id="offlineAlert" style="display: none; position: fixed; top: 0; left: 0; right: 0; background: #e74c3c; color: white; text-align: center; padding: 10px; z-index: 10003; font-family: Vazirmatn;">
+            <i class="fas fa-wifi-slash"></i> حالت آفلاین - اتصال اینترنت برقرار نیست
+        </div>
     <!-- اسکریپت Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
@@ -1256,18 +1551,32 @@
         });
 
         // جلوگیری از اسکرول هنگام زوم در iOS
-        // document.addEventListener('touchmove', function(e) {
-        //     if(e.scale !== 1) {
-        //         e.preventDefault();
-        //     }
-        // }, { passive: false });
+        document.addEventListener('touchmove', function(e) {
+            if(e.scale !== 1) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+
+        // سرویس ورکر
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+        navigator.serviceWorker.register('../sw.js');
+    });
+}
+
+// مدیریت آفلاین
+window.addEventListener('online', function() {
+    document.getElementById('offlineAlert').style.display = 'none';
+});
+
+window.addEventListener('offline', function() {
+    document.getElementById('offlineAlert').style.display = 'block';
+});
+
+if (!navigator.onLine) {
+    document.getElementById('offlineAlert').style.display = 'block';
+}
     </script>
-        <script>
-// این رو دقیقاً قبل از </body> بذار
-window.alert = function(message) {
-    // ساده‌ترین راه - همیشه از confirm استفاده کن
-    confirm(message);
-};
-</script>
 </body>
 </html>
