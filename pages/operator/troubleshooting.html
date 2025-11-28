@@ -913,6 +913,36 @@
             border: 1px solid #3498db;
         }
 
+        /* استایل‌های جدید برای نمایش نام تکنسین */
+        .technician-name {
+            font-weight: 600;
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .electrical-technician {
+            background: #e8f4fd;
+            color: #3498db;
+            border-color: #3498db;
+        }
+
+        .technical-technician {
+            background: #fef5e7;
+            color: #e67e22;
+            border-color: #e67e22;
+        }
+
+        .combined-technician {
+            background: #e8f5e8;
+            color: #27ae60;
+            border-color: #27ae60;
+        }
+
         /* هشدار */
         .alert {
             padding: 12px;
@@ -1349,7 +1379,9 @@
             </form>
         </div>
     </div>
-
+    <div id="offlineAlert" style="display: none; position: fixed; top: 0; left: 0; right: 0; background: #e74c3c; color: white; text-align: center; padding: 10px; z-index: 10003; font-family: Vazirmatn;">
+        <i class="fas fa-wifi-slash"></i> حالت آفلاین - اتصال اینترنت برقرار نیست
+    </div>
     <script>
         // ==================== CUSTOM ALERT SYSTEM ====================
         delete window.alert;
@@ -1489,9 +1521,9 @@
             });
         };
         
-        // ==================== تابع تشخیص نوع ایراد ====================
-        function determineIssueType(problemDescription) {
-            if (!problemDescription) return 'فنی';
+        // ==================== تابع تشخیص نوع ایراد و تعیین تکنسین ====================
+        function determineIssueTypeAndTechnician(problemDescription) {
+            if (!problemDescription) return { issueType: 'فنی', technician: 'نوروزی' };
             
             const problem = problemDescription.toLowerCase();
             
@@ -1528,15 +1560,15 @@
             });
             
             // تصمیم‌گیری بر اساس تعداد کلمات کلیدی
-            if (electricalCount > technicalCount) {
-                return 'برق';
-            } else if (technicalCount > electricalCount) {
-                return 'فنی';
-            } else if (electricalCount === technicalCount && electricalCount > 0) {
-                return 'ترکیبی';
+            if (electricalCount > 0 && technicalCount === 0) {
+                return { issueType: 'برق', technician: 'ابراهیمی' };
+            } else if (technicalCount > 0 && electricalCount === 0) {
+                return { issueType: 'فنی', technician: 'نوروزی' };
+            } else if (electricalCount > 0 && technicalCount > 0) {
+                return { issueType: 'ترکیبی', technician: 'ابراهیمی و نوروزی' };
             }
             
-            return 'فنی';
+            return { issueType: 'فنی', technician: 'نوروزی' };
         }
         
         // داده‌های کامل عیب‌های دستگاه استنتر
@@ -2196,7 +2228,7 @@
             e.preventDefault();
             
             const problemDescription = document.getElementById('problem_description').value;
-            const issueType = determineIssueType(problemDescription);
+            const { issueType, technician } = determineIssueTypeAndTechnician(problemDescription);
             
             const formData = {
                 reporter_name: document.getElementById('reporter_name').value,
@@ -2205,6 +2237,7 @@
                 problem_description: problemDescription,
                 priority: document.getElementById('priority').value,
                 action_type: issueType, // اضافه کردن نوع ایراد
+                technician_name: technician, // اضافه کردن نام تکنسین
                 status: 'جدید',
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString()
@@ -2219,7 +2252,7 @@
                     throw error;
                 }
                 
-                alert(`✅ گزارش با موفقیت ارسال شد!\n\n📋 دستگاه: ${formData.machine_name}\n⚡ نوع ایراد: ${issueType}\n📊 وضعیت: ${formData.machine_status}`);
+                alert(`✅ گزارش با موفقیت ارسال شد!\n\n📋 دستگاه: ${formData.machine_name}\n⚡ نوع ایراد: ${issueType}\n👤 تکنسین: ${technician}\n📊 وضعیت: ${formData.machine_status}`);
                 closeReportPopup();
                 loadReports();
                 
@@ -2251,6 +2284,7 @@
                             <th>دستگاه</th>
                             <th>وضعیت دستگاه</th>
                             <th>نوع ایراد</th>
+                            <th>تکنسین</th>
                             <th>اولویت</th>
                             <th>وضعیت گزارش</th>
                             <th>شرح مشکل</th>
@@ -2263,7 +2297,8 @@
             
             reports.forEach(report => {
                 const date = new Date(report.created_at).toLocaleDateString('fa-IR');
-                const issueType = report.action_type || determineIssueType(report.problem_description);
+                const issueType = report.action_type || 'فنی';
+                const technician = report.technician_name || 'نوروزی';
                 
                 // ایجاد بج برای نوع ایراد
                 let issueTypeBadge;
@@ -2275,12 +2310,23 @@
                     issueTypeBadge = '<span class="issue-type-badge combined-badge">🔰 ترکیبی</span>';
                 }
                 
+                // ایجاد بج برای تکنسین
+                let technicianBadge;
+                if (technician === 'ابراهیمی') {
+                    technicianBadge = '<span class="technician-name electrical-technician">ابراهیمی</span>';
+                } else if (technician === 'نوروزی') {
+                    technicianBadge = '<span class="technician-name technical-technician">نوروزی</span>';
+                } else {
+                    technicianBadge = '<span class="technician-name combined-technician">هر دو</span>';
+                }
+                
                 tableHTML += `
                     <tr>
                         <td>${report.reporter_name}</td>
                         <td>${report.machine_name}</td>
                         <td>${report.machine_status}</td>
                         <td>${issueTypeBadge}</td>
+                        <td>${technicianBadge}</td>
                         <td>${report.priority || '-'}</td>
                         <td>${report.status || 'جدید'}</td>
                         <td style="max-width: 200px; word-wrap: break-word;">${report.problem_description || '-'}</td>
@@ -2395,6 +2441,25 @@
         if (window.matchMedia('(display-mode: standalone)').matches) {
             document.body.style.overscrollBehavior = 'none';
         }
+
+        if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+        navigator.serviceWorker.register('../sw.js');
+    });
+}
+
+// مدیریت آفلاین
+window.addEventListener('online', function() {
+    document.getElementById('offlineAlert').style.display = 'none';
+});
+
+window.addEventListener('offline', function() {
+    document.getElementById('offlineAlert').style.display = 'block';
+});
+
+if (!navigator.onLine) {
+    document.getElementById('offlineAlert').style.display = 'block';
+}
         </script>
 </body>
 </html>
