@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="TPM PRO">
     <meta name="theme-color" content="#2c3e50">
     <meta name="msapplication-TileColor" content="#2c3e50">
@@ -19,7 +19,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="manifest" href="../../manifest.json">
 <link rel="icon" href="../../icons/icon-192x192.png">
-
+<link rel="apple-touch-icon" href="../../icons/icon-192x192.png">
+<link rel="apple-touch-startup-image" href="../../icons/icon-512x512.png">
     <!-- <script src="../../auth.js"></script> -->
     <style>
         /* استایل‌های قبلی بدون تغییر */
@@ -46,7 +47,7 @@
 
         body {
             width: 100vw;
-            height: 100vh;
+            height: 100%;
             height: -webkit-fill-available;
             height: fill-available;
             overflow: hidden;
@@ -59,6 +60,11 @@
             bottom: 0;
             -webkit-overflow-scrolling: touch;
             touch-action: pan-y;
+            padding-top: env(safe-area-inset-top, 0px);
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+            overscroll-behavior-y: none;
+            min-height: 100vh;
+    height: -webkit-fill-available;
         }
 
         :root {
@@ -74,6 +80,17 @@
             --warning: #f39c12;
             --danger: #e74c3c;
         }
+        /* بهبود نمایش select در iOS */
+select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: left 12px center;
+    background-size: 16px;
+    padding-left: 40px;
+}
 
         /* ساختار اپ */
         .app-container {
@@ -380,6 +397,7 @@
             width: 100%;
             border-collapse: collapse;
             min-width: 1000px;
+            -webkit-overflow-scrolling: touch;
         }
 
         .inventory-table th {
@@ -817,6 +835,39 @@
                 height: fill-available;
             }
         }
+        button, .btn {
+    -webkit-tap-highlight-color: rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
+}
+
+@media (max-width: 768px) {
+    button:active, .btn:active {
+        transform: scale(0.98);
+        opacity: 0.9;
+    }
+}
+/* بهبود نمایش در iOS */
+input, select, textarea {
+    font-size: 16px;
+    transform: translateZ(0); /* جلوگیری از زوم خودکار در iOS */
+}
+
+/* بهبود اسکرول جدول */
+.table-container {
+    -webkit-overflow-scrolling: touch;
+    overflow-x: auto;
+}
+
+/* بهبود نمایش دکمه‌ها در iOS */
+button {
+    min-height: 44px; /* حداقل سایز لمسی در iOS */
+}
+/* برای تمام المان‌های لمسی */
+button, .btn, .nav-link, .action-btn, input[type="button"] {
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
     </style>
 </head>
 <body>
@@ -997,7 +1048,9 @@
             </div>
         </div>
     </div>
-
+    <div id="offlineAlert" style="display: none; position: fixed; top: 0; left: 0; right: 0; background: #e74c3c; color: white; text-align: center; padding: 10px; z-index: 10003; font-family: Vazirmatn;">
+        <i class="fas fa-wifi-slash"></i> حالت آفلاین - اتصال اینترنت برقرار نیست
+    </div>
     <!-- ابتدا Supabase رو لود میکنیم -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
@@ -1668,6 +1721,26 @@
         if (window.matchMedia('(display-mode: standalone)').matches) {
             document.body.style.overscrollBehavior = 'none';
         }
+
+        // سرویس ورکر
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+        navigator.serviceWorker.register('../sw.js');
+    });
+}
+
+// مدیریت آفلاین
+window.addEventListener('online', function() {
+    document.getElementById('offlineAlert').style.display = 'none';
+});
+
+window.addEventListener('offline', function() {
+    document.getElementById('offlineAlert').style.display = 'block';
+});
+
+if (!navigator.onLine) {
+    document.getElementById('offlineAlert').style.display = 'block';
+}
     </script>
 </body>
 </html>
