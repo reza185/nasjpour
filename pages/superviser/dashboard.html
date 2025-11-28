@@ -663,9 +663,11 @@
             </div>
         </div>
     </div>
-
+    <div id="offlineAlert" style="display: none; position: fixed; top: 0; left: 0; right: 0; background: #e74c3c; color: white; text-align: center; padding: 10px; z-index: 10003; font-family: Vazirmatn;">
+        <i class="fas fa-wifi-slash"></i> حالت آفلاین - اتصال اینترنت برقرار نیست
+    </div>
     <!-- دکمه دیباگ -->
-    <!-- <button class="debug-btn" onclick="debugStatus()">دیباگ وضعیت</button> -->
+    <button class="debug-btn" onclick="debugStatus()">دیباگ وضعیت</button>
 
     <!-- اسکریپت Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -909,6 +911,30 @@
             // به روز رسانی خودکار وضعیت دستگاه هر 30 ثانیه
             setInterval(getLatestMachineStatus, 30000);
         });
+
+
+
+           // اضافه کن به ابتدای اسکریپت‌ها
+// تشخیص وضعیت آنلاین/آفلاین
+// سرویس ورکر
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+        navigator.serviceWorker.register('../sw.js');
+    });
+}
+
+// مدیریت آفلاین
+window.addEventListener('online', function() {
+    document.getElementById('offlineAlert').style.display = 'none';
+});
+
+window.addEventListener('offline', function() {
+    document.getElementById('offlineAlert').style.display = 'block';
+});
+
+if (!navigator.onLine) {
+    document.getElementById('offlineAlert').style.display = 'block';
+}
     </script>
 </body>
 </html>
