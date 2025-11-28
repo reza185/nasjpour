@@ -3,11 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TMP</title>
+    <meta name="theme-color" content="#2c3e50">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="TPM">
+<title>TMP</title>
     <link rel="icon" href="icons/icon-192x192.png">
     <link rel="apple-touch-icon" href="icons/icon-192x192.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="manifest" href="../../manifest.json">
+    <link rel="apple-touch-icon" href="../../icons/icon-192x192.png">
+<link rel="apple-touch-startup-image" href="../../icons/icon-512x512.png">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- <script src="../../auth.js"></script> -->
     <style>
@@ -41,6 +48,10 @@
             min-height: 100vh;
             overflow-x: hidden;
             width: 100%;
+            -webkit-overflow-scrolling: touch;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    overscroll-behavior-y: none;
         }
 
         /* نویگیشن */
@@ -683,8 +694,44 @@
                 -moz-user-select: text;
                 -ms-user-select: text;
                 user-select: text;
+                -webkit-appearance: none;
+                appearance: none;
+                background-image: url("data:image/svg+xml;charset=UTF-8,...");
+                background-position: left 12px center;
+                padding-left: 40px;
             }
         }
+        button, .btn {
+    -webkit-tap-highlight-color: rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
+}
+
+@media (max-width: 768px) {
+    button:active, .btn:active {
+        transform: scale(0.98);
+        opacity: 0.9;
+    }
+}
+/* بهبود نمایش در iOS */
+input, select, textarea {
+    font-size: 16px !important;
+    transform: translateZ(0);
+    -webkit-user-select: text;
+    user-select: text;
+ /* جلوگیری از زوم خودکار در iOS */
+}
+
+/* بهبود اسکرول جدول */
+.table-container {
+    -webkit-overflow-scrolling: touch !important;
+    overflow-x: auto;
+}
+
+/* بهبود نمایش دکمه‌ها در iOS */
+button, .btn, .nav-link, .alert-btn, .download-btn {
+    min-height: 44px !important;
+    min-width: 44px !important;
+}
     </style>
 </head>
 <body>
@@ -849,7 +896,9 @@
             </div> -->
         </div>
     </div>
-
+    <div id="offlineAlert" style="display: none; position: fixed; top: 0; left: 0; right: 0; background: #e74c3c; color: white; text-align: center; padding: 10px; z-index: 10003; font-family: Vazirmatn;">
+        <i class="fas fa-wifi-slash"></i> حالت آفلاین - اتصال اینترنت برقرار نیست
+    </div>
     <script>
         // ==================== CUSTOM ALERT SYSTEM ====================
         delete window.alert;
@@ -1478,11 +1527,32 @@
         });
         
         // جلوگیری از اسکرول هنگام زوم در iOS
-        // document.addEventListener('touchmove', function(e) {
-        //     if(e.scale !== 1) {
-        //         e.preventDefault();
-        //     }
-        // }, { passive: false });
+        document.addEventListener('touchmove', function(e) {
+            if(e.scale !== 1) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+
+        // سرویس ورکر
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+        navigator.serviceWorker.register('../sw.js');
+    });
+}
+
+// مدیریت آفلاین
+window.addEventListener('online', function() {
+    document.getElementById('offlineAlert').style.display = 'none';
+});
+
+window.addEventListener('offline', function() {
+    document.getElementById('offlineAlert').style.display = 'block';
+});
+
+if (!navigator.onLine) {
+    document.getElementById('offlineAlert').style.display = 'block';
+}
         </script>
 </body>
 </html>
