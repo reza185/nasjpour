@@ -1,5 +1,5 @@
 // sw.js - نسخه اصلاح شده
-const CACHE_NAME = 'tpm-v1.0.0'; // نسخه رو عوض کن
+const CACHE_NAME = 'tpm-v1.0.1'; // نسخه رو عوض کن
 
 const urlsToCache = [
   './',
