@@ -1,20 +1,18 @@
-// sw.js - نسخه اصلاح شده
-const CACHE_NAME = 'tpm-v1.0.1'; // نسخه رو عوض کن
+// sw.js - نسخه نهایی با قابلیت آپدیت اتوماتیک
+const CACHE_NAME = 'tpm-v1.0.2'; // این رو هر بار آپدیت کن
+const APP_VERSION = '1.0.2'; // این هم هماهنگ با CACHE_NAME
 
 const urlsToCache = [
   './',
   './index.html',
-  './styles.css',
-  './app.js', 
   './Logo.png',
+  './manifest.json',
   './icons/icon-192x192.png',
-  './icons/icon-512x512.png',
-  './manifest.json'
+  './icons/icon-512x512.png'
 ];
 
-// 🔥 لیست صفحاتی که نباید کش بشن - نسخه اصلاح شده
+// صفحاتی که نباید کش بشن
 const NO_CACHE_PAGES = [
-  // از مسیر کامل استفاده کن
   '/nasjpour/pages/anbar/dashboard.html',
   '/nasjpour/pages/manager/reports.html',
   '/nasjpour/pages/manager/warehouse.html',
@@ -26,8 +24,11 @@ const NO_CACHE_PAGES = [
   '/nasjpour/pages/superviser/warehouse.html'
 ];
 
+// 🔥 نصب سرویس ورکر جدید
 self.addEventListener('install', event => {
-  console.log('🚀 Installing Service Worker...');
+  console.log(`🚀 Installing Service Worker Version ${APP_VERSION}...`);
+  
+  // فوراً سرویس ورکر جدید رو فعال کن
   self.skipWaiting();
   
   event.waitUntil(
@@ -41,63 +42,78 @@ self.addEventListener('install', event => {
   );
 });
 
+// 🔥 فعال شدن سرویس ورکر جدید
 self.addEventListener('activate', event => {
-  console.log('✅ Activating Service Worker...');
+  console.log(`✅ Service Worker Version ${APP_VERSION} Activated!`);
+  
   event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME) {
-            console.log('🗑️ Deleting old cache:', cacheName);
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    }).then(() => {
-      console.log('🔗 Claiming clients...');
-      return clients.claim();
+    Promise.all([
+      // حذف تمام کش‌های قدیمی
+      caches.keys().then(cacheNames => {
+        return Promise.all(
+          cacheNames.map(cacheName => {
+            if (cacheName !== CACHE_NAME) {
+              console.log('🗑️ Deleting old cache:', cacheName);
+              return caches.delete(cacheName);
+            }
+          })
+        );
+      }),
+      
+      // فوراً کنترل تمام تب‌ها رو بگیر
+      self.clients.claim(),
+      
+      // به تمام کلاینت‌ها پیام آپدیت بفرست
+      self.clients.matchAll().then(clients => {
+        clients.forEach(client => {
+          client.postMessage({
+            type: 'SW_UPDATED',
+            version: APP_VERSION
+          });
+        });
+      })
+    ]).then(() => {
+      console.log('🎉 Service Worker fully activated!');
     })
   );
 });
 
+// 🔥 مدیریت درخواست‌ها
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
   
   const url = new URL(event.request.url);
   
-  // 🔥 چک کن آیا این درخواست جزو صفحات بدون کش هست
+  // چک کن آیا این صفحه نباید کش بشه
   const shouldNotCache = NO_CACHE_PAGES.some(page => 
     url.pathname.includes(page) || 
     url.pathname.endsWith(page.replace('./', '/'))
   );
   
-  console.log('🌐 Fetch:', url.pathname, shouldNotCache ? '(NO-CACHE)' : '(CACHE)');
-  
   if (shouldNotCache) {
-    // 🔥 برای صفحات گزارشات: فقط از شبکه - بدون کش
+    // 📡 فقط از شبکه - بدون کش
     event.respondWith(
       fetch(event.request)
-        .then(response => {
-          console.log('📡 Network response for:', url.pathname);
-          return response;
-        })
+        .then(response => response)
         .catch(error => {
           console.log('❌ Network failed for:', url.pathname);
-          // اگر شبکه در دسترس نبود، صفحه خطا نشون بده
-          return new Response('Network error', { status: 408 });
+          return new Response('اتصال اینترنت برقرار نیست', { 
+            status: 408,
+            headers: { 'Content-Type': 'text/html; charset=utf-8' }
+          });
         })
     );
   } else {
-    // برای فایل‌های استاتیک: کش اول
+    // 💾 استراتژی کش اول
     event.respondWith(
       caches.match(event.request)
         .then(response => {
+          // اگر در کش موجود بود برگردون
           if (response) {
-            console.log('📂 From cache:', url.pathname);
             return response;
           }
           
-          console.log('🌐 Fetching from network:', url.pathname);
+          // از شبکه بگیر و کش کن
           return fetch(event.request)
             .then(fetchResponse => {
               // فقط پاسخ‌های موفق رو کش کن
@@ -110,13 +126,28 @@ self.addEventListener('fetch', event => {
               }
               return fetchResponse;
             })
-            .catch(() => {
-              // اگر آفلاین هستی
+            .catch(error => {
+              // اگر آفلاین هستی و صفحه اصلی رو میخوای
               if (event.request.destination === 'document') {
                 return caches.match('./index.html');
               }
+              throw error;
             });
         })
     );
+  }
+});
+
+// 🔥 دریافت پیام از صفحه
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+  
+  if (event.data && event.data.type === 'CHECK_UPDATE') {
+    event.ports[0].postMessage({
+      version: APP_VERSION,
+      cacheName: CACHE_NAME
+    });
   }
 });
