@@ -14,9 +14,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="TPM">
-    <!-- در index.html این دو متا تگ رو اضافه کن -->
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes"> <!-- برای سازگاری با iOS قدیمی -->
+    
     <!-- Manifest -->
     <link rel="manifest" href="manifest.json">
     
@@ -360,85 +358,243 @@
             color: var(--primary);
         }
 
-        /* PWA Install Alert Styles */
-        .pwa-alert {
+        /* PWA Install Button Styles */
+        .pwa-install-container {
             position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #2c3e50;
-            color: white;
-            padding: 15px 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-            z-index: 10000;
-            text-align: center;
-            min-width: 300px;
-            animation: slideDown 0.5s ease;
+            bottom: 20px;
+            left: 20px;
+            z-index: 1000;
+            animation: fadeInUp 0.5s ease;
         }
 
-        .pwa-overlay {
+        .pwa-install-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, #2c3e50 0%, #1a252f 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(44, 62, 80, 0.3);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .pwa-install-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(44, 62, 80, 0.4);
+            background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+        }
+
+        .pwa-install-btn:active {
+            transform: translateY(-1px);
+        }
+
+        /* PWA Install Prompt Styles */
+        .pwa-install-prompt {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.3);
-            z-index: 9999;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10001;
+            backdrop-filter: blur(5px);
+            animation: fadeIn 0.3s ease;
         }
 
-        .pwa-success {
+        .pwa-prompt-content {
+            background: white;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 400px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.4s ease;
+        }
+
+        .pwa-prompt-header {
+            background: linear-gradient(135deg, #2c3e50 0%, #1a252f 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: relative;
+        }
+
+        .pwa-prompt-header i {
+            font-size: 24px;
+        }
+
+        .pwa-prompt-header h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .pwa-prompt-close {
+            position: absolute;
+            left: 15px;
+            top: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .pwa-prompt-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .pwa-prompt-body {
+            padding: 25px;
+        }
+
+        .pwa-prompt-body p {
+            margin-bottom: 20px;
+            color: var(--dark);
+            line-height: 1.6;
+            text-align: center;
+        }
+
+        .pwa-prompt-features {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 10px;
+        }
+
+        .pwa-feature {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pwa-feature i {
+            color: var(--secondary);
+            font-size: 20px;
+        }
+
+        .pwa-feature span {
+            font-size: 12px;
+            color: var(--gray);
+        }
+
+        .pwa-prompt-footer {
+            display: flex;
+            padding: 15px 20px;
+            gap: 10px;
+            border-top: 1px solid #eee;
+        }
+
+        .pwa-prompt-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .pwa-prompt-cancel {
+            background: #f8f9fa;
+            color: var(--gray);
+        }
+
+        .pwa-prompt-cancel:hover {
+            background: #e9ecef;
+        }
+
+        .pwa-prompt-install {
+            background: var(--accent);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .pwa-prompt-install:hover {
+            background: var(--accent-light);
+        }
+
+        /* PWA Install Success Message */
+        .pwa-install-success {
             position: fixed;
             top: 20px;
             left: 50%;
             transform: translateX(-50%);
             background: #4CAF50;
             color: white;
-            padding: 15px 20px;
+            padding: 15px 25px;
             border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-            z-index: 10001;
-            text-align: center;
-            min-width: 250px;
-        }
-
-        .pwa-content {
-            display: flex;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+            z-index: 10002;
+            display: none;
             align-items: center;
-            justify-content: center;
             gap: 10px;
+            animation: slideDown 0.5s ease;
         }
 
-        .pwa-buttons {
-            margin-top: 10px;
-            display: flex;
-            gap: 10px;
-            justify-content: center;
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
-        .pwa-btn {
-            background: #4CAF50;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
         }
 
-        .pwa-btn-cancel {
-            background: transparent;
-            color: white;
-            border: 1px solid white;
-            padding: 8px 16px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         @keyframes slideDown {
-            from { transform: translateX(-50%) translateY(-100%); opacity: 0; }
-            to { transform: translateX(-50%) translateY(0); opacity: 1; }
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
         }
 
         /* Responsive Design */
@@ -460,9 +616,19 @@
                 justify-content: center;
             }
 
-            .pwa-alert {
-                min-width: 90%;
-                margin: 0 10px;
+            .pwa-install-container {
+                bottom: 15px;
+                left: 15px;
+            }
+
+            .pwa-install-btn {
+                padding: 10px 16px;
+                font-size: 13px;
+            }
+
+            .pwa-prompt-features {
+                flex-direction: column;
+                gap: 15px;
             }
         }
 
@@ -499,21 +665,6 @@
                     <li><i class="fas fa-check-circle"></i> گزارش‌گیری دقیق و آنی</li>
                     <li><i class="fas fa-check-circle"></i> مدیریت موجودی قطعات یدکی</li>
                 </ul>
-                
-                <!-- <div class="stats">
-                    <div class="stat">
-                        <div class="stat-value">۹۸%</div>
-                        <div class="stat-label">رضایت کاربران</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-value">۴۵%</div>
-                        <div class="stat-label">کاهش خرابی</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-value">۱۲۵</div>
-                        <div class="stat-label">کارخانه فعال</div>
-                    </div>
-                </div> -->
             </div>
             
             <div class="login-panel">
@@ -548,8 +699,6 @@
                         نام کاربری یا رمز عبور اشتباه است
                     </div>
                 </form>
-
-                
             </div>
         </div>
         
@@ -558,10 +707,178 @@
         </div>
         <div class="footer">
             <span class="manufacturer">version : 1.0.0</span> 
-        </div
+        </div>
+    </div>
+
+    <!-- PWA Install Components -->
+    <div id="pwaInstallContainer" class="pwa-install-container">
+        <button id="pwaInstallBtn" class="pwa-install-btn">
+            <i class="fas fa-download"></i>
+            <span>نصب اپلیکیشن</span>
+        </button>
+    </div>
+
+    <div id="pwaInstallPrompt" class="pwa-install-prompt">
+        <div class="pwa-prompt-content">
+            <div class="pwa-prompt-header">
+                <i class="fas fa-mobile-alt"></i>
+                <h3>نصب اپلیکیشن</h3>
+                <button id="pwaPromptClose" class="pwa-prompt-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="pwa-prompt-body">
+                <p>برای تجربه بهتر، اپلیکیشن را روی دستگاه خود نصب کنید</p>
+                <div class="pwa-prompt-features">
+                    <div class="pwa-feature">
+                        <i class="fas fa-bolt"></i>
+                        <span>دسترسی سریع</span>
+                    </div>
+                    <div class="pwa-feature">
+                        <i class="fas fa-wifi"></i>
+                        <span>کار آفلاین</span>
+                    </div>
+                    <div class="pwa-feature">
+                        <i class="fas fa-bell"></i>
+                        <span>اعلان‌ها</span>
+                    </div>
+                </div>
+            </div>
+            <div class="pwa-prompt-footer">
+                <button id="pwaPromptCancel" class="pwa-prompt-btn pwa-prompt-cancel">بعداً</button>
+                <button id="pwaPromptInstall" class="pwa-prompt-btn pwa-prompt-install">
+                    <i class="fas fa-download"></i>
+                    نصب
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="pwaInstallSuccess" class="pwa-install-success">
+        <i class="fas fa-check-circle"></i>
+        <span>اپلیکیشن با موفقیت نصب شد!</span>
     </div>
 
     <script>
+        // PWA Installation Logic
+        let deferredPrompt;
+        const pwaInstallContainer = document.getElementById('pwaInstallContainer');
+        const pwaInstallBtn = document.getElementById('pwaInstallBtn');
+        const pwaInstallPrompt = document.getElementById('pwaInstallPrompt');
+        const pwaPromptClose = document.getElementById('pwaPromptClose');
+        const pwaPromptCancel = document.getElementById('pwaPromptCancel');
+        const pwaPromptInstall = document.getElementById('pwaPromptInstall');
+        const pwaInstallSuccess = document.getElementById('pwaInstallSuccess');
+
+        // Check if the app is already installed
+        function isAppInstalled() {
+            return window.matchMedia('(display-mode: standalone)').matches || 
+                   window.navigator.standalone === true;
+        }
+
+        // Hide install button if app is already installed
+        if (isAppInstalled()) {
+            pwaInstallContainer.style.display = 'none';
+        }
+
+        // Listen for beforeinstallprompt event
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Prevent the mini-infobar from appearing on mobile
+            e.preventDefault();
+            // Stash the event so it can be triggered later
+            deferredPrompt = e;
+            
+            // Show our custom install button
+            pwaInstallContainer.style.display = 'block';
+            
+            // Check if user has already dismissed the prompt
+            const hasDismissedPrompt = localStorage.getItem('pwaPromptDismissed');
+            if (!hasDismissedPrompt && !isAppInstalled()) {
+                // Show prompt automatically after 5 seconds
+                setTimeout(() => {
+                    if (deferredPrompt && !isAppInstalled()) {
+                        pwaInstallPrompt.style.display = 'flex';
+                    }
+                }, 5000);
+            }
+        });
+
+        // Install button click handler
+        pwaInstallBtn.addEventListener('click', () => {
+            if (deferredPrompt) {
+                pwaInstallPrompt.style.display = 'flex';
+            }
+        });
+
+        // Close prompt handlers
+        pwaPromptClose.addEventListener('click', () => {
+            pwaInstallPrompt.style.display = 'none';
+            localStorage.setItem('pwaPromptDismissed', 'true');
+        });
+
+        pwaPromptCancel.addEventListener('click', () => {
+            pwaInstallPrompt.style.display = 'none';
+            localStorage.setItem('pwaPromptDismissed', 'true');
+        });
+
+        // Install button in prompt
+        pwaPromptInstall.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                // Show the install prompt
+                deferredPrompt.prompt();
+                
+                // Wait for the user to respond to the prompt
+                const { outcome } = await deferredPrompt.userChoice;
+                
+                if (outcome === 'accepted') {
+                    console.log('User accepted the install prompt');
+                    pwaInstallPrompt.style.display = 'none';
+                    pwaInstallContainer.style.display = 'none';
+                    
+                    // Show success message
+                    pwaInstallSuccess.style.display = 'flex';
+                    setTimeout(() => {
+                        pwaInstallSuccess.style.display = 'none';
+                    }, 3000);
+                } else {
+                    console.log('User dismissed the install prompt');
+                    localStorage.setItem('pwaPromptDismissed', 'true');
+                }
+                
+                // Clear the saved prompt since it can't be used again
+                deferredPrompt = null;
+            }
+        });
+
+        // Listen for app installed event
+        window.addEventListener('appinstalled', () => {
+            console.log('PWA was installed');
+            pwaInstallContainer.style.display = 'none';
+            deferredPrompt = null;
+        });
+
+        // iOS specific installation guidance
+        function isIOS() {
+            return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        }
+
+        function isSafari() {
+            return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+        }
+
+        // Show iOS installation instructions
+        if (isIOS() && isSafari() && !isAppInstalled()) {
+            pwaInstallContainer.style.display = 'block';
+            
+            pwaInstallBtn.addEventListener('click', () => {
+                pwaInstallPrompt.style.display = 'flex';
+                
+                // Update prompt content for iOS
+                document.querySelector('.pwa-prompt-body p').innerHTML = 
+                    'برای نصب اپلیکیشن:<br>1. دکمه Share را فشار دهید<br>2. گزینه "Add to Home Screen" را انتخاب کنید';
+            });
+        }
+
         // فقط این کد رو نگه دار و بقیه alert ها رو پاک کن
         
         // حذف alert اصلی
@@ -656,8 +973,6 @@
             e.preventDefault();
             await handleLogin();
         });
-
-
-        </script>
+    </script>
 </body>
 </html>
