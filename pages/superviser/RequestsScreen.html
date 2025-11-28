@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#2c3e50">
-    <title>گزارشات دریافتی - TPM PRO</title>
+    <title>TPM PRO</title>
     <link rel="icon" href="icons/icon-192x192.png">
     <link rel="apple-touch-icon" href="icons/icon-192x192.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -874,23 +874,23 @@
                             <!-- آمار سریع - به‌روزرسانی شده -->
                             <div class="stats-container" id="statsContainer">
                                 <div class="stat-item">
-                                    <div class="stat-number" style="color: #FF9800;" id="pendingCount">0</div>
+                                    <div class="stat-number" style="color: #a26b18;" id="pendingCount">0</div>
                                     <div class="stat-label">در انتظار رسیدگی</div>
                                 </div>
-                                <div class="stat-item">
+                                <!-- <div class="stat-item">
                                     <div class="stat-number" style="color: #4CAF50;" id="approvedCount">0</div>
                                     <div class="stat-label">تأیید شده</div>
                                 </div>
                                 <div class="stat-item">
                                     <div class="stat-number" style="color: #F44336;" id="rejectedCount">0</div>
                                     <div class="stat-label">رد شده</div>
-                                </div>
+                                </div> -->
                                 <div class="stat-item">
-                                    <div class="stat-number" style="color: #9C27B0;" id="referredCount">0</div>
+                                    <div class="stat-number" style="color: #0b8648;" id="referredCount">0</div>
                                     <div class="stat-label">ارجاع به مدیر</div>
                                 </div>
                                 <div class="stat-item">
-                                    <div class="stat-number" style="color: #2196F3;" id="totalCount">0</div>
+                                    <div class="stat-number" style="color: #6d075c;" id="totalCount">0</div>
                                     <div class="stat-label">کل گزارشات</div>
                                 </div>
                             </div>
@@ -1020,6 +1020,7 @@
     <div id="offlineAlert" style="display: none; position: fixed; top: 0; left: 0; right: 0; background: #e74c3c; color: white; text-align: center; padding: 10px; z-index: 10003; font-family: Vazirmatn;">
         <i class="fas fa-wifi-slash"></i> حالت آفلاین - اتصال اینترنت برقرار نیست
     </div>
+
     <script>
         // ==================== CUSTOM ALERT SYSTEM ====================
         delete window.alert;
@@ -1383,14 +1384,14 @@
                 !r.status || r.status === 'pending' || r.status === 'in-progress'
             ).length;
             
-            const approvedCount = currentReports.filter(r => r.status === 'approved').length;
-            const rejectedCount = currentReports.filter(r => r.status === 'rejected').length;
+            // const approvedCount = currentReports.filter(r => r.status === 'approved').length;
+            // const rejectedCount = currentReports.filter(r => r.status === 'rejected').length;
             const referredCount = currentReports.filter(r => r.status === 'referred_to_manager').length;
             const totalCount = currentReports.length;
         
-            document.getElementById('pendingCount').textContent = pendingCount;
-            document.getElementById('approvedCount').textContent = approvedCount;
-            document.getElementById('rejectedCount').textContent = rejectedCount;
+            document.getElementById('pendingCount').textContent = totalCount-referredCount;
+            // document.getElementById('approvedCount').textContent = approvedCount;
+            // document.getElementById('rejectedCount').textContent = rejectedCount;
             document.getElementById('referredCount').textContent = referredCount;
             document.getElementById('totalCount').textContent = totalCount;
         }
@@ -1436,6 +1437,7 @@
                     
                     <div class="report-details">
                         <div class="detail-item"><strong>گزارش‌دهنده:</strong> ${report.reporter_name || 'نامشخص'}</div>
+                        <div class="detail-item"><strong>تکنسین مربوطه:</strong> ${report.action_type === "برق"? 'ابراهیمی' :'نوروزی' || 'نوروزی'}</div>
                         <div class="detail-item"><strong>وضعیت دستگاه:</strong> ${report.machine_status || 'نامشخص'}</div>
                         <div class="detail-item"><strong>تاریخ ایجاد:</strong> ${new Date(report.created_at).toLocaleDateString('fa-IR')}</div>
                         <div class="detail-item"><strong>کد گزارش:</strong> ${report.id.substring(0, 8)}</div>
@@ -1574,7 +1576,7 @@
                         actions_taken: report.actions_taken,
                         manager_message: report.manager_message,
                         action_type: report.action_type,
-                        technician_name: report.technician_name,
+                        technician_name: report.action_type === "برق"? 'ابراهیمی' :'نوروزی',
                         estimated_time: report.estimated_time,
                         supervisor_note: 'تکمیل شده توسط سرپرست',
                         created_at: report.created_at,
@@ -1636,10 +1638,10 @@
                     const { error: updateError } = await supabase
                         .from('operatourreports')
                         .update({ 
-                            status: 'referred_to_manager',
-                            manager_message: message,
+                            status: 'ارجاع به مدیر',
+                            problem_description: message,
                             action_type: actionType,
-                            referred_at: new Date().toISOString(),
+                            
                             updated_at: new Date().toISOString()
                         })
                         .eq('id', reportId);
@@ -1659,7 +1661,7 @@
                         action_type: actionType,
                         technician_name: report.technician_name,
                         estimated_time: report.estimated_time,
-                        supervisor_note: 'ارجاع شده توسط سرپرست',
+                        problem_description: 'ارجاع شده توسط سرپرست',
                         created_at: report.created_at,
                         referred_at: new Date().toISOString()
                     };
@@ -1774,7 +1776,118 @@
         if (window.matchMedia('(display-mode: standalone)').matches) {
             document.body.style.overscrollBehavior = 'none';
         }
-           // اضافه کن به ابتدای اسکریپت‌ها
+        // بعد از تعریف supabase و currentReports، تابع loadReports را به این صورت به‌روزرسانی کنید:
+
+// لود گزارشات از Supabase
+async function loadReports() {
+    try {
+        const { data: reports, error } = await supabase
+            .from('operatourreports')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        currentReports = reports || [];
+        updateStats();
+        renderReports(currentReports);
+        
+        // فعال کردن Real-time updates (فقط یک بار)
+        if (!window.reportsSubscription) {
+            setupRealTimeUpdates();
+        }
+        
+    } catch (error) {
+        console.error('خطا در دریافت گزارشات:', error);
+        alert('خطا در دریافت گزارشات از سرور');
+    }
+}
+
+// تنظیم Real-time updates
+function setupRealTimeUpdates() {
+    window.reportsSubscription = supabase
+        .channel('operatourreports-changes')
+        .on(
+            'postgres_changes',
+            {
+                event: '*',
+                schema: 'public',
+                table: 'operatourreports'
+            },
+            (payload) => {
+                console.log('تغییر Real-time دریافت شد:', payload);
+                showUpdateNotification(payload.eventType);
+                loadReports();
+            }
+        )
+        .subscribe((status) => {
+            if (status === 'SUBSCRIBED') {
+                console.log('✅ Real-time updates فعال شد');
+            } else if (status === 'CHANNEL_ERROR') {
+                console.error('❌ خطا در اتصال Real-time');
+            }
+        });
+}
+
+// نمایش نوتیفیکیشن برای تغییرات
+function showUpdateNotification(eventType) {
+    const messages = {
+        'INSERT': '📋 گزارش جدید دریافت شد',
+        'UPDATE': '✏️ گزارش به‌روزرسانی شد', 
+        'DELETE': '🗑️ گزارش حذف شد'
+    };
+    
+    const message = messages[eventType] || 'تغییراتی در لیست گزارشات ایجاد شد';
+    
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 70px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--secondary);
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        z-index: 1001;
+        font-size: 14px;
+        font-weight: 500;
+        animation: slideDown 0.3s ease;
+    `;
+    
+    notification.innerHTML = `
+        <i class="fas fa-sync-alt"></i>
+        ${message}
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        if (document.body.contains(notification)) {
+            document.body.removeChild(notification);
+        }
+    }, 3000);
+}
+
+// اضافه کردن animation برای نوتیفیکیشن
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateX(-50%) translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+    }
+`;
+document.head.appendChild(style);
+
+
+ // اضافه کن به ابتدای اسکریپت‌ها
 // تشخیص وضعیت آنلاین/آفلاین
 // سرویس ورکر
 if ('serviceWorker' in navigator) {
