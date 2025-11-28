@@ -1,6 +1,6 @@
 // sw.js - نسخه نهایی با قابلیت آپدیت اتوماتیک
-const CACHE_NAME = 'tpm-v1.0.2'; // این رو هر بار آپدیت کن
-const APP_VERSION = '1.0.2'; // این هم هماهنگ با CACHE_NAME
+const CACHE_NAME = 'tpm-v1.0.0'; // این رو هر بار آپدیت کن
+const APP_VERSION = '1.0.0'; // این هم هماهنگ با CACHE_NAME
 
 const urlsToCache = [
   './',
