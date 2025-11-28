@@ -851,7 +851,7 @@
                     <div class="user-name" id="userName">اپراتور</div>
                     <div class="login-time" id="loginTime">در حال بارگذاری...</div>
                 </div>
-                <div class="user-avatar" id="userAvatar">اپ</div>
+                <div class="user-avatar" id="userAvatar">O</div>
             </div>
         </div>
     </nav>
@@ -958,7 +958,9 @@
             </form>
         </div>
     </div>
-
+    <div id="offlineAlert" style="display: none; position: fixed; top: 0; left: 0; right: 0; background: #e74c3c; color: white; text-align: center; padding: 10px; z-index: 10003; font-family: Vazirmatn;">
+        <i class="fas fa-wifi-slash"></i> حالت آفلاین - اتصال اینترنت برقرار نیست
+    </div>
     <script>
         // ==================== CUSTOM ALERT SYSTEM ====================
         delete window.alert;
@@ -1376,6 +1378,29 @@
         if (window.matchMedia('(display-mode: standalone)').matches) {
             document.body.style.overscrollBehavior = 'none';
         }
+
+
+           // اضافه کن به ابتدای اسکریپت‌ها
+// تشخیص وضعیت آنلاین/آفلاین
+// سرویس ورکر
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+        navigator.serviceWorker.register('../sw.js');
+    });
+}
+
+// مدیریت آفلاین
+window.addEventListener('online', function() {
+    document.getElementById('offlineAlert').style.display = 'none';
+});
+
+window.addEventListener('offline', function() {
+    document.getElementById('offlineAlert').style.display = 'block';
+});
+
+if (!navigator.onLine) {
+    document.getElementById('offlineAlert').style.display = 'block';
+}
         </script>
 </body>
 </html>
