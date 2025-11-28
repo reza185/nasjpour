@@ -5,10 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="TPM PRO">
     <meta name="theme-color" content="#2c3e50">
-    <title>TMP</title>
+    <meta name="msapplication-TileColor" content="#2c3e50">
+    <meta name="msapplication-TileImage" content="icons/icon-144x144.png">
+    <meta name="msapplication-config" content="browserconfig.xml">
+    
+    <title>TPM PRO - انبار</title>
+    
+    <!-- آیکون‌های PWA -->
     <link rel="icon" href="icons/icon-192x192.png">
     <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="167x167" href="icons/icon-167x167.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180x180.png">
+    
+    <!-- مانفیست PWA -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- فونت‌ها و استایل‌ها -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
@@ -27,22 +42,19 @@
 
         html {
             height: 100%;
-            overflow: hidden;
+            scroll-behavior: smooth;
         }
 
         body {
             width: 100%;
             height: 100vh;
             height: -webkit-fill-available;
-            overflow: hidden;
+            overflow-x: hidden;
             background: #f8f9fa;
             color: var(--dark);
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            position: relative;
             -webkit-overflow-scrolling: touch;
+            overscroll-behavior-y: contain;
         }
 
         :root {
@@ -55,6 +67,871 @@
             --light: #ecf0f1;
             --gray: #95a5a6;
             --success: #2ecc71;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --safe-area-inset-top: env(safe-area-inset-top);
+            --safe-area-inset-bottom: env(safe-area-inset-bottom);
+        }
+
+        /* نویگیشن - با پشتیبانی از ناچ آیفون */
+        .navbar {
+            background: var(--primary);
+            color: white;
+            padding: 0 15px;
+            padding-top: calc(15px + var(--safe-area-inset-top, 0px));
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            width: 100%;
+            height: calc(60px + var(--safe-area-inset-top, 0px));
+            flex-shrink: 0;
+        }
+
+        .nav-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            background: transparent;
+            width: 35px;
+            height: 35px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .logo-text {
+            font-size: 16px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .nav-link.active {
+            background: rgba(255,255,255,0.15);
+        }
+
+        .nav-link:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-details {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 2px;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .login-time {
+            font-size: 11px;
+            opacity: 0.8;
+            color: #ecf0f1;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            border: 2px solid rgba(255,255,255,0.2);
+            flex-shrink: 0;
+        }
+
+        /* محتوای اصلی */
+        .main-wrapper {
+            height: calc(100vh - 60px - var(--safe-area-inset-top, 0px));
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 20px 15px;
+            padding-bottom: calc(20px + var(--safe-area-inset-bottom, 0px));
+            width: 100%;
+        }
+
+        .header-card {
+            background: var(--secondary);
+            color: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: 100%;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            gap: 15px;
+        }
+
+        .page-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .page-subtitle {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .login-info {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .login-info i {
+            font-size: 11px;
+        }
+
+        .read-only-note {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            border-right: 4px solid var(--secondary);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            overflow-x: auto;
+            max-width: 100%;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 650px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: right;
+            border-bottom: 1px solid #eee;
+            white-space: nowrap;
+        }
+
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-adequate { background: #e8f5e8; color: var(--success); }
+        .status-low { background: #fff8e1; color: var(--warning); }
+        .status-critical { background: #ffebee; color: var(--danger); }
+
+        /* ناتفیکیشن PWA */
+        .pwa-install-prompt {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: var(--primary);
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            z-index: 1000;
+            display: none;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        .pwa-prompt-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .pwa-icon {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .pwa-text {
+            flex: 1;
+        }
+
+        .pwa-title {
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .pwa-description {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .pwa-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .pwa-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .pwa-install {
+            background: var(--accent);
+            color: white;
+        }
+
+        .pwa-cancel {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* اسپینر لودینگ */
+        .loading-spinner {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: white;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* رسپانسیو */
+        @media (max-width: 768px) {
+            .stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-links {
+                gap: 8px;
+            }
+            
+            .nav-link span {
+                display: none;
+            }
+            
+            .user-details {
+                display: none;
+            }
+
+            .header-top {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            table {
+                font-size: 14px;
+            }
+            
+            th, td {
+                padding: 8px;
+            }
+
+            .pwa-install-prompt {
+                bottom: calc(20px + var(--safe-area-inset-bottom, 0px));
+            }
+        }
+
+        @media (max-width: 480px) {
+            .navbar {
+                padding: 0 10px;
+                padding-top: calc(10px + var(--safe-area-inset-top, 0px));
+            }
+            
+            .nav-container {
+                height: 50px;
+            }
+            
+            .logo-icon {
+                width: 30px;
+                height: 30px;
+                font-size: 14px;
+            }
+            
+            .user-avatar {
+                width: 35px;
+                height: 35px;
+                font-size: 12px;
+            }
+            
+            .container {
+                padding: 15px 10px;
+                padding-bottom: calc(15px + var(--safe-area-inset-bottom, 0px));
+            }
+            
+            .header-card {
+                padding: 15px;
+            }
+            
+            .page-title {
+                font-size: 18px;
+            }
+        }
+
+        /* مخفی کردن اسکرولبار در موبایل */
+        .container::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .container::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 2px;
+        }
+
+        .container::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
+        /* استایل‌های مخصوص iOS */
+        @supports (-webkit-touch-callout: none) {
+            body {
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .navbar {
+                padding-top: calc(15px + constant(safe-area-inset-top));
+                height: calc(60px + constant(safe-area-inset-top));
+            }
+            
+            .container {
+                padding-bottom: calc(20px + constant(safe-area-inset-bottom));
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- نویگیشن -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <div class="logo-icon">
+                    <img src="../../Logo.png" style="max-block-size:100% ;" >
+                </div>
+                <div class="logo-text">TPM PRO</div>
+            </div>
+            
+            <div class="nav-links">
+                <a href="dashboard.html" class="nav-link">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>داشبورد</span>
+                </a>
+                <a href="RequestsScreen.html" class="nav-link ">
+                    <i class="fas fa-clipboard-list"></i>
+                    <span>گزارشات دریافتی</span>
+                </a>
+                <a href="warehouse.html" class="nav-link active">
+                    <i class="fas fa-warehouse"></i>
+                    <span>انبار</span>
+                </a>
+                <a href="troubleshooting.html" class="nav-link" id="troubleshootingLink">
+                    <i class="fas fa-tools"></i>
+                    <span>عیب‌یابی</span>
+                </a>
+            </div>
+            
+            <div class="user-info">
+                <div class="user-details">
+                    <div class="user-name" id="userName">سرپرست</div>
+                    <div class="login-time" id="loginTime">در حال بارگذاری...</div>
+                </div>
+                <div class="user-avatar" id="userAvatar">S</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- محتوای اصلی -->
+    <div class="main-wrapper">
+        <div class="container">
+            <!-- هدر صفحه -->
+            <div class="header-card">
+                <div class="header-top">
+                    <div>
+                        <h1 class="page-title">مشاهده موجودی انبار</h1>
+                        <p class="page-subtitle">سیستم TPM - دسترسی سرپرست (فقط مشاهده)</p>
+                        <div class="login-info">
+                            <i class="fas fa-clock"></i>
+                            آخرین بروزرسانی: <span id="lastUpdate">در حال بارگذاری...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="read-only-note">
+                <i class="fas fa-eye"></i>
+                <strong>دسترسی مشاهده‌only:</strong> شما فقط امکان مشاهده اطلاعات را دارید
+            </div>
+
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalItems">0</div>
+                    <div>کل قطعات</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="criticalItems">0</div>
+                    <div>نیاز به توجه</div>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>کد قطعه</th>
+                            <th>نام قطعه</th>
+                            <th>دسته‌بندی</th>
+                            <th>موجودی</th>
+                            <th>وضعیت</th>
+                            <th>محل نگهداری</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventoryTable">
+                        <!-- داده ها اینجا لود میشن -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- پاپ آپ نصب PWA -->
+    <div class="pwa-install-prompt" id="pwaInstallPrompt">
+        <div class="pwa-prompt-content">
+            <div class="pwa-icon">
+                <i class="fas fa-download"></i>
+            </div>
+            <div class="pwa-text">
+                <div class="pwa-title">نصب اپلیکیشن TPM PRO</div>
+                <div class="pwa-description">برای تجربه بهتر، اپلیکیشن را نصب کنید</div>
+            </div>
+            <div class="pwa-actions">
+                <button class="pwa-btn pwa-cancel" id="pwaCancel">بعداً</button>
+                <button class="pwa-btn pwa-install" id="pwaInstall">نصب</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- اسپینر لودینگ -->
+    <div class="loading-spinner" id="loadingSpinner">
+        <div class="spinner"></div>
+        <div>در حال بارگذاری...</div>
+    </div>
+
+    <!-- آفلاین آلرت -->
+    <div id="offlineAlert" style="display: none; position: fixed; top: 0; left: 0; right: 0; background: #e74c3c; color: white; text-align: center; padding: 10px; z-index: 10003; font-family: Vazirmatn; padding-top: calc(10px + var(--safe-area-inset-top, 0px));">
+        <i class="fas fa-wifi-slash"></i> حالت آفلاین - اتصال اینترنت برقرار نیست
+    </div>
+
+    <script>
+        // تنظیمات Supabase
+        const SUPABASE_URL = 'https://kalykylvjqigqlaprlca.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImthbHlreWx2anFpZ3FsYXBybGNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM1NjI1OTcsImV4cCI6MjA3OTEzODU5N30.S8YtogVrxkqYjkgfkGpy4_mS6mqaNxmsHjxnhyBPwEY';
+        
+        let supabaseClient = null;
+        let deferredPrompt = null;
+
+        // مقداردهی اولیه Supabase
+        function initializeSupabase() {
+            if (typeof supabase === 'undefined') {
+                console.error('Supabase لود نشده!');
+                return null;
+            }
+            
+            if (!supabaseClient) {
+                supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            }
+            return supabaseClient;
+        }
+
+        // دریافت داده از دیتابیس
+        async function fetchInventoryData() {
+            try {
+                showLoading(true);
+                const client = initializeSupabase();
+                if (!client) return [];
+
+                const { data, error } = await client
+                    .from('inventory')
+                    .select('*')
+                    .order('name');
+
+                if (error) throw error;
+                return data || [];
+            } catch (error) {
+                console.error('خطا در دریافت داده:', error);
+                return [];
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // نمایش داده در جدول
+        function renderInventoryTable(data) {
+            const tableBody = document.getElementById('inventoryTable');
+            
+            if (data.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 40px; color: var(--gray);">
+                            <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 10px; display: block;"></i>
+                            داده‌ای برای نمایش وجود ندارد
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            let tableHTML = '';
+            let totalItems = 0;
+            let criticalItems = 0;
+
+            data.forEach(item => {
+                totalItems++;
+                
+                // تعیین وضعیت
+                let statusText = '';
+                let statusClass = '';
+                
+                if (item.current_stock === 0) {
+                    statusText = 'اتمام موجودی';
+                    statusClass = 'status-critical';
+                    criticalItems++;
+                } else if (item.current_stock <= (item.min_stock || 5)) {
+                    statusText = 'موجودی کم';
+                    statusClass = 'status-low';
+                    criticalItems++;
+                } else {
+                    statusText = 'کافی';
+                    statusClass = 'status-adequate';
+                }
+
+                tableHTML += `
+                    <tr>
+                        <td><strong>${item.code || '---'}</strong></td>
+                        <td>${item.name || '---'}</td>
+                        <td>${item.category || '---'}</td>
+                        <td>${item.current_stock || 0} ${item.unit || ''}</td>
+                        <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                        <td>${item.location || '---'}</td>
+                    </tr>
+                `;
+            });
+
+            // آپدیت آمار
+            document.getElementById('totalItems').textContent = totalItems;
+            document.getElementById('criticalItems').textContent = criticalItems;
+            document.getElementById('lastUpdate').textContent = new Date().toLocaleString('fa-IR');
+            
+            tableBody.innerHTML = tableHTML;
+        }
+
+        // مدیریت زمان ورود
+        function updateLoginTime() {
+            const now = new Date();
+            const loginTimeElement = document.getElementById('loginTime');
+            
+            if (loginTimeElement) {
+                loginTimeElement.textContent = now.toLocaleString('fa-IR');
+            }
+        }
+
+        // نمایش/مخفی کردن لودینگ
+        function showLoading(show) {
+            const spinner = document.getElementById('loadingSpinner');
+            if (spinner) {
+                spinner.style.display = show ? 'flex' : 'none';
+            }
+        }
+
+        // مدیریت PWA
+        function initializePWA() {
+            // رویداد نصب PWA
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                
+                // نمایش پاپ آپ نصب بعد از 5 ثانیه
+                setTimeout(() => {
+                    showInstallPrompt();
+                }, 5000);
+            });
+
+            // رویداد پس از نصب
+            window.addEventListener('appinstalled', () => {
+                console.log('PWA نصب شد');
+                deferredPrompt = null;
+                hideInstallPrompt();
+            });
+
+            // دکمه‌های نصب PWA
+            document.getElementById('pwaInstall').addEventListener('click', async () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    if (outcome === 'accepted') {
+                        console.log('کاربر نصب را پذیرفت');
+                    }
+                    deferredPrompt = null;
+                    hideInstallPrompt();
+                }
+            });
+
+            document.getElementById('pwaCancel').addEventListener('click', hideInstallPrompt);
+        }
+
+        function showInstallPrompt() {
+            // فقط اگر قبلاً نصب نشده باشد نمایش بده
+            if (!isAppInstalled() && deferredPrompt) {
+                const prompt = document.getElementById('pwaInstallPrompt');
+                prompt.style.display = 'block';
+                
+                // مخفی کردن خودکار بعد از 15 ثانیه
+                setTimeout(hideInstallPrompt, 15000);
+            }
+        }
+
+        function hideInstallPrompt() {
+            const prompt = document.getElementById('pwaInstallPrompt');
+            prompt.style.display = 'none';
+        }
+
+        function isAppInstalled() {
+            return window.matchMedia('(display-mode: standalone)').matches || 
+                   window.navigator.standalone === true;
+        }
+
+        // مدیریت وضعیت آنلاین/آفلاین
+        function initializeOfflineSupport() {
+            window.addEventListener('online', function() {
+                document.getElementById('offlineAlert').style.display = 'none';
+                // رفرش داده‌ها هنگام آنلاین شدن
+                setTimeout(async () => {
+                    const data = await fetchInventoryData();
+                    renderInventoryTable(data);
+                }, 1000);
+            });
+
+            window.addEventListener('offline', function() {
+                document.getElementById('offlineAlert').style.display = 'block';
+            });
+
+            if (!navigator.onLine) {
+                document.getElementById('offlineAlert').style.display = 'block';
+            }
+        }
+
+        // ثبت Service Worker
+        async function registerServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                try {
+                    const registration = await navigator.worker.register('../sw.js');
+                    console.log('ServiceWorker ثبت شد:', registration);
+                } catch (error) {
+                    console.error('خطا در ثبت ServiceWorker:', error);
+                }
+            }
+        }
+
+        // لود داده ها هنگام بارگذاری صفحه
+        document.addEventListener('DOMContentLoaded', async function() {
+            // جلوگیری از زوم با حرکات چندلمسی
+            document.addEventListener('touchstart', function(e) {
+                if (e.touches.length > 1) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+
+            let lastTouchEnd = 0;
+            document.addEventListener('touchend', function(e) {
+                const now = (new Date()).getTime();
+                if (now - lastTouchEnd <= 300) {
+                    e.preventDefault();
+                }
+                lastTouchEnd = now;
+            }, false);
+
+            // مقداردهی اولیه
+            updateLoginTime();
+            initializePWA();
+            initializeOfflineSupport();
+            registerServiceWorker();
+
+            // تغییر وضعیت فعال در نویگیشن
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+
+            // بارگذاری داده‌های انبار
+            console.log('در حال بارگذاری داده های انبار...');
+            const data = await fetchInventoryData();
+            renderInventoryTable(data);
+            
+            // رفرش خودکار هر 2 دقیقه
+            setInterval(async () => {
+                if (navigator.onLine) {
+                    const newData = await fetchInventoryData();
+                    renderInventoryTable(newData);
+                }
+            }, 120000);
+
+            // نمایش اطلاعات کاربر
+            const userNameElement = document.getElementById('userName');
+            const userAvatarElement = document.getElementById('userAvatar');
+            
+            if (userNameElement) {
+                userNameElement.textContent = 'سرپرست (توسعه)';
+            }
+            if (userAvatarElement) {
+                userAvatarElement.textContent = 'S';
+            }
+        });
+
+        // جلوگیری از کلیک راست و کپی
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
+
+        document.addEventListener('copy', function(e) {
+            e.preventDefault();
+        });
+    </script>
+</body>
+</html>            --success: #2ecc71;
             --warning: #f39c12;
             --danger: #e74c3c;
         }
