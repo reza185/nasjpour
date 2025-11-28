@@ -1099,6 +1099,64 @@ window.addEventListener('offline', function() {
 if (!navigator.onLine) {
     document.getElementById('offlineAlert').style.display = 'block';
 }
+
+
+// ==================== غیرفعال کردن رفرش ====================
+(function disableRefresh() {
+    'use strict';
+    
+    // جلوگیری از کلیدهای رفرش
+    document.addEventListener('keydown', function(e) {
+        const refreshKeys = [
+            'F5', 'r', 'R'
+        ];
+        
+        if (refreshKeys.includes(e.key) && (e.ctrlKey || e.metaKey)) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('🔄 رفرش غیرفعال است');
+            return false;
+        }
+        
+        // جلوگیری از F5
+        if (e.key === 'F5') {
+            e.preventDefault();
+            return false;
+        }
+    });
+    
+    // جلوگیری از beforeunload
+    window.addEventListener('beforeunload', function(e) {
+        e.preventDefault();
+        e.returnValue = 'تغییرات ذخیره نشده ممکن است از بین بروند. آیا مطمئن هستید؟';
+        return e.returnValue;
+    });
+    
+    // جلوگیری از pull-to-refresh در موبایل
+    let touchStartY = 0;
+    document.addEventListener('touchstart', function(e) {
+        touchStartY = e.touches[0].clientY;
+        if (e.touches.length > 1) {
+            e.preventDefault();
+        }
+    }, { passive: false });
+    
+    document.addEventListener('touchmove', function(e) {
+        const touchY = e.touches[0].clientY;
+        // اگر کاربر در بالای صفحه به پایین کشید
+        if (touchY > touchStartY && window.scrollY <= 0) {
+            e.preventDefault();
+        }
+    }, { passive: false });
+    
+    // جلوگیری از راست کلیک
+    document.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+        return false;
+    });
+    
+    console.log('✅ قابلیت رفرش غیرفعال شد');
+})();
     </script>
 </body>
 </html>
