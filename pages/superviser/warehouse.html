@@ -649,6 +649,152 @@
         //     }
         // }, { passive: false });
     </script>
+    <!-- در انتهای <body> همه صفحات سرپرست -->
+<script>
+class SupervisorNotification {
+    constructor() {
+        this.hasRequestedPermission = false;
+        this.processedIds = new Set();
+        this.init();
+    }
+
+    async init() {
+        await this.setupServiceWorker();
+        this.setupRealtime();
+        this.injectStyles();
+    }
+
+    async setupServiceWorker() {
+        if ('serviceWorker' in navigator) {
+            await navigator.serviceWorker.register('/nasjpour/sw.js');
+        }
+    }
+
+    setupRealtime() {
+        this.subscription = supabase
+            .channel('operator-reports-channel')
+            .on('postgres_changes', 
+                { 
+                    event: 'INSERT', 
+                    schema: 'public', 
+                    table: 'operatourreports'
+                }, 
+                (payload) => this.handleNewRequest(payload)
+            )
+            .subscribe();
+
+        console.log('✅ سرپرست - گوش دادن به درخواست‌های جدید فعال شد');
+    }
+
+    async handleNewRequest(payload) {
+        const requestId = payload.new.id;
+        
+        if (this.processedIds.has(requestId)) return;
+        this.processedIds.add(requestId);
+
+        if (this.processedIds.size > 50) {
+            const firstId = this.processedIds.values().next().value;
+            this.processedIds.delete(firstId);
+        }
+
+        await this.showNotification(
+            '👨‍💼 درخواست سرپرستی جدید', 
+            `دستگاه: ${payload.new.machine_name || 'سیستم'}`,
+            'RequestsScreen.html' // صفحه مقصد
+        );
+    }
+
+    async showNotification(title, message, targetPage) {
+        if (!this.hasRequestedPermission && Notification.permission === 'default') {
+            await Notification.requestPermission();
+            this.hasRequestedPermission = true;
+        }
+
+        if (Notification.permission === 'granted') {
+            new Notification(title, {
+                body: message,
+                icon: '/nasjpour/icons/icon-192x192.png',
+                tag: 'supervisor-request'
+            });
+        } else {
+            this.showInAppNotification(title, message, targetPage);
+        }
+    }
+
+    showInAppNotification(title, message, targetPage) {
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            z-index: 10000;
+            font-family: Vazirmatn, sans-serif;
+            cursor: pointer;
+            max-width: 400px;
+            width: 90vw;
+            text-align: center;
+            animation: notificationSlideIn 0.5s ease;
+            border-right: 4px solid #2ecc71;
+        `;
+        
+        notification.innerHTML = `
+            <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+                <div style="font-size: 20px;">👨‍💼</div>
+                <div>
+                    <div style="font-weight: bold; font-size: 14px;">${title}</div>
+                    <div style="font-size: 12px; opacity: 0.9;">${message}</div>
+                    <div style="font-size: 10px; opacity: 0.7; margin-top: 5px;">برای مشاهده کلیک کنید</div>
+                </div>
+            </div>
+        `;
+
+        // کلیک روی اعلان - برو به صفحه درخواست‌ها
+        notification.onclick = () => {
+            if (window.location.pathname.includes(targetPage)) {
+                window.location.reload();
+            } else {
+                window.location.href = targetPage;
+            }
+        };
+
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.style.animation = 'notificationSlideOut 0.5s ease';
+                setTimeout(() => notification.remove(), 500);
+            }
+        }, 5000);
+    }
+
+    injectStyles() {
+        if (document.getElementById('supervisor-notification-styles')) return;
+        
+        const style = document.createElement('style');
+        style.id = 'supervisor-notification-styles';
+        style.textContent = `
+            @keyframes notificationSlideIn {
+                from { opacity: 0; transform: translateX(-50%) translateY(-30px); }
+                to { opacity: 1; transform: translateX(-50%) translateY(0); }
+            }
+            @keyframes notificationSlideOut {
+                from { opacity: 1; transform: translateX(-50%) translateY(0); }
+                to { opacity: 0; transform: translateX(-50%) translateY(-30px); }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+}
+
+// راه‌اندازی در تمام صفحات سرپرست
+new SupervisorNotification();
+</script>
     <script src="./supervisor-notifier.js"></script>
 </body>
 </html> 
