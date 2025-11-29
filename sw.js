@@ -1,113 +1,123 @@
-// sw.js - Service Worker اصلاح شده
-const CACHE_NAME = 'tpm-notifications-v1-' + Date.now();
+// ==================== SERVICE WORKER - PWA REAL APP ====================
+const CACHE_NAME = 'tpm v1.0.0' +Date.new();
 
-// مدیریت وضعیت برای جلوگیری از دوباره کاری
-let notificationCooldown = {
-    managers: new Map(),
-    supervisors: new Map()
-};
-
-const COOLDOWN_TIME = 5000; // 5 ثانیه
+// مدیریت وضعیت اعلان‌ها
+let notificationCooldown = new Map();
+const COOLDOWN_TIME = 5000;
 
 self.addEventListener('install', event => {
-    console.log('🚀 نصب Service Worker...');
+    console.log('🚀 نصب اپلیکیشن TPM PRO...');
     self.skipWaiting();
 });
 
 self.addEventListener('activate', event => {
-    console.log('✅ Service Worker فعال شد');
+    console.log('✅ اپلیکیشن فعال شد');
     event.waitUntil(self.clients.claim());
 });
 
-// دریافت پیام از صفحات - اصلاح شده
+// دریافت پیام از اپ
 self.addEventListener('message', event => {
-    console.log('📨 پیام دریافت:', event.data?.type);
+    const { type, data, role } = event.data || {};
+    console.log('📱 پیام از اپ:', type, 'برای:', role);
     
     const now = Date.now();
-    const data = event.data;
-    
-    if (data?.type === 'SHOW_MANAGER_NOTIFICATION') {
-        const reportId = data.reportId || 'default';
-        
-        // چک کولدان برای جلوگیری از تکراری
-        if (!notificationCooldown.managers.has(reportId) || 
-            (now - notificationCooldown.managers.get(reportId)) > COOLDOWN_TIME) {
-            
-            notificationCooldown.managers.set(reportId, now);
+    const messageId = data?.id || 'default';
+
+    if (type === 'SHOW_MANAGER_NOTIFICATION') {
+        if (!notificationCooldown.has(messageId) || (now - notificationCooldown.get(messageId)) > COOLDOWN_TIME) {
+            notificationCooldown.set(messageId, now);
             this.showManagerNotification(data);
-            this.broadcastToManagers(data);
+            this.broadcastToRole('manager', data);
         }
     }
     
-    if (data?.type === 'SHOW_SUPERVISOR_NOTIFICATION') {
-        const requestId = data.requestId || 'default';
-        
-        // چک کولدان برای جلوگیری از تکراری
-        if (!notificationCooldown.supervisors.has(requestId) || 
-            (now - notificationCooldown.supervisors.get(requestId)) > COOLDOWN_TIME) {
-            
-            notificationCooldown.supervisors.set(requestId, now);
+    if (type === 'SHOW_SUPERVISOR_NOTIFICATION') {
+        if (!notificationCooldown.has(messageId) || (now - notificationCooldown.get(messageId)) > COOLDOWN_TIME) {
+            notificationCooldown.set(messageId, now);
             this.showSupervisorNotification(data);
-            this.broadcastToSupervisors(data);
+            this.broadcastToRole('supervisor', data);
         }
     }
 });
 
-// نمایش نوتیفیکیشن مرورگر برای مدیران - اصلاح شده
+// نمایش نوتیفیکیشن برای مدیر
 function showManagerNotification(data) {
-    const tag = 'manager-' + (data.reportId || Date.now());
-    
     const options = {
-        body: data.machineName ? `گزارش جدید برای دستگاه: ${data.machineName}` : 'گزارش جدید در صفحه گزارشات دارید',
+        body: data.machineName ? `گزارش جدید: ${data.machineName}` : 'گزارش مدیریتی جدید',
         icon: './icons/icon-192x192.png',
-        tag: tag,
+        badge: './icons/icon-72x72.png',
+        tag: 'manager-' + (data.id || Date.now()),
         requireInteraction: true,
+        silent: false,
+        vibrate: [200, 100, 200],
         data: { 
-            targetUrl: './pages/manager/reports.html',
-            source: 'manager',
-            reportId: data.reportId
-        }
+            url: '/nasjpour/pages/manager/reports.html',
+            role: 'manager',
+            reportId: data.id
+        },
+        actions: [
+            {
+                action: 'view',
+                title: '📋 مشاهده'
+            },
+            {
+                action: 'close', 
+                title: '❌ بستن'
+            }
+        ]
     };
 
-    self.registration.showNotification('📋 گزارش مدیریتی جدید', options)
-        .then(() => console.log('✅ اعلان مرورگر مدیر نمایش داده شد'))
-        .catch(error => console.error('❌ خطای اعلان مدیر:', error));
+    self.registration.showNotification('📋 گزارش مدیریتی', options)
+        .then(() => console.log('✅ اعلان مدیر نمایش داده شد'))
+        .catch(err => console.error('❌ خطای اعلان مدیر:', err));
 }
 
-// نمایش نوتیفیکیشن مرورگر برای سرپرستان - اصلاح شده
+// نمایش نوتیفیکیشن برای سرپرست
 function showSupervisorNotification(data) {
-    const tag = 'supervisor-' + (data.requestId || Date.now());
-    
     const options = {
-        body: data.machineName ? `درخواست جدید برای دستگاه: ${data.machineName}` : 'درخواست جدید در صفحه درخواست‌ها دارید',
+        body: data.machineName ? `درخواست جدید: ${data.machineName}` : 'درخواست سرپرستی جدید',
         icon: './icons/icon-192x192.png',
-        tag: tag,
+        badge: './icons/icon-72x72.png',
+        tag: 'supervisor-' + (data.id || Date.now()),
         requireInteraction: true,
+        silent: false,
+        vibrate: [200, 100, 200],
         data: { 
-            targetUrl: './pages/supervisor/RequestsScreen.html',
-            source: 'supervisor',
-            requestId: data.requestId
-        }
+            url: '/nasjpour/pages/supervisor/RequestsScreen.html',
+            role: 'supervisor',
+            requestId: data.id
+        },
+        actions: [
+            {
+                action: 'view',
+                title: '📝 مشاهده'
+            },
+            {
+                action: 'close',
+                title: '❌ بستن'
+            }
+        ]
     };
 
-    self.registration.showNotification('👨‍💼 درخواست سرپرستی جدید', options)
-        .then(() => console.log('✅ اعلان مرورگر سرپرست نمایش داده شد'))
-        .catch(error => console.error('❌ خطای اعلان سرپرست:', error));
+    self.registration.showNotification('👨‍💼 درخواست سرپرستی', options)
+        .then(() => console.log('✅ اعلان سرپرست نمایش داده شد'))
+        .catch(err => console.error('❌ خطای اعلان سرپرست:', err));
 }
 
-// ارسال به تمام صفحات مدیر - اصلاح شده
-function broadcastToManagers(data) {
+// ارسال به نقش خاص
+function broadcastToRole(role, data) {
     self.clients.matchAll({ includeUncontrolled: true }).then(clients => {
-        let managerClients = clients.filter(client => 
-            client.url.includes('/manager/') || 
-            client.url.includes('reports.html')
+        const roleClients = clients.filter(client => 
+            client.url.includes(`/${role}/`) || 
+            (role === 'manager' && client.url.includes('reports.html')) ||
+            (role === 'supervisor' && client.url.includes('RequestsScreen.html'))
         );
         
-        console.log(`📤 ارسال به ${managerClients.length} مدیر`);
+        console.log(`📤 ارسال به ${roleClients.length} ${role}`);
         
-        managerClients.forEach(client => {
+        roleClients.forEach(client => {
             client.postMessage({
-                type: 'MANAGER_NOTIFICATION',
+                type: `${role.toUpperCase()}_NOTIFICATION`,
                 data: data,
                 timestamp: new Date().toISOString(),
                 source: 'service-worker'
@@ -116,44 +126,47 @@ function broadcastToManagers(data) {
     });
 }
 
-// ارسال به تمام صفحات سرپرست - اصلاح شده
-function broadcastToSupervisors(data) {
-    self.clients.matchAll({ includeUncontrolled: true }).then(clients => {
-        let supervisorClients = clients.filter(client => 
-            client.url.includes('/supervisor/') || 
-            client.url.includes('RequestsScreen.html')
-        );
-        
-        console.log(`📤 ارسال به ${supervisorClients.length} سرپرست`);
-        
-        supervisorClients.forEach(client => {
-            client.postMessage({
-                type: 'SUPERVISOR_NOTIFICATION', 
-                data: data,
-                timestamp: new Date().toISOString(),
-                source: 'service-worker'
-            });
-        });
-    });
-}
-
-// مدیریت کلیک روی نوتیفیکیشن - اصلاح شده
+// مدیریت کلیک روی نوتیفیکیشن
 self.addEventListener('notificationclick', event => {
     console.log('🖱️ کلیک روی نوتیفیکیشن:', event.notification.data);
     event.notification.close();
     
-    const targetUrl = event.notification.data?.targetUrl || './';
+    const targetUrl = event.notification.data?.url || '/nasjpour/';
+    const action = event.action;
     
     event.waitUntil(
         self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clients => {
-            // پیدا کردن تب باز موجود
-            for (let client of clients) {
-                if (client.url.includes(targetUrl) && 'focus' in client) {
-                    return client.focus();
+            // اگر کاربر روی "مشاهده" کلیک کرد
+            if (action === 'view') {
+                // پیدا کردن تب باز
+                for (let client of clients) {
+                    if (client.url.includes(targetUrl) && 'focus' in client) {
+                        return client.focus();
+                    }
                 }
+                // باز کردن در پنجره جدید
+                return self.clients.openWindow(targetUrl);
             }
-            // اگر تب پیدا نشد، تب جدید باز کن
-            return self.clients.openWindow(targetUrl);
+            // اگر روی "بستن" کلیک کرد یا بدون action
+            else if (action === 'close') {
+                // فقط بستن نوتیفیکیشن
+                return;
+            }
+            // کلیک معمولی روی بدنه نوتیفیکیشن
+            else {
+                // باز کردن اپ
+                for (let client of clients) {
+                    if ('focus' in client) {
+                        return client.focus();
+                    }
+                }
+                return self.clients.openWindow(targetUrl);
+            }
         })
     );
+});
+
+// مدیریت بستن نوتیفیکیشن
+self.addEventListener('notificationclose', event => {
+    console.log('📪 نوتیفیکیشن بسته شد:', event.notification.tag);
 });
