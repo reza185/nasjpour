@@ -3,11 +3,22 @@ class SupervisorNotifier {
     constructor() {
         this.notificationQueue = [];
         this.isShowing = false;
-        this.init();
+        // فقط در صفحات سرپرست راه‌اندازی شود
+        if (this.shouldInitialize()) {
+            this.init();
+        }
+    }
+
+    // بررسی آیا باید در این صفحه راه‌اندازی شود
+    shouldInitialize() {
+        const currentPage = window.location.pathname;
+        return currentPage.includes('RequestsScreen.html') || 
+               currentPage.includes('supervisor') ||
+               currentPage === '/';
     }
 
     async init() {
-        // بررسی دسترسی هنگام راه‌اندازی
+        console.log('🚀 راه‌اندازی سرپرست نوتیفایر...');
         await NotificationSender.requestPermission();
         await this.setupServiceWorker();
         this.setupMessageListener();
@@ -34,6 +45,9 @@ class SupervisorNotifier {
 
     // نمایش اعلان درون‌برنامه‌ای
     showInAppNotification(data) {
+        // فقط اعلان‌های سرپرست را نمایش بده
+        if (data.data.role !== 'supervisor') return;
+
         const notification = {
             id: data.data.id || Date.now(),
             title: '👨‍💼 درخواست سرپرستی جدید',
@@ -126,11 +140,17 @@ class SupervisorNotifier {
     }
 }
 
-// راه‌اندازی خودکار
+// راه‌اندازی خودکار فقط در صفحات مربوطه
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-        window.supervisorNotifier = new SupervisorNotifier();
+        const currentPage = window.location.pathname;
+        if (currentPage.includes('RequestsScreen.html') || currentPage.includes('supervisor') || currentPage === '/') {
+            window.supervisorNotifier = new SupervisorNotifier();
+        }
     });
 } else {
-    window.supervisorNotifier = new SupervisorNotifier();
+    const currentPage = window.location.pathname;
+    if (currentPage.includes('RequestsScreen.html') || currentPage.includes('supervisor') || currentPage === '/') {
+        window.supervisorNotifier = new SupervisorNotifier();
+    }
 }
