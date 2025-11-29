@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#2c3e50">
-    <title>TPM PRO</title>
+    <title>TPM</title>
     <link rel="icon" href="icons/icon-192x192.png">
     <link rel="apple-touch-icon" href="icons/icon-192x192.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -1785,9 +1785,9 @@ async function loadReports() {
         renderReports(currentReports);
         
         // فعال کردن Real-time updates (فقط یک بار)
-        if (!window.reportsSubscription) {
-            setupRealTimeUpdates();
-        }
+        // if (!window.reportsSubscription) {
+        //     setupRealTimeUpdates();
+        // }
         
     } catch (error) {
         console.error('خطا در دریافت گزارشات:', error);
@@ -1796,71 +1796,71 @@ async function loadReports() {
 }
 
 // تنظیم Real-time updates
-function setupRealTimeUpdates() {
-    window.reportsSubscription = supabase
-        .channel('operatourreports-changes')
-        .on(
-            'postgres_changes',
-            {
-                event: '*',
-                schema: 'public',
-                table: 'operatourreports'
-            },
-            (payload) => {
-                console.log('تغییر Real-time دریافت شد:', payload);
-                showUpdateNotification(payload.eventType);
-                loadReports();
-            }
-        )
-        .subscribe((status) => {
-            if (status === 'SUBSCRIBED') {
-                console.log('✅ Real-time updates فعال شد');
-            } else if (status === 'CHANNEL_ERROR') {
-                console.error('❌ خطا در اتصال Real-time');
-            }
-        });
-}
+// function setupRealTimeUpdates() {
+//     window.reportsSubscription = supabase
+//         .channel('operatourreports-changes')
+//         .on(
+//             'postgres_changes',
+//             {
+//                 event: '*',
+//                 schema: 'public',
+//                 table: 'operatourreports'
+//             },
+//             (payload) => {
+//                 console.log('تغییر Real-time دریافت شد:', payload);
+//                 showUpdateNotification(payload.eventType);
+//                 loadReports();
+//             }
+//         )
+//         .subscribe((status) => {
+//             if (status === 'SUBSCRIBED') {
+//                 console.log('✅ Real-time updates فعال شد');
+//             } else if (status === 'CHANNEL_ERROR') {
+//                 console.error('❌ خطا در اتصال Real-time');
+//             }
+//         });
+// }
 
 // نمایش نوتیفیکیشن برای تغییرات
-function showUpdateNotification(eventType) {
-    const messages = {
-        'INSERT': '📋 گزارش جدید دریافت شد',
-        'UPDATE': '✏️ گزارش به‌روزرسانی شد', 
-        'DELETE': '🗑️ گزارش حذف شد'
-    };
+// function showUpdateNotification(eventType) {
+//     const messages = {
+//         'INSERT': '📋 گزارش جدید دریافت شد',
+//         'UPDATE': '✏️ گزارش به‌روزرسانی شد', 
+//         'DELETE': '🗑️ گزارش حذف شد'
+//     };
     
-    const message = messages[eventType] || 'تغییراتی در لیست گزارشات ایجاد شد';
+//     const message = messages[eventType] || 'تغییراتی در لیست گزارشات ایجاد شد';
     
-    const notification = document.createElement('div');
-    notification.style.cssText = `
-        position: fixed;
-        top: 70px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: var(--secondary);
-        color: white;
-        padding: 12px 20px;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        z-index: 1001;
-        font-size: 14px;
-        font-weight: 500;
-        animation: slideDown 0.3s ease;
-    `;
+//     const notification = document.createElement('div');
+//     notification.style.cssText = `
+//         position: fixed;
+//         top: 70px;
+//         left: 50%;
+//         transform: translateX(-50%);
+//         background: var(--secondary);
+//         color: white;
+//         padding: 12px 20px;
+//         border-radius: 8px;
+//         box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+//         z-index: 1001;
+//         font-size: 14px;
+//         font-weight: 500;
+//         animation: slideDown 0.3s ease;
+//     `;
     
-    notification.innerHTML = `
-        <i class="fas fa-sync-alt"></i>
-        ${message}
-    `;
+//     notification.innerHTML = `
+//         <i class="fas fa-sync-alt"></i>
+//         ${message}
+//     `;
     
-    document.body.appendChild(notification);
+//     document.body.appendChild(notification);
     
-    setTimeout(() => {
-        if (document.body.contains(notification)) {
-            document.body.removeChild(notification);
-        }
-    }, 3000);
-}
+//     setTimeout(() => {
+//         if (document.body.contains(notification)) {
+//             document.body.removeChild(notification);
+//         }
+//     }, 3000);
+// }
 
 // اضافه کردن animation برای نوتیفیکیشن
 const style = document.createElement('style');
@@ -1908,125 +1908,152 @@ if (!navigator.onLine) {
         
 // این متغیرها رو در بالای تابع اضافه کن
  // راه‌اندازی سیستم نوتیفیکیشن سرپرست
-        class SupervisorNotificationManager {
-            constructor() {
-                this.isProcessing = false;
-                this.processedIds = new Set();
-                this.subscription = null;
-                this.lastProcessedTime = 0;
-                this.MIN_INTERVAL = 3000; // 3 ثانیه
-                this.init();
+        // راه‌اندازی سیستم نوتیفیکیشن سرپرست - نسخه اصلاح شده
+class SupervisorNotificationManager {
+    constructor() {
+        this.isProcessing = false;
+        this.processedIds = new Set();
+        this.subscription = null;
+        this.lastProcessedTime = 0;
+        this.MIN_INTERVAL = 3000;
+        this.init();
+    }
+
+    async init() {
+        await this.setupRealtime();
+    }
+
+    async setupRealtime() {
+        try {
+            // لغو subscription موجود
+            if (this.subscription) {
+                await supabase.removeChannel(this.subscription);
             }
 
-            async init() {
-                await this.setupRealtime();
-            }
-
-            async setupRealtime() {
-                try {
-                    // لغو subscription موجود
-                    if (this.subscription) {
-                        await supabase.removeChannel(this.subscription);
+            this.subscription = supabase
+                .channel('operator-reports-channel')
+                .on('postgres_changes', 
+                    { 
+                        event: 'INSERT', 
+                        schema: 'public', 
+                        table: 'operatourreports'
+                    }, 
+                    (payload) => this.handleNewReport(payload)
+                )
+                .subscribe((status) => {
+                    console.log('📡 وضعیت سرپرست:', status);
+                    if (status === 'SUBSCRIBED') {
+                        console.log('✅ Real-time نوتیفیکیشن فعال شد');
                     }
+                });
 
-                    this.subscription = supabase
-                        .channel('operator-reports-channel')
-                        .on('postgres_changes', 
-                            { 
-                                event: 'INSERT', 
-                                schema: 'public', 
-                                table: 'operatourreports'
-                            }, 
-                            (payload) => this.handleNewReport(payload)
-                        )
-                        .subscribe((status) => {
-                            console.log('📡 وضعیت سرپرست:', status);
-                        });
+        } catch (error) {
+            console.error('❌ خطا در اتصال سرپرست:', error);
+            setTimeout(() => this.setupRealtime(), 10000);
+        }
+    }
 
-                    console.log('✅ گوش دادن به گزارشات اپراتورها فعال شد');
-
-                } catch (error) {
-                    console.error('❌ خطا در اتصال سرپرست:', error);
-                    setTimeout(() => this.setupRealtime(), 10000);
-                }
-            }
-
-            async handleNewReport(payload) {
-                const now = Date.now();
-                
-                // چک اینتروال زمانی
-                if (now - this.lastProcessedTime < this.MIN_INTERVAL) {
-                    console.log('⏰ اینتروال زمانی رعایت نشده');
-                    return;
-                }
-
-                // چک قفل پردازش
-                if (this.isProcessing) {
-                    console.log('🔒 در حال پردازش گزارش قبلی سرپرست...');
-                    return;
-                }
-
-                // چک تکراری
-                const reportId = payload.new.id;
-                if (this.processedIds.has(reportId)) {
-                    console.log('🔄 گزارش سرپرست تکراری:', reportId);
-                    return;
-                }
-
-                this.isProcessing = true;
-                this.lastProcessedTime = now;
-                this.processedIds.add(reportId);
-
-                try {
-                    console.log('👨‍💼 گزارش جدید اپراتور:', payload.new);
-                    
-                    await NotificationSender.notifySupervisors({
-                        id: reportId,
-                        machine_name: payload.new.machine_name,
-                        problem_description: payload.new.problem_description
-                    });
-
-                } catch (error) {
-                    console.error('❌ خطا در ارسال اعلان سرپرست:', error);
-                } finally {
-                    // آزاد کردن قفل بعد از تاخیر
-                    setTimeout(() => {
-                        this.isProcessing = false;
-                    }, 1000);
-
-                    // مدیریت حافظه
-                    this.cleanupProcessedIds();
-                }
-            }
-
-            cleanupProcessedIds() {
-                if (this.processedIds.size > 100) {
-                    const array = Array.from(this.processedIds);
-                    // نگه داشتن فقط 50 آیتم آخر
-                    this.processedIds = new Set(array.slice(-50));
-                }
-            }
+    async handleNewReport(payload) {
+        const now = Date.now();
+        
+        // چک اینتروال زمانی
+        if (now - this.lastProcessedTime < this.MIN_INTERVAL) {
+            return;
         }
 
-        // راه‌اندازی زمانی که DOM آماده شد
-        document.addEventListener('DOMContentLoaded', function() {
-            // کدهای موجود قبلی...
-            
-            // راه‌اندازی سیستم نوتیفیکیشن
-            setTimeout(() => {
-                new SupervisorNotificationManager();
-                console.log('✅ سیستم نوتیفیکیشن سرپرست راه‌اندازی شد');
-            }, 2000);
+        // چک قفل پردازش
+        if (this.isProcessing) {
+            return;
+        }
 
-            // تست دستی - برای بررسی کارکرد سیستم
-            window.testSupervisorNotification = function() {
-                NotificationSender.notifySupervisors({
-                    id: 'test-' + Date.now(),
-                    machine_name: 'دستگاه تست',
-                    problem_description: 'این یک تست سرپرست است'
-                });
-            };
-        })
+        // چک تکراری
+        const reportId = payload.new.id;
+        if (this.processedIds.has(reportId)) {
+            return;
+        }
+
+        this.isProcessing = true;
+        this.lastProcessedTime = now;
+        this.processedIds.add(reportId);
+
+        try {
+            console.log('👨‍💼 گزارش جدید اپراتور:', payload.new);
+            
+            // ارسال نوتیفیکیشن
+            await NotificationSender.notifySupervisors({
+                id: reportId,
+                machine_name: payload.new.machine_name,
+                problem_description: payload.new.problem_description
+            });
+
+            // نمایش نوتیفیکیشن درون‌صفحه‌ای
+            this.showUpdateNotification('INSERT');
+
+        } catch (error) {
+            console.error('❌ خطا در ارسال اعلان سرپرست:', error);
+        } finally {
+            setTimeout(() => {
+                this.isProcessing = false;
+            }, 1000);
+            this.cleanupProcessedIds();
+        }
+    }
+
+    // نمایش نوتیفیکیشن برای تغییرات
+    showUpdateNotification(eventType) {
+        const messages = {
+            'INSERT': '📋 گزارش جدید دریافت شد'
+        };
+        
+        const message = messages[eventType] || 'تغییراتی در لیست گزارشات ایجاد شد';
+        
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--secondary);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 1001;
+            font-size: 14px;
+            font-weight: 500;
+            animation: slideDown 0.3s ease;
+        `;
+        
+        notification.innerHTML = `
+            <i class="fas fa-bell"></i>
+            ${message}
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            if (document.body.contains(notification)) {
+                document.body.removeChild(notification);
+            }
+        }, 3000);
+    }
+
+    cleanupProcessedIds() {
+        if (this.processedIds.size > 100) {
+            const array = Array.from(this.processedIds);
+            this.processedIds = new Set(array.slice(-50));
+        }
+    }
+}
+
+// راه‌اندازی
+document.addEventListener('DOMContentLoaded', function() {
+    // راه‌اندازی سیستم نوتیفیکیشن
+    setTimeout(() => {
+        new SupervisorNotificationManager();
+        console.log('✅ سیستم نوتیفیکیشن سرپرست راه‌اندازی شد');
+    }, 2000);
+});
 
 
 
