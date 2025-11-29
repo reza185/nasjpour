@@ -1,5 +1,7 @@
-// ==================== NOTIFICATION SENDER - SMART SYSTEM ====================
+// ==================== NOTIFICATION SENDER - SMART PERMISSION ====================
 class NotificationSender {
+    static permissionRequested = false;
+
     // ارسال به مدیران
     static async notifyManagers(reportData = {}) {
         return await this.sendNotification('manager', reportData);
@@ -14,10 +16,10 @@ class NotificationSender {
     static async sendNotification(role, data) {
         console.log(`🚀 ارسال اعلان به ${role}...`);
         
-        // بررسی دسترسی
-        const hasPermission = await this.checkPermission();
+        // بررسی دسترسی - بدون درخواست مجدد
+        const hasPermission = await this.checkPermissionSilent();
         if (!hasPermission) {
-            console.log(`🔕 دسترسی نوتیفیکیشن برای ${role} وجود ندارد`);
+            console.log(`🔕 دسترسی نوتیفیکیشن برای ${role} وجود ندارد - ارسال نمی‌شود`);
             return false;
         }
 
@@ -49,26 +51,50 @@ class NotificationSender {
         }
     }
 
-    // بررسی و درخواست دسترسی هوشمند
-    static async checkPermission() {
+    // بررسی دسترسی بدون درخواست
+    static async checkPermissionSilent() {
         if (!('Notification' in window)) return false;
         
-        if (Notification.permission === 'granted') return true;
-        if (Notification.permission === 'denied') return false;
+        // اگر دسترسی داده شده
+        if (Notification.permission === 'granted') {
+            return true;
+        }
         
-        // درخواست دسترسی فقط وقتی که کاربر با اپ تعامل داشته
-        try {
-            const permission = await Notification.requestPermission();
-            return permission === 'granted';
-        } catch (error) {
-            console.error('❌ خطا در درخواست دسترسی:', error);
+        // اگر دسترسی مسدود شده - درخواست نکن
+        if (Notification.permission === 'denied') {
             return false;
         }
+        
+        // اگر دسترسی داده نشده و قبلاً درخواست نکردیم
+        if (Notification.permission === 'default' && !this.permissionRequested) {
+            // فقط یک بار در طول عمر اپ درخواست کن
+            this.permissionRequested = true;
+            try {
+                const permission = await Notification.requestPermission();
+                return permission === 'granted';
+            } catch (error) {
+                console.error('❌ خطا در درخواست دسترسی:', error);
+                return false;
+            }
+        }
+        
+        return false;
     }
 
     // وضعیت دسترسی
     static getPermissionStatus() {
+        if (!('Notification' in window)) return 'not-supported';
         return Notification.permission;
+    }
+
+    // آیا دسترسی داده شده؟
+    static hasPermission() {
+        return this.getPermissionStatus() === 'granted';
+    }
+
+    // آیا می‌توان درخواست داد؟
+    static canRequestPermission() {
+        return this.getPermissionStatus() === 'default' && !this.permissionRequested;
     }
 }
 
