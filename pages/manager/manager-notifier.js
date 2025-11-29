@@ -1,24 +1,26 @@
 // manager-notifier.js - برای همه صفحات مدیر
 class ManagerNotifier {
   constructor() {
-    this.namespace = 'manager';
     this.init();
   }
 
   async init() {
+    console.log('🔧 راه‌اندازی مدیر نوتیفیکیشن...');
     await this.setupServiceWorker();
     this.setupNotificationListener();
     this.injectStyles();
-    console.log('✅ مدیر نوتیفیکیشن مدیر راه‌اندازی شد');
   }
 
   async setupServiceWorker() {
     if ('serviceWorker' in navigator) {
       try {
-        await navigator.serviceWorker.register('../../sw.js');
-        console.log('✅ سرویس ورکر برای مدیر ثبت شد');
+        const registration = await navigator.serviceWorker.register('../../sw.js');
+        console.log('✅ Service Worker مدیر ثبت شد');
+        
+        // تست اولیه
+        setTimeout(() => this.testNotification(), 2000);
       } catch (error) {
-        console.error('❌ خطا در ثبت سرویس ورکر:', error);
+        console.error('❌ خطا در ثبت Service Worker:', error);
       }
     }
   }
@@ -26,14 +28,16 @@ class ManagerNotifier {
   setupNotificationListener() {
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.addEventListener('message', event => {
-        if (event.data && event.data.type === 'MANAGER_NOTIFICATION_RECEIVED') {
+        console.log('📩 مدیر - پیام دریافت:', event.data?.type);
+        
+        if (event.data?.type === 'MANAGER_NOTIFICATION') {
           this.showInPageNotification(event.data);
         }
       });
     }
   }
 
-  // نمایش اعلان در صفحه برای مدیر
+  // نمایش اعلان درون‌صفحه‌ای
   showInPageNotification(data) {
     this.removeExistingNotifications();
     
@@ -57,7 +61,6 @@ class ManagerNotifier {
       border-right: 4px solid #1a252f;
       max-width: 400px;
       width: 90%;
-      backdrop-filter: blur(10px);
     `;
 
     notification.innerHTML = `
@@ -81,7 +84,6 @@ class ManagerNotifier {
       </div>
     `;
 
-    // کلیک روی اعلان
     notification.onclick = () => {
       this.handleNotificationClick();
     };
@@ -100,28 +102,16 @@ class ManagerNotifier {
   }
 
   removeExistingNotifications() {
-    const existingNotifications = document.querySelectorAll('.manager-notification-alert');
-    existingNotifications.forEach(notif => notif.remove());
+    document.querySelectorAll('.manager-notification-alert').forEach(notif => notif.remove());
   }
 
   playNotificationSound() {
     try {
-      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-      
-      oscillator.frequency.value = 800;
-      oscillator.type = 'sine';
-      gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
-      
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.4);
+      const audio = new Audio("data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==");
+      audio.volume = 0.3;
+      audio.play();
     } catch (error) {
-      console.log('🔇 پخش صدا پشتیبانی نمی‌شود');
+      console.log('🔇 صدا پشتیبانی نمی‌شود');
     }
   }
 
@@ -129,13 +119,21 @@ class ManagerNotifier {
     setTimeout(() => {
       if (document.body.contains(notification)) {
         notification.style.animation = 'managerAlertSlideOut 0.5s ease';
-        setTimeout(() => {
-          if (document.body.contains(notification)) {
-            document.body.removeChild(notification);
-          }
-        }, 500);
+        setTimeout(() => notification.remove(), 500);
       }
     }, 6000);
+  }
+
+  testNotification() {
+    console.log('🧪 تست نوتیفیکیشن مدیر...');
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.ready.then(registration => {
+        registration.active.postMessage({
+          type: 'SHOW_MANAGER_NOTIFICATION',
+          machineName: 'تست سیستم'
+        });
+      });
+    }
   }
 
   injectStyles() {
@@ -154,7 +152,6 @@ class ManagerNotifier {
           transform: translateX(-50%) translateY(0);
         }
       }
-      
       @keyframes managerAlertSlideOut {
         from {
           opacity: 1;
@@ -165,19 +162,12 @@ class ManagerNotifier {
           transform: translateX(-50%) translateY(-30px);
         }
       }
-      
-      .manager-notification-alert:hover {
-        transform: translateX(-50%) translateY(-2px);
-        box-shadow: 0 12px 35px rgba(0,0,0,0.4);
-      }
     `;
     document.head.appendChild(style);
   }
 }
 
 // راه‌اندازی خودکار
-let managerNotifier;
-
-document.addEventListener('DOMContentLoaded', function() {
-  managerNotifier = new ManagerNotifier();
+document.addEventListener('DOMContentLoaded', () => {
+  new ManagerNotifier();
 });
