@@ -1,248 +1,108 @@
-// sw.js - نسخه کامل با پشتیبانی از همه پوشه‌ها
-const CACHE_NAME = 'tpm-v1.0.4';
-const urlsToCache = ['./', './index.html', './manifest.json'];
-
-// 🔥 Namespace برای هر پوشه
-const NOTIFICATION_NAMESPACES = {
-  MANAGER: 'manager',
-  SUPERVISOR: 'supervisor', 
-  OPERATOR: 'operator',
-  ANBAR: 'anbar'
-};
-
-// 🔥 ذخیره تاریخچه برای هر namespace
-let notificationHistory = {
-  manager: [],
-  supervisor: [],
-  operator: [],
-  anbar: []
-};
+// sw.js - مدیریت اعلان‌های مجزا
+const CACHE_NAME = 'tpm-v1.0.5';
 
 self.addEventListener('install', event => {
-  console.log('🚀 Installing Service Worker...');
+  console.log('🚀 نصب سرویس ورکر...');
   self.skipWaiting();
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(urlsToCache))
-      .then(() => console.log('✅ App shell cached'))
-  );
+  event.waitUntil(caches.open(CACHE_NAME));
 });
 
 self.addEventListener('activate', event => {
-  console.log('✅ Service Worker Activated!');
-  event.waitUntil(
-    Promise.all([
-      caches.keys().then(cacheNames => {
-        return Promise.all(
-          cacheNames.map(cacheName => {
-            if (cacheName !== CACHE_NAME) {
-              console.log('🗑️ Deleting old cache:', cacheName);
-              return caches.delete(cacheName);
-            }
-          })
-        );
-      }),
-      self.clients.claim()
-    ]).then(() => {
-      console.log('🎯 Service Worker ready for notifications');
-    })
-  );
+  console.log('✅ سرویس ورکر فعال شد');
+  event.waitUntil(self.clients.claim());
 });
 
-// 🔥 تشخیص namespace از روی URL
-function getNamespaceFromURL(url) {
-  if (url.includes('/manager/')) return NOTIFICATION_NAMESPACES.MANAGER;
-  if (url.includes('/supervisor/')) return NOTIFICATION_NAMESPACES.SUPERVISOR;
-  if (url.includes('/operator/')) return NOTIFICATION_NAMESPACES.OPERATOR;
-  if (url.includes('/anbar/')) return NOTIFICATION_NAMESPACES.ANBAR;
-  return 'default';
-}
-
-// 🔥 گوش دادن به پیام‌ها از صفحات
+// دریافت پیام از صفحات
 self.addEventListener('message', event => {
-  if (event.data && event.data.type === 'NEW_REPORT') {
-    const namespace = event.data.namespace || getNamespaceFromURL(event.source.url);
-    console.log(`📢 دریافت گزارش جدید برای ${namespace}:`, event.data.reportId);
-    
-    broadcastToNamespaceTabs(namespace, event.data);
-    showNotificationToNamespace(namespace, event.data);
+  if (event.data && event.data.type === 'SHOW_MANAGER_NOTIFICATION') {
+    this.showManagerNotification(event.data);
+  }
+  
+  if (event.data && event.data.type === 'SHOW_SUPERVISOR_NOTIFICATION') {
+    this.showSupervisorNotification(event.data);
   }
 });
 
-// 🔥 ارسال فقط به تب‌های هم‌namespace
-function broadcastToNamespaceTabs(namespace, message) {
-  self.clients.matchAll().then(clients => {
-    let sentCount = 0;
-    clients.forEach(client => {
-      const clientNamespace = getNamespaceFromURL(client.url);
-      if (clientNamespace === namespace) {
-        client.postMessage({
-          type: 'BROADCAST_NOTIFICATION',
-          data: message,
-          namespace: namespace,
-          timestamp: new Date().toISOString()
-        });
-        sentCount++;
-      }
-    });
-    console.log(`📤 ارسال به ${sentCount} تب از ${namespace}`);
-  });
-}
-
-// 🔥 نمایش نوتیفیکیشن مخصوص هر namespace
-function showNotificationToNamespace(namespace, data) {
-  const namespaceConfig = {
-    manager: {
-      title: '📋 گزارش مدیریتی جدید',
-      color: '#2c3e50',
-      icon: './icons/icon-192x192.png',
-      badge: './icons/icon-192x192.png'
-    },
-    supervisor: {
-      title: '👨‍💼 درخواست جدید سرپرستی',
-      color: '#3498db',
-      icon: './icons/icon-192x192.png',
-      badge: './icons/icon-192x192.png'
-    },
-    operator: {
-      title: '🔧 وظیفه جدید اپراتوری',
-      color: '#e74c3c',
-      icon: './icons/icon-192x192.png',
-      badge: './icons/icon-192x192.png'
-    },
-    anbar: {
-      title: '📦 موجودی جدید انبار',
-      color: '#27ae60',
-      icon: './icons/icon-192x192.png',
-      badge: './icons/icon-192x192.png'
-    }
-  };
-
-  const config = namespaceConfig[namespace] || namespaceConfig.manager;
-  
+// نمایش نوتیفیکیشن به مدیران
+function showManagerNotification(data) {
   const options = {
-    body: `📝 ${data.machineName || 'سیستم'} - ${data.problemDescription || 'پیام جدید'}`,
-    icon: config.icon,
-    badge: config.badge,
-    tag: `new-report-${namespace}-${Date.now()}`,
-    renotify: true,
+    body: 'گزارش جدید در صفحه گزارشات دارید',
+    icon: './icons/icon-192x192.png',
+    badge: './icons/icon-192x192.png',
+    tag: 'manager-report',
     requireInteraction: true,
     data: { 
-      namespace: namespace,
-      reportId: data.reportId,
-      targetPage: getTargetPageForNamespace(namespace)
+      targetUrl: '/pages/manager/reports.html',
+      type: 'manager'
     },
     actions: [
       {
         action: 'view',
-        title: '📋 مشاهده'
-      },
-      {
-        action: 'dismiss', 
-        title: '❌ بستن'
+        title: '📋 مشاهده گزارش'
       }
     ]
   };
 
-  self.registration.showNotification(config.title, options)
-    .then(() => {
-      console.log(`✅ نوتیفیکیشن برای ${namespace} نمایش داده شد`);
-      
-      // ذخیره در تاریخچه مخصوص
-      notificationHistory[namespace].push({
-        ...data,
-        timestamp: new Date().toISOString()
-      });
-      
-      // فقط ۱۰ تا آخر رو نگه دار
-      if (notificationHistory[namespace].length > 10) {
-        notificationHistory[namespace] = notificationHistory[namespace].slice(-10);
+  self.registration.showNotification('📋 گزارش مدیریتی جدید', options)
+    .then(() => console.log('✅ اعلان به مدیران نمایش داده شد'));
+}
+
+// نمایش نوتیفیکیشن به سرپرستان
+function showSupervisorNotification(data) {
+  const options = {
+    body: 'درخواست جدید در صفحه درخواست‌ها دارید',
+    icon: './icons/icon-192x192.png',
+    badge: './icons/icon-192x192.png',
+    tag: 'supervisor-request',
+    requireInteraction: true,
+    data: { 
+      targetUrl: '/pages/supervisor/RequestsScreen.html',
+      type: 'supervisor'
+    },
+    actions: [
+      {
+        action: 'view',
+        title: '📝 مشاهده درخواست'
       }
-    })
-    .catch(error => {
-      console.error(`❌ خطا در نمایش نوتیفیکیشن برای ${namespace}:`, error);
-    });
-}
-
-// 🔥 صفحه هدف برای هر namespace
-function getTargetPageForNamespace(namespace) {
-  const pageMap = {
-    manager: '/pages/manager/reports.html',
-    supervisor: '/pages/supervisor/RequestsScreen.html',
-    operator: '/pages/operator/troubleshooting.html',
-    anbar: '/pages/anbar/dashboard.html'
+    ]
   };
-  return pageMap[namespace] || '/';
+
+  self.registration.showNotification('👨‍💼 درخواست سرپرستی جدید', options)
+    .then(() => console.log('✅ اعلان به سرپرستان نمایش داده شد'));
 }
 
-// 🔥 مدیریت کلیک روی نوتیفیکیشن
+// مدیریت کلیک روی نوتیفیکیشن
 self.addEventListener('notificationclick', event => {
-  const notification = event.notification;
-  const namespace = notification.data?.namespace || 'manager';
-  const action = event.action;
+  event.notification.close();
   
-  console.log(`🖱️ کلیک روی نوتیفیکیشن ${namespace}:`, action);
+  const targetUrl = event.notification.data?.targetUrl;
+  const type = event.notification.data?.type;
   
-  notification.close();
-
-  if (action === 'view' || !action) {
-    const targetPage = notification.data?.targetPage || getTargetPageForNamespace(namespace);
-    
+  if (event.action === 'view' || !event.action) {
     event.waitUntil(
-      self.clients.matchAll({ 
-        type: 'window',
-        includeUncontrolled: true 
-      }).then(clientList => {
-        // سعی کن تب مربوطه رو پیدا کنی
+      self.clients.matchAll({ type: 'window' }).then(clientList => {
+        // اگر تب مربوطه باز است، به آن برو
         for (const client of clientList) {
-          if (client.url.includes(`/${namespace}/`) && 'focus' in client) {
-            console.log(`🎯 فوکوس روی تب موجود: ${client.url}`);
+          if (type === 'manager' && client.url.includes('/manager/')) {
+            return client.focus();
+          }
+          if (type === 'supervisor' && client.url.includes('/supervisor/')) {
             return client.focus();
           }
         }
-        // اگر پیدا نشد، صفحه جدید باز کن
-        if (self.clients.openWindow) {
-          console.log(`🔄 باز کردن صفحه جدید: ${targetPage}`);
-          return self.clients.openWindow(targetPage);
+        // در غیر این صورت صفحه جدید باز کن
+        if (self.clients.openWindow && targetUrl) {
+          return self.clients.openWindow(targetUrl);
         }
       })
     );
   }
 });
 
-// 🔥 مدیریت بسته شدن نوتیفیکیشن
-self.addEventListener('notificationclose', event => {
-  console.log('📪 نوتیفیکیشن بسته شد:', event.notification.tag);
-});
-
 // مدیریت fetch
 self.addEventListener('fetch', event => {
-  if (event.request.method !== 'GET') return;
-  
   event.respondWith(
     caches.match(event.request)
-      .then(response => {
-        if (response) {
-          return response;
-        }
-        
-        return fetch(event.request)
-          .then(fetchResponse => {
-            if (fetchResponse && fetchResponse.status === 200) {
-              const responseToCache = fetchResponse.clone();
-              caches.open(CACHE_NAME)
-                .then(cache => {
-                  cache.put(event.request, responseToCache);
-                });
-            }
-            return fetchResponse;
-          })
-          .catch(error => {
-            console.log('🌐 خطای شبکه:', error);
-            if (event.request.destination === 'document') {
-              return caches.match('./index.html');
-            }
-          });
-      })
+      .then(response => response || fetch(event.request))
   );
 });
