@@ -1907,84 +1907,126 @@ if (!navigator.onLine) {
 
         
 // این متغیرها رو در بالای تابع اضافه کن
-class SupervisorNotificationManager {
-    constructor() {
-        this.isProcessing = false;
-        this.processedIds = new Set();
-        this.subscription = null;
-        this.init();
-    }
-
-    async init() {
-        await this.setupRealtime();
-    }
-
-    async setupRealtime() {
-        try {
-            this.subscription = supabase
-                .channel('operator-reports-channel')
-                .on('postgres_changes', 
-                    { 
-                        event: 'INSERT', 
-                        schema: 'public', 
-                        table: 'operatourreports'
-                    }, 
-                    (payload) => this.handleNewReport(payload)
-                )
-                .subscribe((status) => {
-                    console.log('📡 وضعیت سرپرست:', status);
-                });
-
-            console.log('✅ گوش دادن به گزارشات اپراتورها فعال شد');
-
-        } catch (error) {
-            console.error('❌ خطا در اتصال سرپرست:', error);
-            setTimeout(() => this.setupRealtime(), 5000);
-        }
-    }
-
-    async handleNewReport(payload) {
-        if (this.isProcessing) {
-            console.log('🔒 در حال پردازش گزارش قبلی سرپرست...');
-            return;
-        }
-
-        if (this.processedIds.has(payload.new.id)) {
-            console.log('🔄 گزارش سرپرست تکراری:', payload.new.id);
-            return;
-        }
-
-        this.isProcessing = true;
-        this.processedIds.add(payload.new.id);
-
-        try {
-            console.log('👨‍💼 گزارش جدید اپراتور:', payload.new);
-            
-            await NotificationSender.notifySupervisors({
-                id: payload.new.id,
-                machine_name: payload.new.machine_name,
-                problem_description: payload.new.problem_description
-            });
-
-        } catch (error) {
-            console.error('❌ خطا در ارسال اعلان سرپرست:', error);
-        } finally {
-            setTimeout(() => {
+ // راه‌اندازی سیستم نوتیفیکیشن سرپرست
+        class SupervisorNotificationManager {
+            constructor() {
                 this.isProcessing = false;
-            }, 1000);
+                this.processedIds = new Set();
+                this.subscription = null;
+                this.lastProcessedTime = 0;
+                this.MIN_INTERVAL = 3000; // 3 ثانیه
+                this.init();
+            }
 
-            if (this.processedIds.size > 50) {
-                const firstId = this.processedIds.values().next().value;
-                this.processedIds.delete(firstId);
+            async init() {
+                await this.setupRealtime();
+            }
+
+            async setupRealtime() {
+                try {
+                    // لغو subscription موجود
+                    if (this.subscription) {
+                        await supabase.removeChannel(this.subscription);
+                    }
+
+                    this.subscription = supabase
+                        .channel('operator-reports-channel')
+                        .on('postgres_changes', 
+                            { 
+                                event: 'INSERT', 
+                                schema: 'public', 
+                                table: 'operatourreports'
+                            }, 
+                            (payload) => this.handleNewReport(payload)
+                        )
+                        .subscribe((status) => {
+                            console.log('📡 وضعیت سرپرست:', status);
+                        });
+
+                    console.log('✅ گوش دادن به گزارشات اپراتورها فعال شد');
+
+                } catch (error) {
+                    console.error('❌ خطا در اتصال سرپرست:', error);
+                    setTimeout(() => this.setupRealtime(), 10000);
+                }
+            }
+
+            async handleNewReport(payload) {
+                const now = Date.now();
+                
+                // چک اینتروال زمانی
+                if (now - this.lastProcessedTime < this.MIN_INTERVAL) {
+                    console.log('⏰ اینتروال زمانی رعایت نشده');
+                    return;
+                }
+
+                // چک قفل پردازش
+                if (this.isProcessing) {
+                    console.log('🔒 در حال پردازش گزارش قبلی سرپرست...');
+                    return;
+                }
+
+                // چک تکراری
+                const reportId = payload.new.id;
+                if (this.processedIds.has(reportId)) {
+                    console.log('🔄 گزارش سرپرست تکراری:', reportId);
+                    return;
+                }
+
+                this.isProcessing = true;
+                this.lastProcessedTime = now;
+                this.processedIds.add(reportId);
+
+                try {
+                    console.log('👨‍💼 گزارش جدید اپراتور:', payload.new);
+                    
+                    await NotificationSender.notifySupervisors({
+                        id: reportId,
+                        machine_name: payload.new.machine_name,
+                        problem_description: payload.new.problem_description
+                    });
+
+                } catch (error) {
+                    console.error('❌ خطا در ارسال اعلان سرپرست:', error);
+                } finally {
+                    // آزاد کردن قفل بعد از تاخیر
+                    setTimeout(() => {
+                        this.isProcessing = false;
+                    }, 1000);
+
+                    // مدیریت حافظه
+                    this.cleanupProcessedIds();
+                }
+            }
+
+            cleanupProcessedIds() {
+                if (this.processedIds.size > 100) {
+                    const array = Array.from(this.processedIds);
+                    // نگه داشتن فقط 50 آیتم آخر
+                    this.processedIds = new Set(array.slice(-50));
+                }
             }
         }
-    }
-}
 
-// راه‌اندازی
-document.addEventListener('DOMContentLoaded', () => {
-    new SupervisorNotificationManager();
-});
+        // راه‌اندازی زمانی که DOM آماده شد
+        document.addEventListener('DOMContentLoaded', function() {
+            // کدهای موجود قبلی...
+            
+            // راه‌اندازی سیستم نوتیفیکیشن
+            setTimeout(() => {
+                new SupervisorNotificationManager();
+                console.log('✅ سیستم نوتیفیکیشن سرپرست راه‌اندازی شد');
+            }, 2000);
+
+            // تست دستی - برای بررسی کارکرد سیستم
+            window.testSupervisorNotification = function() {
+                NotificationSender.notifySupervisors({
+                    id: 'test-' + Date.now(),
+                    machine_name: 'دستگاه تست',
+                    problem_description: 'این یک تست سرپرست است'
+                });
+            };
+        })
 
 
 
