@@ -3,11 +3,22 @@ class ManagerNotifier {
     constructor() {
         this.notificationQueue = [];
         this.isShowing = false;
-        this.init();
+        // فقط در صفحات مدیر راه‌اندازی شود
+        if (this.shouldInitialize()) {
+            this.init();
+        }
+    }
+
+    // بررسی آیا باید در این صفحه راه‌اندازی شود
+    shouldInitialize() {
+        const currentPage = window.location.pathname;
+        return currentPage.includes('reports.html') || 
+               currentPage.includes('manager') ||
+               currentPage === '/';
     }
 
     async init() {
-        // بررسی دسترسی هنگام راه‌اندازی
+        console.log('🚀 راه‌اندازی مدیر نوتیفایر...');
         await NotificationSender.requestPermission();
         await this.setupServiceWorker();
         this.setupMessageListener();
@@ -34,6 +45,9 @@ class ManagerNotifier {
 
     // نمایش اعلان درون‌برنامه‌ای
     showInAppNotification(data) {
+        // فقط اعلان‌های مدیر را نمایش بده
+        if (data.data.role !== 'manager') return;
+
         const notification = {
             id: data.data.id || Date.now(),
             title: '📋 گزارش مدیریتی جدید',
@@ -220,11 +234,17 @@ class ManagerNotifier {
     }
 }
 
-// راه‌اندازی خودکار
+// راه‌اندازی خودکار فقط در صفحات مربوطه
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-        window.managerNotifier = new ManagerNotifier();
+        const currentPage = window.location.pathname;
+        if (currentPage.includes('reports.html') || currentPage.includes('manager') || currentPage === '/') {
+            window.managerNotifier = new ManagerNotifier();
+        }
     });
 } else {
-    window.managerNotifier = new ManagerNotifier();
+    const currentPage = window.location.pathname;
+    if (currentPage.includes('reports.html') || currentPage.includes('manager') || currentPage === '/') {
+        window.managerNotifier = new ManagerNotifier();
+    }
 }
