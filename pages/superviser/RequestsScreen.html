@@ -909,10 +909,10 @@
                     <select class="filter-select" id="statusFilter">
                         <option value="all">همه وضعیت‌ها</option>
                         <option value="pending">در انتظار رسیدگی</option>
-                        <option value="approved">تأیید شده</option>
+                        <!-- <option value="approved">تأیید شده</option>
                         <option value="rejected">رد شده</option>
                         <option value="in-progress">در دست اقدام</option>
-                        <option value="completed">تکمیل شده</option>
+                        <option value="completed">تکمیل شده</option> -->
                         <option value="referred_to_manager">ارجاع به مدیر</option>
                     </select>
                     
@@ -1380,21 +1380,13 @@
         
         // آپدیت آمار
         function updateStats() {
-            const pendingCount = currentReports.filter(r => 
-                !r.status || r.status === 'pending' || r.status === 'in-progress'
-            ).length;
-            
-            // const approvedCount = currentReports.filter(r => r.status === 'approved').length;
-            // const rejectedCount = currentReports.filter(r => r.status === 'rejected').length;
-            const referredCount = currentReports.filter(r => r.status === 'referred_to_manager').length;
-            const totalCount = currentReports.length;
-        
-            document.getElementById('pendingCount').textContent = totalCount-referredCount;
-            // document.getElementById('approvedCount').textContent = approvedCount;
-            // document.getElementById('rejectedCount').textContent = rejectedCount;
-            document.getElementById('referredCount').textContent = referredCount;
-            document.getElementById('totalCount').textContent = totalCount;
-        }
+    const referredCount = currentReports.filter(r => r.status === 'ارجاع به مدیر').length;
+    const totalCount = currentReports.length;
+    const pendingCount = currentReports.length - referredCount;
+    document.getElementById('pendingCount').textContent = pendingCount;
+    document.getElementById('referredCount').textContent = referredCount;
+    document.getElementById('totalCount').textContent = totalCount;
+}
         
         // نمایش گزارشات
         function renderReports(reports) {
@@ -1502,7 +1494,7 @@
                 const { error } = await supabase
                     .from('operatourreports')
                     .update({ 
-                        status: 'approved',
+                        status: 'referred_to_manager',
                         updated_at: new Date().toISOString()
                     })
                     .eq('id', reportId);
@@ -1557,7 +1549,7 @@
                     const { error: updateError } = await supabase
                         .from('operatourreports')
                         .update({ 
-                            status: 'completed',
+                            status: 'referred_to_manager',
                             completed_at: new Date().toISOString(),
                             updated_at: new Date().toISOString()
                         })
@@ -1571,7 +1563,7 @@
                         machine_name: report.machine_name,
                         machine_status: report.machine_status,
                         problem_description: report.problem_description,
-                        status: 'completed',
+                        status: 'referred_to_manager',
                         priority: report.priority,
                         actions_taken: report.actions_taken,
                         manager_message: report.manager_message,
