@@ -7,6 +7,8 @@ class SupervisorNotifier {
     }
 
     async init() {
+        // بررسی دسترسی هنگام راه‌اندازی
+        await NotificationSender.requestPermission();
         await this.setupServiceWorker();
         this.setupMessageListener();
         this.injectStyles();
@@ -126,7 +128,9 @@ class SupervisorNotifier {
 
 // راه‌اندازی خودکار
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => new SupervisorNotifier());
+    document.addEventListener('DOMContentLoaded', () => {
+        window.supervisorNotifier = new SupervisorNotifier();
+    });
 } else {
-    new SupervisorNotifier();
+    window.supervisorNotifier = new SupervisorNotifier();
 }
