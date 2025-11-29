@@ -1151,5 +1151,12 @@ if (!navigator.onLine) {
     console.log('✅ قابلیت رفرش غیرفعال شد');
 })();
     </script>
+    <!-- در انتهای <body> -->
+<script>
+// فقط سیستم پایه نوتیفیکیشن رو راه‌اندازی کن
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/nasjpour/sw.js');
+}
+</script>
 </body>
 </html>
