@@ -1126,11 +1126,11 @@ if (!navigator.onLine) {
     });
     
     // جلوگیری از beforeunload
-    window.addEventListener('beforeunload', function(e) {
-        e.preventDefault();
-        e.returnValue = 'تغییرات ذخیره نشده ممکن است از بین بروند. آیا مطمئن هستید؟';
-        return e.returnValue;
-    });
+    // window.addEventListener('beforeunload', function(e) {
+    //     e.preventDefault();
+    //     e.returnValue = 'تغییرات ذخیره نشده ممکن است از بین بروند. آیا مطمئن هستید؟';
+    //     return e.returnValue;
+    // });
     
     // جلوگیری از pull-to-refresh در موبایل
     let touchStartY = 0;
