@@ -1904,7 +1904,10 @@ if (!navigator.onLine) {
 
 
 
-// گوش دادن به گزارشات جدید اپراتورها
+// این متغیرها رو در بالای تابع اضافه کن
+let lastSupervisorNotificationTime = 0;
+let processedSupervisorIds = new Set();
+
 async function setupSupervisorNotifications() {
     const subscription = supabase
         .channel('operator-reports-channel')
@@ -1915,10 +1918,30 @@ async function setupSupervisorNotifications() {
                 table: 'operatourreports'
             }, 
             async (payload) => {
+                const now = Date.now();
+                const reportId = payload.new.id;
+                
+                if (now - lastSupervisorNotificationTime < 5000) {
+                    console.log('⏰ اعلان سرپرست اخیراً ارسال شده');
+                    return;
+                }
+                
+                if (processedSupervisorIds.has(reportId)) {
+                    console.log('🔄 گزارش سرپرست تکراری:', reportId);
+                    return;
+                }
+                
                 console.log('👨‍💼 گزارش جدید اپراتور:', payload.new);
+                lastSupervisorNotificationTime = now;
+                processedSupervisorIds.add(reportId);
+                
+                if (processedSupervisorIds.size > 100) {
+                    const firstId = processedSupervisorIds.values().next().value;
+                    processedSupervisorIds.delete(firstId);
+                }
                 
                 await NotificationSender.notifySupervisors({
-                    id: payload.new.id,
+                    id: reportId,
                     machine_name: payload.new.machine_name,
                     problem_description: payload.new.problem_description
                 });
@@ -1926,13 +1949,6 @@ async function setupSupervisorNotifications() {
         )
         .subscribe();
 }
-
-// راه‌اندازی وقتی صفحه لود شد
-document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(() => {
-        setupSupervisorNotifications();
-    }, 3000);
-});
         
         </script>
     <script src="./supervisor-notifier.js"></script>
