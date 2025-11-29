@@ -1,5 +1,5 @@
 // Service Worker - TPM PRO
-const CACHE_NAME = 'tpm-v1.0.0' + Date.now();
+const CACHE_NAME = 'tpm-v2.0.0' + Date.now();
 const urlsToCache = [
   './',
   './index.html', 
