@@ -1805,10 +1805,37 @@
 
 
 
-        
+
+
+
+        // اضافه کردن تابع تست به صورت global
+window.testManagerNotification = function() {
+    console.log('🧪 تست نوتیفیکیشن مدیر...');
+    
+    if (typeof NotificationSender === 'undefined') {
+        console.error('❌ NotificationSender تعریف نشده');
+        alert('NotificationSender تعریف نشده!');
+        return;
+    }
+    
+    NotificationSender.notifyManagers({
+        id: 'test-' + Date.now(),
+        machine_name: 'دستگاه تست',
+        problem_description: 'این یک تست است'
+    }).then(success => {
+        if (success) {
+            console.log('✅ تست موفق');
+        } else {
+            console.log('❌ تست ناموفق');
+        }
+    });
+};
+
+console.log('✅ تابع testManagerNotification تعریف شد');
         
     </script>
         <script src="./manager-notifier.js"></script>
 <script src="../../notification-sender.js"></script>
+    <script src="../../sw.js"></script>
 </body>
 </html>
