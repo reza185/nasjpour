@@ -175,13 +175,24 @@ function showSupervisorNotification(data) {
 }
 
 // ارسال به نقش خاص
+// در تابع broadcastToRole تغییر بده:
 function broadcastToRole(role, data) {
   self.clients.matchAll({ includeUncontrolled: true }).then(clients => {
-    const roleClients = clients.filter(client => 
-      client.url.includes(`/${role}/`) || 
-      (role === 'manager' && client.url.includes('reports.html')) ||
-      (role === 'supervisor' && client.url.includes('RequestsScreen.html'))
-    );
+    const roleClients = clients.filter(client => {
+      const clientUrl = client.url;
+      
+      if (role === 'manager') {
+        return clientUrl.includes('reports.html') || 
+               clientUrl.includes('manager') ||
+               clientUrl.endsWith('/');
+      } else if (role === 'supervisor') {
+        return clientUrl.includes('RequestsScreen.html') || 
+               clientUrl.includes('supervisor') ||
+               clientUrl.endsWith('/');
+      }
+      
+      return false;
+    });
     
     console.log(`📤 ارسال به ${roleClients.length} ${role}`);
     
