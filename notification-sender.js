@@ -6,7 +6,6 @@ class NotificationSender {
       try {
         const registration = await navigator.serviceWorker.ready;
         
-        // ارسال به سرویس ورکر
         registration.active.postMessage({
           type: 'SHOW_MANAGER_NOTIFICATION',
           reportId: reportData.id || Date.now().toString(),
@@ -30,7 +29,6 @@ class NotificationSender {
       try {
         const registration = await navigator.serviceWorker.ready;
         
-        // ارسال به سرویس ورکر
         registration.active.postMessage({
           type: 'SHOW_SUPERVISOR_NOTIFICATION',
           requestId: requestData.id || Date.now().toString(),
@@ -49,5 +47,5 @@ class NotificationSender {
   }
 }
 
-// برای استفاده در سایر قسمت‌های کد
+// برای استفاده جهانی
 window.NotificationSender = NotificationSender;
