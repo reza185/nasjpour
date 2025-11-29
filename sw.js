@@ -1,10 +1,8 @@
 // Service Worker - TPM PRO
-const CACHE_NAME = 'tpm-v2.0.0' + Date.now();
+const CACHE_NAME = 'tpm-v2.0.0-' + Date.now();
 const urlsToCache = [
   './',
   './index.html', 
-  './styles.css',
-  './app.js',
   './Logo.png',
   './icons/icon-192x192.png',
   './icons/icon-512x512.png',
@@ -174,8 +172,37 @@ function showSupervisorNotification(data) {
     .catch(err => console.error('❌ خطای اعلان سرپرست:', err));
 }
 
+// نمایش نوتیفیکیشن برای آپدیت
+function showUpdateNotification() {
+  const options = {
+    body: 'نسخه جدید اپ آماده است. برای دریافت آپدیت، اپ را رفرش کنید.',
+    icon: './icons/icon-192x192.png',
+    badge: './icons/icon-192x192.png',
+    tag: 'update-available',
+    requireInteraction: true,
+    vibrate: [300, 100, 300],
+    data: { 
+      url: './',
+      type: 'update'
+    },
+    actions: [
+      {
+        action: 'refresh',
+        title: '🔄 رفرش'
+      },
+      {
+        action: 'close',
+        title: '❌ بستن'
+      }
+    ]
+  };
+
+  self.registration.showNotification('🔄 آپدیت جدید', options)
+    .then(() => console.log('✅ اعلان آپدیت نمایش داده شد'))
+    .catch(err => console.error('❌ خطای اعلان آپدیت:', err));
+}
+
 // ارسال به نقش خاص
-// در تابع broadcastToRole تغییر بده:
 function broadcastToRole(role, data) {
   self.clients.matchAll({ includeUncontrolled: true }).then(clients => {
     const roleClients = clients.filter(client => {
@@ -213,9 +240,29 @@ self.addEventListener('notificationclick', event => {
   
   const targetUrl = event.notification.data?.url || './';
   const action = event.action;
+  const notificationType = event.notification.data?.type;
   
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clients => {
+      
+      // اگر نوتیفیکیشن آپدیت باشد
+      if (notificationType === 'update') {
+        if (action === 'refresh' || !action) {
+          // رفرش کردن تمام تب‌ها
+          clients.forEach(client => {
+            client.navigate(client.url).then(() => {
+              console.log('🔄 رفرش تب:', client.url);
+            });
+          });
+          return self.clients.openWindow('./').then(windowClient => {
+            if (windowClient) {
+              windowClient.focus();
+            }
+          });
+        }
+        return;
+      }
+      
       // اگر کاربر روی "مشاهده" کلیک کرد
       if (action === 'view') {
         for (let client of clients) {
@@ -238,32 +285,92 @@ self.addEventListener('notificationclick', event => {
   );
 });
 
-// ==================== سیستم آپدیت ====================
+// ==================== سیستم آپدیت پیشرفته ====================
 
 // چک کردن آپدیت
 function checkForUpdates() {
-  caches.open(CACHE_NAME).then(cache => {
-    // چک کردن آپدیت برای فایل‌های مهم
-    const urlsToCheck = [
+  console.log('🔍 در حال چک کردن آپدیت...');
+  
+  const versionCheckUrl = './?v=' + Date.now();
+  
+  fetch(versionCheckUrl, { 
+    cache: 'no-cache',
+    headers: {
+      'Cache-Control': 'no-cache'
+    }
+  })
+  .then(response => {
+    if (!response.ok) throw new Error('Network response was not ok');
+    return response.text();
+  })
+  .then(htmlContent => {
+    // چک کردن تغییرات در فایل‌های اصلی
+    const importantFiles = [
       './index.html',
-      './app.js', 
       './notification-sender.js'
     ];
-
-    urlsToCheck.forEach(url => {
-      fetch(url, { cache: 'no-cache' }).then(networkResponse => {
-        if (networkResponse.status === 200) {
-          cache.match(url).then(cachedResponse => {
-            if (!cachedResponse || 
-                cachedResponse.headers.get('etag') !== networkResponse.headers.get('etag')) {
-              // آپدیت موجود است
-              console.log('🔄 آپدیت پیدا شد برای:', url);
-              notifyClientsAboutUpdate();
-            }
-          });
-        }
-      });
+    
+    // چک کردن هر فایل مهم
+    importantFiles.forEach(file => {
+      checkFileForUpdate(file);
     });
+  })
+  .catch(error => {
+    console.error('❌ خطا در چک کردن آپدیت:', error);
+  });
+}
+
+// چک کردن آپدیت برای یک فایل خاص
+function checkFileForUpdate(fileUrl) {
+  fetch(fileUrl, { 
+    cache: 'no-cache',
+    headers: {
+      'Cache-Control': 'no-cache'
+    }
+  })
+  .then(networkResponse => {
+    if (networkResponse.status === 200) {
+      return caches.open(CACHE_NAME).then(cache => {
+        return cache.match(fileUrl).then(cachedResponse => {
+          if (!cachedResponse) {
+            console.log('🆕 فایل جدید:', fileUrl);
+            return true;
+          }
+          
+          // مقایسه هدرهای ETag
+          const cachedETag = cachedResponse.headers.get('etag');
+          const networkETag = networkResponse.headers.get('etag');
+          
+          if (cachedETag !== networkETag) {
+            console.log('🔄 آپدیت پیدا شد برای:', fileUrl);
+            return true;
+          }
+          
+          // اگر ETag موجود نبود، محتوا رو چک کن
+          return Promise.all([
+            cachedResponse.text(),
+            networkResponse.clone().text()
+          ]).then(([cachedText, networkText]) => {
+            if (cachedText !== networkText) {
+              console.log('📝 محتوای تغییر کرده برای:', fileUrl);
+              return true;
+            }
+            return false;
+          });
+        });
+      });
+    }
+    return false;
+  })
+  .then(hasUpdate => {
+    if (hasUpdate) {
+      console.log('🎯 آپدیت شناسایی شد:', fileUrl);
+      notifyClientsAboutUpdate();
+      showUpdateNotification();
+    }
+  })
+  .catch(error => {
+    console.error('❌ خطا در چک کردن فایل:', fileUrl, error);
   });
 }
 
@@ -273,8 +380,9 @@ function notifyClientsAboutUpdate() {
     clients.forEach(client => {
       client.postMessage({
         type: 'UPDATE_AVAILABLE',
-        message: 'نسخه جدید اپ آماده است!',
-        timestamp: new Date().toISOString()
+        message: 'نسخه جدید اپ آماده است! لطفا صفحه را رفرش کنید.',
+        timestamp: new Date().toISOString(),
+        action: 'refresh'
       });
     });
   });
@@ -289,5 +397,34 @@ self.addEventListener('updatefound', () => {
 // کنترل کردن وقتی Service Worker جدید منتظره
 self.addEventListener('controllerchange', () => {
   console.log('🎉 Service Worker جدید فعال شد');
-  window.location.reload();
+  // ارسال پیام به تمام کلاینت‌ها برای رفرش
+  self.clients.matchAll().then(clients => {
+    clients.forEach(client => {
+      client.postMessage({
+        type: 'SW_UPDATED',
+        message: 'Service Worker به روز شد!',
+        action: 'reload'
+      });
+    });
+  });
+});
+
+// چک کردن دوره‌ای برای آپدیت
+self.addEventListener('periodicsync', (event) => {
+  if (event.tag === 'check-updates') {
+    console.log('⏰ چک کردن دوره‌ای آپدیت...');
+    checkForUpdates();
+  }
+});
+
+// وقتی Service Worker شروع به کار میکنه، یه بار چک کن برای آپدیت
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    new Promise((resolve) => {
+      setTimeout(() => {
+        checkForUpdates();
+        resolve();
+      }, 3000);
+    })
+  );
 });
