@@ -1575,47 +1575,7 @@ if (!navigator.onLine) {
 }
 
 
-        // وقتی گزارش جدید از Supabase میاد
-async function setupManagerNotifications() {
-    const { data: reports, error } = await supabase
-        .from('managerreports')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(1);
 
-    if (error) {
-        console.error('خطا در دریافت گزارشات:', error);
-        return;
-    }
-
-    // گوش دادن به تغییرات جدول
-    const subscription = supabase
-        .channel('manager-reports-changes')
-        .on('postgres_changes', 
-            { 
-                event: 'INSERT', 
-                schema: 'public', 
-                table: 'managerreports' 
-            }, 
-            async (payload) => {
-                console.log('📨 گزارش جدید دریافت شد:', payload.new);
-                
-                // ارسال اعلان به مدیران
-                await NotificationSender.notifyManagers({
-                    id: payload.new.id,
-                    machine_name: payload.new.machine_name,
-                    problem_description: payload.new.problem_description,
-                    reporter_name: payload.new.reporter_name
-                });
-            }
-        )
-        .subscribe();
-
-    console.log('✅ گوش دادن به گزارشات جدید فعال شد');
-}
-
-// راه‌اندازی
-setupManagerNotifications();
     </script>
     <script src="./manager-notifier.js"></script>
 </body>
