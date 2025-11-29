@@ -1,13 +1,10 @@
-// ==================== NOTIFICATION SENDER - SMART PERMISSION ====================
 class NotificationSender {
-    static permissionRequested = false;
-
     // ارسال به مدیران
     static async notifyManagers(reportData = {}) {
         return await this.sendNotification('manager', reportData);
     }
 
-    // ارسال به سرپرستان
+    // ارسال به سرپرستان  
     static async notifySupervisors(requestData = {}) {
         return await this.sendNotification('supervisor', requestData);
     }
@@ -16,16 +13,18 @@ class NotificationSender {
     static async sendNotification(role, data) {
         console.log(`🚀 ارسال اعلان به ${role}...`);
         
-        // بررسی دسترسی - بدون درخواست مجدد
-        const hasPermission = await this.checkPermissionSilent();
+        // ۱. اول دسترسی رو چک کن
+        const hasPermission = await this.ensurePermission();
         if (!hasPermission) {
-            console.log(`🔕 دسترسی نوتیفیکیشن برای ${role} وجود ندارد - ارسال نمی‌شود`);
+            console.log(`🔕 دسترسی نوتیفیکیشن وجود ندارد`);
             return false;
         }
 
-        // ارسال از طریق Service Worker
-        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        // ۲. ارسال از طریق Service Worker
+        if ('serviceWorker' in navigator) {
             try {
+                const registration = await navigator.serviceWorker.ready;
+                
                 const message = {
                     type: `SHOW_${role.toUpperCase()}_NOTIFICATION`,
                     data: {
@@ -33,11 +32,10 @@ class NotificationSender {
                         machineName: data.machine_name || data.machineName || 'سیستم',
                         problemDescription: data.problem_description,
                         timestamp: Date.now()
-                    },
-                    role: role
+                    }
                 };
 
-                navigator.serviceWorker.controller.postMessage(message);
+                registration.active.postMessage(message);
                 console.log(`✅ اعلان به ${role} ارسال شد`);
                 return true;
                 
@@ -45,58 +43,47 @@ class NotificationSender {
                 console.error(`❌ خطا در ارسال به ${role}:`, error);
                 return false;
             }
-        } else {
-            console.log(`❌ Service Worker برای ${role} در دسترس نیست`);
-            return false;
         }
+        
+        console.log(`❌ Service Worker در دسترس نیست`);
+        return false;
     }
 
-    // بررسی دسترسی بدون درخواست
-    static async checkPermissionSilent() {
-        if (!('Notification' in window)) return false;
+    // بررسی و درخواست دسترسی هوشمند
+    static async ensurePermission() {
+        if (!('Notification' in window)) {
+            console.log('❌ مرورگر از Notification پشتیبانی نمی‌کند');
+            return false;
+        }
         
         // اگر دسترسی داده شده
         if (Notification.permission === 'granted') {
             return true;
         }
         
-        // اگر دسترسی مسدود شده - درخواست نکن
+        // اگر دسترسی مسدود شده
         if (Notification.permission === 'denied') {
+            console.log('❌ کاربر دسترسی را مسدود کرده');
             return false;
         }
         
-        // اگر دسترسی داده نشده و قبلاً درخواست نکردیم
-        if (Notification.permission === 'default' && !this.permissionRequested) {
-            // فقط یک بار در طول عمر اپ درخواست کن
-            this.permissionRequested = true;
-            try {
-                const permission = await Notification.requestPermission();
-                return permission === 'granted';
-            } catch (error) {
-                console.error('❌ خطا در درخواست دسترسی:', error);
-                return false;
-            }
+        // اگر دسترسی داده نشده - درخواست کن
+        console.log('🔔 درخواست دسترسی نوتیفیکیشن...');
+        try {
+            const permission = await Notification.requestPermission();
+            console.log(`🔔 نتیجه درخواست: ${permission}`);
+            return permission === 'granted';
+        } catch (error) {
+            console.error('❌ خطا در درخواست دسترسی:', error);
+            return false;
         }
-        
-        return false;
     }
 
-    // وضعیت دسترسی
+    // وضعیت فعلی دسترسی
     static getPermissionStatus() {
         if (!('Notification' in window)) return 'not-supported';
         return Notification.permission;
     }
-
-    // آیا دسترسی داده شده؟
-    static hasPermission() {
-        return this.getPermissionStatus() === 'granted';
-    }
-
-    // آیا می‌توان درخواست داد؟
-    static canRequestPermission() {
-        return this.getPermissionStatus() === 'default' && !this.permissionRequested;
-    }
 }
 
-// ثبت جهانی
 window.NotificationSender = NotificationSender;
