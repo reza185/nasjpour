@@ -1,80 +1,76 @@
+// ==================== NOTIFICATION SENDER - SMART SYSTEM ====================
 class NotificationSender {
-    // ارسال اعلان به مدیران - نسخه اصلاح شده
+    // ارسال به مدیران
     static async notifyManagers(reportData = {}) {
-        console.log('🚀 شروع ارسال نوتیفیکیشن...');
+        return await this.sendNotification('manager', reportData);
+    }
+
+    // ارسال به سرپرستان
+    static async notifySupervisors(requestData = {}) {
+        return await this.sendNotification('supervisor', requestData);
+    }
+
+    // ارسال هوشمند
+    static async sendNotification(role, data) {
+        console.log(`🚀 ارسال اعلان به ${role}...`);
         
-        // اول دسترسی رو چک کن
+        // بررسی دسترسی
         const hasPermission = await this.checkPermission();
         if (!hasPermission) {
-            console.log('🔕 دسترسی نوتیفیکیشن وجود ندارد');
+            console.log(`🔕 دسترسی نوتیفیکیشن برای ${role} وجود ندارد`);
             return false;
         }
 
-        if ('serviceWorker' in navigator) {
+        // ارسال از طریق Service Worker
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
             try {
-                const registration = await navigator.serviceWorker.ready;
-                
                 const message = {
-                    type: 'SHOW_MANAGER_NOTIFICATION',
-                    reportId: reportData.id || `report-${Date.now()}`,
-                    machineName: reportData.machine_name || reportData.machineName || 'سیستم',
-                    problemDescription: reportData.problem_description,
-                    timestamp: Date.now()
+                    type: `SHOW_${role.toUpperCase()}_NOTIFICATION`,
+                    data: {
+                        id: data.id || `${role}-${Date.now()}`,
+                        machineName: data.machine_name || data.machineName || 'سیستم',
+                        problemDescription: data.problem_description,
+                        timestamp: Date.now()
+                    },
+                    role: role
                 };
 
-                console.log('📨 ارسال پیام به Service Worker:', message);
-                registration.active.postMessage(message);
-
-                console.log('✅ اعلان گزارش به مدیران ارسال شد');
+                navigator.serviceWorker.controller.postMessage(message);
+                console.log(`✅ اعلان به ${role} ارسال شد`);
                 return true;
+                
             } catch (error) {
-                console.error('❌ خطا در ارسال اعلان مدیر:', error);
+                console.error(`❌ خطا در ارسال به ${role}:`, error);
                 return false;
             }
+        } else {
+            console.log(`❌ Service Worker برای ${role} در دسترس نیست`);
+            return false;
         }
-        console.log('❌ Service Worker پشتیبانی نمی‌شود');
-        return false;
     }
 
-    // چک کردن دسترسی نوتیفیکیشن - نسخه بهبود یافته
+    // بررسی و درخواست دسترسی هوشمند
     static async checkPermission() {
-        if (!('Notification' in window)) {
-            console.log('❌ Notification API پشتیبانی نمی‌شود');
+        if (!('Notification' in window)) return false;
+        
+        if (Notification.permission === 'granted') return true;
+        if (Notification.permission === 'denied') return false;
+        
+        // درخواست دسترسی فقط وقتی که کاربر با اپ تعامل داشته
+        try {
+            const permission = await Notification.requestPermission();
+            return permission === 'granted';
+        } catch (error) {
+            console.error('❌ خطا در درخواست دسترسی:', error);
             return false;
         }
-        
-        console.log('🔍 بررسی دسترسی نوتیفیکیشن...');
-        
-        if (Notification.permission === 'granted') {
-            console.log('✅ دسترسی نوتیفیکیشن قبلاً داده شده');
-            return true;
-        }
-        
-        if (Notification.permission === 'denied') {
-            console.log('❌ دسترسی نوتیفیکیشن مسدود شده');
-            return false;
-        }
-        
-        // اگر دسترسی داده نشده، درخواست نکن - فقط false برگردون
-        console.log('⚠️ دسترسی نوتیفیکیشن داده نشده');
-        return false;
     }
 
-    // تابع جدید برای درخواست دسترسی (فقط با کلیک کاربر)
-    static async requestPermission() {
-        if (!('Notification' in window)) {
-            return false;
-        }
-        
-        if (Notification.permission === 'granted') {
-            return true;
-        }
-        
-        // فقط وقتی با کلیک کاربر صدا زده میشه می‌تونیم درخواست بدیم
-        const permission = await Notification.requestPermission();
-        console.log('🔔 نتیجه درخواست دسترسی:', permission);
-        return permission === 'granted';
+    // وضعیت دسترسی
+    static getPermissionStatus() {
+        return Notification.permission;
     }
 }
 
+// ثبت جهانی
 window.NotificationSender = NotificationSender;
