@@ -10,6 +10,10 @@ const urlsToCache = [
   './notification-sender.js'
 ];
 
+// متغیرهای مدیریت آپدیت
+let updateAvailable = false;
+let waitingServiceWorker = null;
+
 // نصب و کش کردن
 self.addEventListener('install', event => {
   console.log('🚀 نصب اپ TPM PRO...');
@@ -108,6 +112,16 @@ self.addEventListener('message', event => {
   if (type === 'CHECK_FOR_UPDATES') {
     this.checkForUpdates();
   }
+
+  // پیام تایید آپدیت از کاربر
+  if (type === 'CONFIRM_UPDATE') {
+    this.confirmUpdate();
+  }
+
+  // پیام رد آپدیت از کاربر
+  if (type === 'REJECT_UPDATE') {
+    this.rejectUpdate();
+  }
 });
 
 // نمایش نوتیفیکیشن برای مدیر
@@ -175,7 +189,7 @@ function showSupervisorNotification(data) {
 // نمایش نوتیفیکیشن برای آپدیت
 function showUpdateNotification() {
   const options = {
-    body: 'نسخه جدید اپ آماده است. برای دریافت آپدیت، اپ را رفرش کنید.',
+    body: 'نسخه جدید اپ آماده است. آیا می‌خواهید آپدیت را نصب کنید؟',
     icon: './icons/icon-192x192.png',
     badge: './icons/icon-192x192.png',
     tag: 'update-available',
@@ -187,12 +201,12 @@ function showUpdateNotification() {
     },
     actions: [
       {
-        action: 'refresh',
-        title: '🔄 رفرش'
+        action: 'install-update',
+        title: '✅ نصب آپدیت'
       },
       {
-        action: 'close',
-        title: '❌ بستن'
+        action: 'cancel-update',
+        title: '❌ نه الان'
       }
     ]
   };
@@ -247,17 +261,38 @@ self.addEventListener('notificationclick', event => {
       
       // اگر نوتیفیکیشن آپدیت باشد
       if (notificationType === 'update') {
-        if (action === 'refresh' || !action) {
-          // رفرش کردن تمام تب‌ها
-          clients.forEach(client => {
-            client.navigate(client.url).then(() => {
-              console.log('🔄 رفرش تب:', client.url);
+        if (action === 'install-update') {
+          // تایید آپدیت توسط کاربر
+          self.clients.matchAll().then(allClients => {
+            allClients.forEach(client => {
+              client.postMessage({
+                type: 'USER_CONFIRMED_UPDATE',
+                message: 'آپدیت تایید شد. در حال نصب...'
+              });
             });
           });
+          
+          // فعال کردن Service Worker جدید
+          if (waitingServiceWorker) {
+            waitingServiceWorker.postMessage({ type: 'SKIP_WAITING' });
+          }
+          
           return self.clients.openWindow('./').then(windowClient => {
             if (windowClient) {
               windowClient.focus();
             }
+          });
+        }
+        else if (action === 'cancel-update') {
+          // کاربر آپدیت را رد کرد
+          updateAvailable = false;
+          self.clients.matchAll().then(allClients => {
+            allClients.forEach(client => {
+              client.postMessage({
+                type: 'USER_REJECTED_UPDATE',
+                message: 'آپدیت برای بعد موکول شد.'
+              });
+            });
           });
         }
         return;
@@ -367,6 +402,7 @@ function checkFileForUpdate(fileUrl) {
       console.log('🎯 آپدیت شناسایی شد:', fileUrl);
       notifyClientsAboutUpdate();
       showUpdateNotification();
+      updateAvailable = true;
     }
   })
   .catch(error => {
@@ -380,9 +416,9 @@ function notifyClientsAboutUpdate() {
     clients.forEach(client => {
       client.postMessage({
         type: 'UPDATE_AVAILABLE',
-        message: 'نسخه جدید اپ آماده است! لطفا صفحه را رفرش کنید.',
+        message: 'نسخه جدید اپ آماده است! آیا می‌خواهید آپدیت را نصب کنید؟',
         timestamp: new Date().toISOString(),
-        action: 'refresh'
+        action: 'confirm'
       });
     });
   });
@@ -391,12 +427,36 @@ function notifyClientsAboutUpdate() {
 // گوش دادن به آپدیت Service Worker
 self.addEventListener('updatefound', () => {
   console.log('🔄 آپدیت Service Worker پیدا شد');
-  self.registration.waiting?.postMessage({ type: 'SKIP_WAITING' });
+  const newWorker = self.registration.installing;
+  
+  newWorker.addEventListener('statechange', () => {
+    if (newWorker.state === 'installed' && self.registration.active) {
+      // Service Worker جدید منتظر فعال‌سازی است
+      waitingServiceWorker = newWorker;
+      updateAvailable = true;
+      
+      // اطلاع به کلاینت‌ها
+      self.clients.matchAll().then(clients => {
+        clients.forEach(client => {
+          client.postMessage({
+            type: 'UPDATE_READY',
+            message: 'آپدیت جدید آماده نصب است',
+            action: 'showPrompt'
+          });
+        });
+      });
+      
+      // نمایش نوتیفیکیشن آپدیت
+      showUpdateNotification();
+    }
+  });
 });
 
 // کنترل کردن وقتی Service Worker جدید منتظره
 self.addEventListener('controllerchange', () => {
   console.log('🎉 Service Worker جدید فعال شد');
+  updateAvailable = false;
+  
   // ارسال پیام به تمام کلاینت‌ها برای رفرش
   self.clients.matchAll().then(clients => {
     clients.forEach(client => {
@@ -408,6 +468,27 @@ self.addEventListener('controllerchange', () => {
     });
   });
 });
+
+// تایید آپدیت توسط کاربر
+function confirmUpdate() {
+  if (waitingServiceWorker) {
+    waitingServiceWorker.postMessage({ type: 'SKIP_WAITING' });
+    updateAvailable = false;
+  }
+}
+
+// رد آپدیت توسط کاربر
+function rejectUpdate() {
+  updateAvailable = false;
+  self.clients.matchAll().then(clients => {
+    clients.forEach(client => {
+      client.postMessage({
+        type: 'UPDATE_REJECTED',
+        message: 'آپدیت برای بعد موکول شد'
+      });
+    });
+  });
+}
 
 // چک کردن دوره‌ای برای آپدیت
 self.addEventListener('periodicsync', (event) => {
