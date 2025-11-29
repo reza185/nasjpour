@@ -1056,9 +1056,12 @@
                 document.body.appendChild(overlay);
                 
                 window.closeCustomAlert = function() {
-                    document.body.removeChild(overlay);
-                    resolve();
-                };
+    const overlay = document.querySelector('[style*="z-index: 10000"]');
+    if (overlay) {
+        document.body.removeChild(overlay);
+    }
+    resolve();
+};
             });
         };
 
@@ -1248,7 +1251,7 @@
                     console.error('خطا در دریافت داده‌ها:', error);
                     // اگر جدول وجود ندارد، نمونه داده ایجاد کن
                     if (error.code === 'PGRST204') {
-                        await createSampleData();
+                        // await createSampleData();
                         return;
                     }
                     throw error;
@@ -1755,6 +1758,8 @@
                         machine_name: payload.new.machine_name,
                         problem_description: payload.new.problem_description
                     });
+                    loadManagerReports();
+
 
                 } catch (error) {
                     console.error('❌ خطا در ارسال اعلان مدیر:', error);
