@@ -1677,54 +1677,88 @@
 
 // گوش دادن به گزارشات جدید مدیران
 // این متغیرها رو در بالای تابع اضافه کن
-let lastNotificationTime = 0;
-let processedIds = new Set();
+class ManagerNotificationManager {
+    constructor() {
+        this.isProcessing = false;
+        this.processedIds = new Set();
+        this.subscription = null;
+        this.init();
+    }
 
-async function setupManagerNotifications() {
-    const subscription = supabase
-        .channel('manager-reports-channel')
-        .on('postgres_changes', 
-            { 
-                event: 'INSERT', 
-                schema: 'public', 
-                table: 'managerreports'
-            }, 
-            async (payload) => {
-                const now = Date.now();
-                const reportId = payload.new.id;
-                
-                // چک زمان (۵ ثانیه)
-                if (now - lastNotificationTime < 5000) {
-                    console.log('⏰ اعلان اخیراً ارسال شده');
-                    return;
-                }
-                
-                // چک تکراری
-                if (processedIds.has(reportId)) {
-                    console.log('🔄 گزارش تکراری:', reportId);
-                    return;
-                }
-                
-                console.log('📋 گزارش جدید مدیر:', payload.new);
-                lastNotificationTime = now;
-                processedIds.add(reportId);
-                
-                // مدیریت حافظه
-                if (processedIds.size > 100) {
-                    const firstId = processedIds.values().next().value;
-                    processedIds.delete(firstId);
-                }
-                
-                await NotificationSender.notifyManagers({
-                    id: reportId,
-                    machine_name: payload.new.machine_name,
-                    problem_description: payload.new.problem_description
+    async init() {
+        await this.setupRealtime();
+    }
+
+    async setupRealtime() {
+        try {
+            this.subscription = supabase
+                .channel('manager-reports-channel')
+                .on('postgres_changes', 
+                    { 
+                        event: 'INSERT', 
+                        schema: 'public', 
+                        table: 'managerreports'
+                    }, 
+                    (payload) => this.handleNewReport(payload)
+                )
+                .subscribe((status) => {
+                    console.log('📡 وضعیت مدیر:', status);
                 });
+
+            console.log('✅ گوش دادن به گزارشات مدیران فعال شد');
+
+        } catch (error) {
+            console.error('❌ خطا در اتصال مدیر:', error);
+            setTimeout(() => this.setupRealtime(), 5000);
+        }
+    }
+
+    async handleNewReport(payload) {
+        // چک قفل پردازش
+        if (this.isProcessing) {
+            console.log('🔒 در حال پردازش گزارش قبلی...');
+            return;
+        }
+
+        // چک تکراری
+        if (this.processedIds.has(payload.new.id)) {
+            console.log('🔄 گزارش تکراری:', payload.new.id);
+            return;
+        }
+
+        this.isProcessing = true;
+        this.processedIds.add(payload.new.id);
+
+        try {
+            console.log('📋 گزارش جدید مدیر:', payload.new);
+            
+            await NotificationSender.notifyManagers({
+                id: payload.new.id,
+                machine_name: payload.new.machine_name,
+                problem_description: payload.new.problem_description
+            });
+
+        } catch (error) {
+            console.error('❌ خطا در ارسال اعلان مدیر:', error);
+        } finally {
+            // آزاد کردن قفل بعد از ۱ ثانیه
+            setTimeout(() => {
+                this.isProcessing = false;
+            }, 1000);
+
+            // مدیریت حافظه
+            if (this.processedIds.size > 50) {
+                const firstId = this.processedIds.values().next().value;
+                this.processedIds.delete(firstId);
             }
-        )
-        .subscribe();
+        }
+    }
 }
 
+// راه‌اندازی
+document.addEventListener('DOMContentLoaded', () => {
+    new ManagerNotificationManager();
+});
 
 
         
