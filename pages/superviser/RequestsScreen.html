@@ -1904,51 +1904,93 @@ if (!navigator.onLine) {
 
 
 
-// این متغیرها رو در بالای تابع اضافه کن
-let lastSupervisorNotificationTime = 0;
-let processedSupervisorIds = new Set();
 
-async function setupSupervisorNotifications() {
-    const subscription = supabase
-        .channel('operator-reports-channel')
-        .on('postgres_changes', 
-            { 
-                event: 'INSERT', 
-                schema: 'public', 
-                table: 'operatourreports'
-            }, 
-            async (payload) => {
-                const now = Date.now();
-                const reportId = payload.new.id;
-                
-                if (now - lastSupervisorNotificationTime < 5000) {
-                    console.log('⏰ اعلان سرپرست اخیراً ارسال شده');
-                    return;
-                }
-                
-                if (processedSupervisorIds.has(reportId)) {
-                    console.log('🔄 گزارش سرپرست تکراری:', reportId);
-                    return;
-                }
-                
-                console.log('👨‍💼 گزارش جدید اپراتور:', payload.new);
-                lastSupervisorNotificationTime = now;
-                processedSupervisorIds.add(reportId);
-                
-                if (processedSupervisorIds.size > 100) {
-                    const firstId = processedSupervisorIds.values().next().value;
-                    processedSupervisorIds.delete(firstId);
-                }
-                
-                await NotificationSender.notifySupervisors({
-                    id: reportId,
-                    machine_name: payload.new.machine_name,
-                    problem_description: payload.new.problem_description
+        
+// این متغیرها رو در بالای تابع اضافه کن
+class SupervisorNotificationManager {
+    constructor() {
+        this.isProcessing = false;
+        this.processedIds = new Set();
+        this.subscription = null;
+        this.init();
+    }
+
+    async init() {
+        await this.setupRealtime();
+    }
+
+    async setupRealtime() {
+        try {
+            this.subscription = supabase
+                .channel('operator-reports-channel')
+                .on('postgres_changes', 
+                    { 
+                        event: 'INSERT', 
+                        schema: 'public', 
+                        table: 'operatourreports'
+                    }, 
+                    (payload) => this.handleNewReport(payload)
+                )
+                .subscribe((status) => {
+                    console.log('📡 وضعیت سرپرست:', status);
                 });
+
+            console.log('✅ گوش دادن به گزارشات اپراتورها فعال شد');
+
+        } catch (error) {
+            console.error('❌ خطا در اتصال سرپرست:', error);
+            setTimeout(() => this.setupRealtime(), 5000);
+        }
+    }
+
+    async handleNewReport(payload) {
+        if (this.isProcessing) {
+            console.log('🔒 در حال پردازش گزارش قبلی سرپرست...');
+            return;
+        }
+
+        if (this.processedIds.has(payload.new.id)) {
+            console.log('🔄 گزارش سرپرست تکراری:', payload.new.id);
+            return;
+        }
+
+        this.isProcessing = true;
+        this.processedIds.add(payload.new.id);
+
+        try {
+            console.log('👨‍💼 گزارش جدید اپراتور:', payload.new);
+            
+            await NotificationSender.notifySupervisors({
+                id: payload.new.id,
+                machine_name: payload.new.machine_name,
+                problem_description: payload.new.problem_description
+            });
+
+        } catch (error) {
+            console.error('❌ خطا در ارسال اعلان سرپرست:', error);
+        } finally {
+            setTimeout(() => {
+                this.isProcessing = false;
+            }, 1000);
+
+            if (this.processedIds.size > 50) {
+                const firstId = this.processedIds.values().next().value;
+                this.processedIds.delete(firstId);
             }
-        )
-        .subscribe();
+        }
+    }
 }
+
+// راه‌اندازی
+document.addEventListener('DOMContentLoaded', () => {
+    new SupervisorNotificationManager();
+});
+
+
+
+
+
+        
         
         </script>
     <script src="./supervisor-notifier.js"></script>
