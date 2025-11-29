@@ -1677,90 +1677,19 @@
 
 // گوش دادن به گزارشات جدید مدیران
 // این متغیرها رو در بالای تابع اضافه کن
-class ManagerNotificationManager {
-    constructor() {
-        this.isProcessing = false;
-        this.processedIds = new Set();
-        this.subscription = null;
-        this.init();
-    }
-
-    async init() {
-        await this.setupRealtime();
-    }
-
-    async setupRealtime() {
-        try {
-            this.subscription = supabase
-                .channel('manager-reports-channel')
-                .on('postgres_changes', 
-                    { 
-                        event: 'INSERT', 
-                        schema: 'public', 
-                        table: 'managerreports'
-                    }, 
-                    (payload) => this.handleNewReport(payload)
-                )
-                .subscribe((status) => {
-                    console.log('📡 وضعیت مدیر:', status);
-                });
-
-            console.log('✅ گوش دادن به گزارشات مدیران فعال شد');
-
-        } catch (error) {
-            console.error('❌ خطا در اتصال مدیر:', error);
-            setTimeout(() => this.setupRealtime(), 5000);
-        }
-    }
-
-    async handleNewReport(payload) {
-        // چک قفل پردازش
-        if (this.isProcessing) {
-            console.log('🔒 در حال پردازش گزارش قبلی...');
-            return;
-        }
-
-        // چک تکراری
-        if (this.processedIds.has(payload.new.id)) {
-            console.log('🔄 گزارش تکراری:', payload.new.id);
-            return;
-        }
-
-        this.isProcessing = true;
-        this.processedIds.add(payload.new.id);
-
-        try {
-            console.log('📋 گزارش جدید مدیر:', payload.new);
+document.addEventListener('DOMContentLoaded', function() {
+            // سایر کدهای موجود...
             
-            await NotificationSender.notifyManagers({
-                id: payload.new.id,
-                machine_name: payload.new.machine_name,
-                problem_description: payload.new.problem_description
-            });
-
-        } catch (error) {
-            console.error('❌ خطا در ارسال اعلان مدیر:', error);
-        } finally {
-            // آزاد کردن قفل بعد از ۱ ثانیه
+            // راه‌اندازی سیستم real-time برای مدیر
             setTimeout(() => {
-                this.isProcessing = false;
-            }, 1000);
-
-            // مدیریت حافظه
-            if (this.processedIds.size > 50) {
-                const firstId = this.processedIds.values().next().value;
-                this.processedIds.delete(firstId);
-            }
-        }
-    }
-}
-
-// راه‌اندازی
-document.addEventListener('DOMContentLoaded', () => {
-    new ManagerNotificationManager();
-});
+                new ManagerNotificationManager();
+                console.log('✅ سیستم نوتیفیکیشن مدیر راه‌اندازی شد');
+            }, 2000);
+        });
 
 
+
+        
         
     </script>
         <script src="./manager-notifier.js"></script>
