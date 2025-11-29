@@ -7,6 +7,8 @@ class ManagerNotifier {
     }
 
     async init() {
+        // بررسی دسترسی هنگام راه‌اندازی
+        await NotificationSender.requestPermission();
         await this.setupServiceWorker();
         this.setupMessageListener();
         this.injectStyles();
@@ -220,7 +222,9 @@ class ManagerNotifier {
 
 // راه‌اندازی خودکار
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => new ManagerNotifier());
+    document.addEventListener('DOMContentLoaded', () => {
+        window.managerNotifier = new ManagerNotifier();
+    });
 } else {
-    new ManagerNotifier();
+    window.managerNotifier = new ManagerNotifier();
 }
