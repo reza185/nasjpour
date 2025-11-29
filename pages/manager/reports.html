@@ -16,7 +16,6 @@
     <link rel="apple-touch-icon" href="../../icons/icon-192x192.png">
     <link rel="apple-touch-startup-image" href="../../icons/icon-512x512.png">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
     <!-- <script src="../../auth.js"></script> -->
     <style>
         * {
@@ -1010,13 +1009,6 @@
         <div id="offlineAlert" style="display: none; position: fixed; top: 0; left: 0; right: 0; background: #e74c3c; color: white; text-align: center; padding: 10px; z-index: 10003; font-family: Vazirmatn;">
             <i class="fas fa-wifi-slash"></i> حالت آفلاین - اتصال اینترنت برقرار نیست
         </div>
-
-<!-- بنر درخواست دسترسی هوشمند -->
-
-
-
-
-    
     <script>
         // ==================== CUSTOM ALERT SYSTEM ====================
         delete window.alert;
@@ -1063,12 +1055,9 @@
                 document.body.appendChild(overlay);
                 
                 window.closeCustomAlert = function() {
-    const overlay = document.querySelector('[style*="z-index: 10000"]');
-    if (overlay) {
-        document.body.removeChild(overlay);
-    }
-    resolve();
-};
+                    document.body.removeChild(overlay);
+                    resolve();
+                };
             });
         };
 
@@ -1258,7 +1247,7 @@
                     console.error('خطا در دریافت داده‌ها:', error);
                     // اگر جدول وجود ندارد، نمونه داده ایجاد کن
                     if (error.code === 'PGRST204') {
-                        // await createSampleData();
+                        await createSampleData();
                         return;
                     }
                     throw error;
@@ -1672,19 +1661,6 @@
         if (!navigator.onLine) {
             document.getElementById('offlineAlert').style.display = 'block';
         }
-
-
-
-
-
-
-
-
-
-
-();
-        <script src="./manager-notifier.js"></script>
-<script src="../../notification-sender.js"></script>
-   <script src="../../notification-permissin-manager.js"></script> 
+    </script>
 </body>
 </html>
