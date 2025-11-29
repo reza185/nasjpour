@@ -1676,6 +1676,10 @@
 
 
 // گوش دادن به گزارشات جدید مدیران
+// این متغیرها رو در بالای تابع اضافه کن
+let lastNotificationTime = 0;
+let processedIds = new Set();
+
 async function setupManagerNotifications() {
     const subscription = supabase
         .channel('manager-reports-channel')
@@ -1686,10 +1690,33 @@ async function setupManagerNotifications() {
                 table: 'managerreports'
             }, 
             async (payload) => {
+                const now = Date.now();
+                const reportId = payload.new.id;
+                
+                // چک زمان (۵ ثانیه)
+                if (now - lastNotificationTime < 5000) {
+                    console.log('⏰ اعلان اخیراً ارسال شده');
+                    return;
+                }
+                
+                // چک تکراری
+                if (processedIds.has(reportId)) {
+                    console.log('🔄 گزارش تکراری:', reportId);
+                    return;
+                }
+                
                 console.log('📋 گزارش جدید مدیر:', payload.new);
+                lastNotificationTime = now;
+                processedIds.add(reportId);
+                
+                // مدیریت حافظه
+                if (processedIds.size > 100) {
+                    const firstId = processedIds.values().next().value;
+                    processedIds.delete(firstId);
+                }
                 
                 await NotificationSender.notifyManagers({
-                    id: payload.new.id,
+                    id: reportId,
                     machine_name: payload.new.machine_name,
                     problem_description: payload.new.problem_description
                 });
@@ -1697,13 +1724,6 @@ async function setupManagerNotifications() {
         )
         .subscribe();
 }
-
-// راه‌اندازی وقتی صفحه لود شد
-document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(() => {
-        setupManagerNotifications();
-    }, 3000);
-});
 
 
 
