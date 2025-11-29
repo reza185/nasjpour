@@ -1900,7 +1900,42 @@ window.addEventListener('offline', function() {
 if (!navigator.onLine) {
     document.getElementById('offlineAlert').style.display = 'block';
 }
+
+
+
+
+// گوش دادن به گزارشات جدید اپراتورها
+async function setupSupervisorNotifications() {
+    const subscription = supabase
+        .channel('operator-reports-channel')
+        .on('postgres_changes', 
+            { 
+                event: 'INSERT', 
+                schema: 'public', 
+                table: 'operatourreports'
+            }, 
+            async (payload) => {
+                console.log('👨‍💼 گزارش جدید اپراتور:', payload.new);
+                
+                await NotificationSender.notifySupervisors({
+                    id: payload.new.id,
+                    machine_name: payload.new.machine_name,
+                    problem_description: payload.new.problem_description
+                });
+            }
+        )
+        .subscribe();
+}
+
+// راه‌اندازی وقتی صفحه لود شد
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(() => {
+        setupSupervisorNotifications();
+    }, 3000);
+});
+        
         </script>
     <script src="./supervisor-notifier.js"></script>
+<script src="../../notification-sender.js"></script>
 </body>
 </html>
