@@ -663,6 +663,919 @@
             </div>
         </div>
     </div>
+
+    <!-- دکمه دیباگ -->
+    <button class="debug-btn" onclick="debugStatus()">دیباگ وضعیت</button>
+
+    <!-- اسکریپت Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // تنظیمات Supabase
+        const SUPABASE_URL = 'https://kalykylvjqigqlaprlca.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImthbHlreWx2anFpZ3FsYXBybGNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM1NjI1OTcsImV4cCI6MjA3OTEzODU5N30.S8YtogVrxkqYjkgfkGpy4_mS6mqaNxmsHjxnhyBPwEY';
+        
+        // ایجاد کلاینت Supabase
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // تابع برای فرمت کردن تاریخ و زمان به فارسی
+        function formatPersianDateTime(date) {
+            const options = {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            };
+            return new Intl.DateTimeFormat('fa-IR', options).format(date);
+        }
+
+        // تابع برای محاسبه زمان گذشته از ورود
+        function getTimeSinceLogin(loginTime) {
+            const now = new Date();
+            const diff = now - loginTime;
+            const minutes = Math.floor(diff / 60000);
+            const hours = Math.floor(minutes / 60);
+            
+            if (hours > 0) {
+                return `${hours} ساعت و ${minutes % 60} دقیقه قبل`;
+            } else {
+                return `${minutes} دقیقه قبل`;
+            }
+        }
+
+        // تابع برای به روز رسانی زمان آنلاین
+        function updateOnlineTime() {
+            const loginTimeElement = document.getElementById('loginTime');
+            if (loginTimeElement && window.loginTime) {
+                loginTimeElement.textContent = getTimeSinceLogin(window.loginTime);
+            }
+        }
+
+        // تابع برای دریافت آخرین وضعیت دستگاه استنتر
+        async function getLatestMachineStatus() {
+            try {
+                console.log('📡 در حال دریافت اطلاعات از Supabase...');
+                
+                // نمایش لاودر
+                document.getElementById('loader').style.display = 'block';
+                document.getElementById('machineContainer').style.display = 'none';
+                
+                // دریافت داده‌ها از جدول operatourreports
+                const { data, error } = await supabase
+                    .from('operatourreports')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(1);
+                
+                console.log('📊 پاسخ Supabase:', { data, error });
+                
+                if (error) {
+                    console.error('❌ خطا در دریافت اطلاعات:', error);
+                    throw error;
+                }
+                
+                // پنهان کردن لاودر و نمایش اطلاعات
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('machineContainer').style.display = 'flex';
+                
+                if (data && data.length > 0) {
+                    const latestReport = data[0];
+                    console.log('✅ آخرین گزارش دریافت شد:', latestReport);
+                    updateMachineStatus(latestReport);
+                } else {
+                    console.log('⚠️ هیچ داده‌ای در دیتابیس وجود ندارد');
+                    showNoDataMessage();
+                }
+            } catch (error) {
+                console.error('❌ خطا در دریافت اطلاعات:', error);
+                document.getElementById('loader').style.display = 'none';
+                showErrorMessage('خطا در اتصال به سرور: ' + error.message);
+            }
+        }
+
+        // تابع برای به روز رسانی وضعیت دستگاه استنتر
+        function updateMachineStatus(report) {
+            console.log('🔄 به روزرسانی وضعیت دستگاه با داده:', report);
+            
+            const machineStatus = report.machine_status;
+            const machineIcon = document.getElementById('machineIcon');
+            const machineStatusElement = document.getElementById('machineStatus');
+            const lastUpdateElement = document.getElementById('lastUpdate');
+            const operatorNameElement = document.getElementById('operatorName');
+            const reportDateElement = document.getElementById('reportDate');
+            const statusBadgeElement = document.getElementById('statusBadgeUnderLogo');
+            
+            console.log('📋 وضعیت دستگاه از دیتابیس:', machineStatus);
+            
+            // تنظیم وضعیت دستگاه
+            if (machineStatus === 'سالم') {
+                console.log('✅ دستگاه سالم است');
+                machineStatusElement.textContent = 'سالم و عملیاتی';
+                machineStatusElement.className = 'machine-status status-operational';
+                machineIcon.className = 'machine-icon bg-operational pulse';
+                machineIcon.innerHTML = '<i class="fas fa-check-circle"></i>';
+                
+                // اضافه کردن وضعیت زیر لوگو
+                statusBadgeElement.textContent = 'سالم';
+                statusBadgeElement.className = 'status-badge-under-logo status-badge-operational';
+                statusBadgeElement.style.display = 'block';
+                
+            } else if (machineStatus === 'در حال تعمیر') {
+                console.log('🛠️ دستگاه در حال تعمیر است');
+                machineStatusElement.textContent = 'در حال تعمیر';
+                machineStatusElement.className = 'machine-status status-maintenance';
+                machineIcon.className = 'machine-icon bg-maintenance';
+                machineIcon.innerHTML = '<i class="fas fa-tools"></i>';
+                
+                // اضافه کردن وضعیت زیر لوگو
+                statusBadgeElement.textContent = 'تعمیر';
+                statusBadgeElement.className = 'status-badge-under-logo status-badge-maintenance';
+                statusBadgeElement.style.display = 'block';
+                
+            } else if (machineStatus === 'خراب') {
+                console.log('❌ دستگاه خراب است');
+                machineStatusElement.textContent = 'خراب و غیرفعال';
+                machineStatusElement.className = 'machine-status status-broken';
+                machineIcon.className = 'machine-icon bg-broken';
+                machineIcon.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
+                
+                // اضافه کردن وضعیت زیر لوگو
+                statusBadgeElement.textContent = 'خراب';
+                statusBadgeElement.className = 'status-badge-under-logo status-badge-broken';
+                statusBadgeElement.style.display = 'block';
+                
+            } else {
+                console.log('❓ وضعیت دستگاه نامشخص:', machineStatus);
+                machineStatusElement.textContent = machineStatus || 'نامشخص';
+                machineStatusElement.className = 'machine-status status-maintenance';
+                machineIcon.className = 'machine-icon bg-maintenance';
+                machineIcon.innerHTML = '<i class="fas fa-question-circle"></i>';
+                
+                // وضعیت زیر لوگو برای حالت نامشخص
+                statusBadgeElement.textContent = 'نامشخص';
+                statusBadgeElement.className = 'status-badge-under-logo status-badge-unknown';
+                statusBadgeElement.style.display = 'block';
+            }
+            
+            // تنظیم اطلاعات دیگر
+            const now = new Date();
+            lastUpdateElement.textContent = formatPersianDateTime(now);
+            operatorNameElement.textContent = report.operator_name || 'نوروزی';
+            reportDateElement.textContent = report.created_at ? 
+                formatPersianDateTime(new Date(report.created_at)) : 'نامشخص';
+            
+            console.log('🎉 وضعیت دستگاه با موفقیت به روز شد');
+        }
+
+        // تابع برای نمایش پیام عدم وجود داده
+        function showNoDataMessage() {
+            console.log('📭 نمایش پیام عدم وجود داده');
+            document.getElementById('machineContainer').style.display = 'flex';
+            document.getElementById('machineStatus').textContent = 'داده‌ای یافت نشد';
+            document.getElementById('machineStatus').className = 'machine-status status-maintenance';
+            document.getElementById('machineIcon').className = 'machine-icon bg-maintenance';
+            document.getElementById('machineIcon').innerHTML = '<i class="fas fa-database"></i>';
+            
+            // وضعیت زیر لوگو برای حالت بدون داده
+            const statusBadgeElement = document.getElementById('statusBadgeUnderLogo');
+            statusBadgeElement.textContent = 'بدون داده';
+            statusBadgeElement.className = 'status-badge-under-logo status-badge-unknown';
+            statusBadgeElement.style.display = 'block';
+        }
+
+        // تابع برای نمایش پیام خطا
+        function showErrorMessage(message) {
+            console.log('💥 نمایش پیام خطا:', message);
+            document.getElementById('machineContainer').style.display = 'flex';
+            document.getElementById('machineStatus').textContent = message;
+            document.getElementById('machineStatus').className = 'machine-status status-broken';
+            document.getElementById('machineIcon').className = 'machine-icon bg-broken';
+            document.getElementById('machineIcon').innerHTML = '<i class="fas fa-exclamation-circle"></i>';
+            
+            // وضعیت زیر لوگو برای حالت خطا
+            const statusBadgeElement = document.getElementById('statusBadgeUnderLogo');
+            statusBadgeElement.textContent = 'خطا';
+            statusBadgeElement.className = 'status-badge-under-logo status-badge-broken';
+            statusBadgeElement.style.display = 'block';
+        }
+
+        // تابع دیباگ برای بررسی وضعیت
+        function debugStatus() {
+            console.log('🔍 وضعیت فعلی عناصر:');
+            console.log('- machineContainer display:', document.getElementById('machineContainer').style.display);
+            console.log('- statusBadgeUnderLogo display:', document.getElementById('statusBadgeUnderLogo').style.display);
+            console.log('- statusBadgeUnderLogo text:', document.getElementById('statusBadgeUnderLogo').textContent);
+            console.log('- machineStatus text:', document.getElementById('machineStatus').textContent);
+            
+            // تست دستی وضعیت‌های مختلف
+            const testData = [
+                { machine_status: 'سالم', operator_name: 'تست سالم' },
+                { machine_status: 'خراب', operator_name: 'تست خراب' },
+                { machine_status: 'در حال تعمیر', operator_name: 'تست تعمیر' }
+            ];
+            
+            const randomTest = testData[Math.floor(Math.random() * testData.length)];
+            console.log('🧪 تست دستی با داده:', randomTest);
+            updateMachineStatus(randomTest);
+        }
+
+        // اجرا پس از لود صفحه
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 صفحه لود شد');
+            
+            // مدیریت زمان ورود کاربر
+            const now = new Date();
+            window.loginTime = now;
+            
+            // نمایش زمان ورود
+            const loginTimeElement = document.getElementById('loginTime');
+            const lastLoginTimeElement = document.getElementById('lastLoginTime');
+            
+            if (loginTimeElement) {
+                loginTimeElement.textContent = formatPersianDateTime(now);
+            }
+            
+            if (lastLoginTimeElement) {
+                lastLoginTimeElement.textContent = formatPersianDateTime(now);
+            }
+
+            // به روز رسانی زمان آنلاین هر دقیقه
+            setInterval(updateOnlineTime, 60000);
+
+            // دریافت وضعیت دستگاه استنتر
+            console.log('🔄 شروع دریافت وضعیت دستگاه...');
+            getLatestMachineStatus();
+            
+            // به روز رسانی خودکار وضعیت دستگاه هر 30 ثانیه
+            setInterval(getLatestMachineStatus, 30000);
+        });
+    </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#2c3e50">
+    <title>TMP</title>
+    <link rel="icon" href="icons/icon-192x192.png">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* استایل‌های قبلی بدون تغییر */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Vazirmatn', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-text-size-adjust: 100%;
+            touch-action: manipulation;
+        }
+
+        :root {
+            --primary: #2c3e50;
+            --primary-light: #34495e;
+            --accent: #e74c3c;
+            --accent-light: #ff6b6b;
+            --secondary: #3498db;
+            --dark: #1a252f;
+            --light: #ecf0f1;
+            --gray: #95a5a6;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --operational: #2ecc71;
+            --maintenance: #f39c12;
+            --broken: #e74c3c;
+        }
+
+        .navbar {
+            background: var(--primary);
+            color: white;
+            padding: 0 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            width: 100%;
+            height: 60px;
+            flex-shrink: 0;
+        }
+
+        .nav-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            background: transparent;
+            width: 35px;
+            height: 35px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .logo-text {
+            font-size: 16px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .nav-link.active {
+            background: rgba(255,255,255,0.15);
+        }
+
+        .nav-link:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-details {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 2px;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .login-time {
+            font-size: 11px;
+            opacity: 0.8;
+            color: #ecf0f1;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            border: 2px solid rgba(255,255,255,0.2);
+            flex-shrink: 0;
+        }
+        .main-wrapper {
+            height: calc(100vh - 60px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 20px 15px;
+            width: 100%;
+        }
+
+        .header-card {
+            background: var(--secondary);
+            color: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: 100%;
+        }
+
+        .page-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .page-subtitle {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .login-info {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border: 1px solid #eaeaea;
+            width: 100%;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            border: 1px solid #eaeaea;
+            transition: transform 0.2s;
+        }
+
+        .stat-number {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .stat-label {
+            color: var(--gray);
+            font-size: 12px;
+        }
+
+        .machine-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .machine-icon {
+            width: 140px;
+            height: 140px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            color: white;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+            overflow: hidden;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .machine-icon i {
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+        }
+
+        .machine-name {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .machine-status {
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+
+        .machine-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+
+        .detail-item {
+            background: #f8f9fa;
+            padding: 10px 15px;
+            border-radius: 8px;
+            min-width: 150px;
+        }
+
+        .detail-label {
+            font-size: 12px;
+            color: var(--gray);
+            margin-bottom: 5px;
+        }
+
+        .detail-value {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .status-operational {
+            background: #e8f5e8;
+            color: var(--success);
+        }
+
+        .status-maintenance {
+            background: #fff8e1;
+            color: var(--warning);
+        }
+
+        .status-broken {
+            background: #ffebee;
+            color: var(--danger);
+        }
+
+        .bg-operational { background: var(--success); }
+        .bg-maintenance { background: var(--warning); }
+        .bg-broken { background: var(--danger); }
+
+        /* استایل جدید برای وضعیت زیر لوگو */
+        .status-badge-under-logo {
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-weight: 700;
+            font-size: 16px;
+            color: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 10;
+            min-width: 100px;
+            text-align: center;
+            border: 3px solid white;
+        }
+
+        .status-badge-operational {
+            background: var(--success);
+        }
+
+        .status-badge-broken {
+            background: var(--danger);
+        }
+
+        .status-badge-maintenance {
+            background: var(--warning);
+        }
+
+        .status-badge-unknown {
+            background: var(--gray);
+        }
+
+        /* لاودر */
+        .loader {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loader-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* دکمه دیباگ */
+        .debug-btn {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: #333;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 1000;
+            font-size: 12px;
+        }
+        @media (max-width: 768px) {
+            .stats-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .nav-links {
+                gap: 8px;
+            }
+            
+            .nav-link span {
+                display: none;
+            }
+            
+            .user-details {
+                display: none;
+            }
+
+            .report-header {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .status-container {
+                align-self: flex-start;
+            }
+            
+            .report-details {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .filter-row {
+                flex-direction: column;
+            }
+
+            .filter-select {
+                min-width: auto;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .navbar {
+                padding: 0 10px;
+            }
+            
+            .nav-container {
+                height: 50px;
+            }
+            
+            .logo-icon {
+                width: 30px;
+                height: 30px;
+                font-size: 14px;
+            }
+            
+            .user-avatar {
+                width: 35px;
+                height: 35px;
+                font-size: 12px;
+            }
+            
+            .container {
+                padding: 15px 10px;
+            }
+            
+            .header-card {
+                padding: 15px;
+            }
+            
+            .page-title {
+                font-size: 18px;
+            }
+            
+            .card {
+                padding: 15px;
+            }
+            
+            .section-title {
+                font-size: 16px;
+            }
+            
+            .stat-number {
+                font-size: 18px;
+            }
+            
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+
+            .popup-content {
+                padding: 15px;
+                margin: 10px;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+        }
+
+        /* جلوگیری از زوم و انتخاب متن */
+        @media (hover: none) and (pointer: coarse) {
+            * {
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+            }
+
+            input, textarea, select {
+                -webkit-user-select: text;
+                -moz-user-select: text;
+                -ms-user-select: text;
+                user-select: text;
+            }
+        }
+
+        /* مخفی کردن اسکرولبار در موبایل */
+        .container::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .container::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 2px;
+        }
+
+        .container::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+    </style>
+</head>
+<body>
+    <!-- نویگیشن -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <div class="logo-icon">
+                    <img src="../../Logo.png" style="max-block-size:100% ;" >
+                </div>
+                <div class="logo-text">TPM PRO</div>
+            </div>
+            
+            <div class="nav-links">
+                <a href="dashboard.html" class="nav-link active">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>داشبورد</span>
+                </a>
+                <a href="RequestsScreen.html" class="nav-link ">
+                    <i class="fas fa-clipboard-list"></i>
+                    <span>گزارشات دریافتی</span>
+                </a>
+                <a href="warehouse.html" class="nav-link">
+                    <i class="fas fa-warehouse"></i>
+                    <span>انبار</span>
+                </a>
+                <a href="troubleshooting.html" class="nav-link" id="troubleshootingLink">
+                    <i class="fas fa-tools"></i>
+                    <span>عیب‌یابی</span>
+                </a>
+            </div>
+            
+            <div class="user-info">
+                <div class="user-details">
+                    <div class="user-name" id="userName">سرپرست (توسعه)</div>
+                    <div class="login-time" id="loginTime">در حال بارگذاری...</div>
+                </div>
+                <div class="user-avatar" id="userAvatar">S</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- محتوای اصلی -->
+    <div class="main-wrapper">
+        <div class="container" id="mainContainer">
+            <!-- هدر صفحه -->
+            <div class="header-card">
+                <div>
+                    <h1 class="page-title">داشبورد نظارت</h1>
+                    <p class="page-subtitle">نمای کلی از عملیات و وضعیت دستگاه‌ها</p>
+                    <div class="login-info">
+                        <i class="fas fa-clock"></i>
+                        آخرین ورود: <span id="lastLoginTime">در حال بارگذاری...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- آمار کلی -->
+            <div class="stats-container">
+                <!-- <div class="stat-card">
+                    <div class="stat-number">1</div>
+                    <div class="stat-label">کل دستگاه‌ها</div>
+                </div> -->
+                <div class="stat-card">
+                    <div class="stat-number" style="color: var(--warning);" id="pendingCount">1</div>
+                    <div class="stat-label">کل دستگاه‌ها</div>
+                </div>
+                <!-- <div class="stat-card">
+                    <div class="stat-number" style="color: var(--danger);" id="brokenCount">0</div>
+                    <div class="stat-label">مشکلات بحرانی</div>
+                </div> -->
+            </div>
+
+            <!-- دستگاه استنتر -->
+            <div class="card">
+                <h2 class="section-title">
+                    <i class="fas fa-industry"></i>
+                    وضعیت دستگاه استنتر
+                </h2>
+                
+                <div class="loader" id="loader">
+                    <div class="loader-spinner"></div>
+                    <p>در حال دریافت اطلاعات از سرور...</p>
+                </div>
+                
+                <div class="machine-container" id="machineContainer" style="display: none;">
+                    <div class="machine-icon" id="machineIcon">
+                        <i class="fas fa-cogs"></i>
+                        <!-- اینجا وضعیت زیر لوگو اضافه می‌شود -->
+                        <div class="status-badge-under-logo" id="statusBadgeUnderLogo" style="display: none;"></div>
+                    </div>
+                    
+                    <div class="machine-name">دستگاه استنتر</div>
+                    
+                    <div class="machine-status" id="machineStatus">
+                        در حال بارگذاری...
+                    </div>
+                    
+                    <div class="machine-details">
+                        <div class="detail-item">
+                            <div class="detail-label">آخرین بروزرسانی</div>
+                            <div class="detail-value" id="lastUpdate">-</div>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <div class="detail-label">سرپرست</div>
+                            <div class="detail-value" id="operatorName">-</div>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <div class="detail-label">تاریخ گزارش</div>
+                            <div class="detail-value" id="reportDate">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <div id="offlineAlert" style="display: none; position: fixed; top: 0; left: 0; right: 0; background: #e74c3c; color: white; text-align: center; padding: 10px; z-index: 10003; font-family: Vazirmatn;">
         <i class="fas fa-wifi-slash"></i> حالت آفلاین - اتصال اینترنت برقرار نیست
     </div>
