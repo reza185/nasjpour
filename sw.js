@@ -1,5 +1,5 @@
 // sw.js - مدیریت اعلان‌های مجزا
-const CACHE_NAME = 'tpm-v1.0.0';
+const CACHE_NAME = 'tpm-v1.0.0'+ Date.now();;
 
 self.addEventListener('install', event => {
   console.log('🚀 نصب سرویس ورکر...');
