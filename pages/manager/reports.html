@@ -1010,6 +1010,82 @@
         <div id="offlineAlert" style="display: none; position: fixed; top: 0; left: 0; right: 0; background: #e74c3c; color: white; text-align: center; padding: 10px; z-index: 10003; font-family: Vazirmatn;">
             <i class="fas fa-wifi-slash"></i> حالت آفلاین - اتصال اینترنت برقرار نیست
         </div>
+
+<!-- دکمه تست نوتیفیکیشن -->
+<button onclick="testNotificationWithClick()" 
+        style="position: fixed; bottom: 20px; right: 20px; z-index: 10000; padding: 12px 20px; background: #2c3e50; color: white; border: none; border-radius: 8px; cursor: pointer;">
+    🔔 تست نوتیفیکیشن
+</button>
+
+<script>
+// تابع تست با کلیک کاربر
+async function testNotificationWithClick() {
+    console.log('🧪 تست نوتیفیکیشن با کلیک کاربر...');
+    
+    try {
+        const result = await NotificationSender.notifyManagers({
+            id: 'click-test-' + Date.now(),
+            machine_name: 'دستگاه تست',
+            problem_description: 'این تست با کلیک کاربر است'
+        });
+        
+        if (result) {
+            console.log('✅ تست موفق');
+            alert('نوتیفیکیشن ارسال شد!');
+        } else {
+            console.log('❌ تست ناموفق');
+            alert('خطا در ارسال نوتیفیکیشن');
+        }
+    } catch (error) {
+        console.error('❌ خطا:', error);
+        alert('خطا: ' + error.message);
+    }
+}
+</script>
+
+
+
+    <!-- دکمه درخواست دسترسی -->
+<button onclick="requestNotificationPermission()" 
+        style="position: fixed; bottom: 80px; right: 20px; z-index: 10000; padding: 12px 20px; background: #3498db; color: white; border: none; border-radius: 8px; cursor: pointer;">
+    🔔 درخواست دسترسی
+</button>
+
+<script>
+// درخواست دسترسی نوتیفیکیشن
+async function requestNotificationPermission() {
+    console.log('🔔 درخواست دسترسی نوتیفیکیشن...');
+    
+    try {
+        const granted = await NotificationSender.requestPermission();
+        if (granted) {
+            alert('✅ دسترسی نوتیفیکیشن داده شد!');
+        } else {
+            alert('❌ دسترسی نوتیفیکیشن داده نشد');
+        }
+    } catch (error) {
+        console.error('❌ خطا در درخواست دسترسی:', error);
+        alert('خطا در درخواست دسترسی');
+    }
+}
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
     <script>
         // ==================== CUSTOM ALERT SYSTEM ====================
         delete window.alert;
