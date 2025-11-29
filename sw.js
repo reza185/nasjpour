@@ -9,7 +9,7 @@ const urlsToCache = [
   './manifest.json'
 ];
 
-// لیست URLهایی که نباید کش شوند (با regex)
+// لیست URLهایی که نباید کش شوند
 const NO_CACHE_URLS = [
   './pages/anbar/dashboard.html',
   './pages/manager/dashboard.html',
@@ -44,13 +44,24 @@ self.addEventListener('activate', event => {
           }
         })
       );
-    }).then(() => self.clients.claim())
+    }).then(() => {
+      self.clients.claim();
+      // چک آپدیت رو خارج از event.waitUntil قرار بدید
+      setTimeout(() => checkForUpdates(), 1000);
+    })
   );
 });
 
 // چک کردن آیا URL باید کش شود یا نه
 function shouldNotCache(url) {
-  return NO_CACHE_URLS.some(pattern => pattern.test(url));
+  const currentUrl = new URL(url);
+  const currentPath = currentUrl.pathname;
+  
+  return NO_CACHE_URLS.some(noCacheUrl => {
+    // تبدیل به مسیر کامل برای مقایسه
+    const fullNoCacheUrl = new URL(noCacheUrl, self.location.origin).pathname;
+    return currentPath === fullNoCacheUrl;
+  });
 }
 
 // مدیریت درخواست‌های شبکه
@@ -93,6 +104,7 @@ self.addEventListener('fetch', event => {
         if (request.destination === 'document') {
           return caches.match('./index.html');
         }
+        return Response.error();
       })
   );
 });
@@ -123,8 +135,8 @@ async function checkForUpdates() {
     const cache = await caches.open(CACHE_NAME);
     const urlsToCheck = [
       './index.html',
-      './manifest.json',
-      './sw.js'
+      './manifest.json'
+      // './sw.js' حذف شد چون ممکنه مشکل ایجاد کنه
     ];
     
     let hasUpdate = false;
@@ -208,14 +220,4 @@ self.addEventListener('controllerchange', () => {
       });
     });
   });
-});
-
-// چک آپدیت هنگام لود Service Worker
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    Promise.all([
-      self.clients.claim(),
-      checkForUpdates()
-    ])
-  );
 });
