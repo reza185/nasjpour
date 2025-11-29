@@ -16,6 +16,8 @@
     <link rel="apple-touch-icon" href="../../icons/icon-192x192.png">
     <link rel="apple-touch-startup-image" href="../../icons/icon-512x512.png">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./manager-notifier.js"></script>
+<script src="../../notification-sender.js"></script>
     <!-- <script src="../../auth.js"></script> -->
     <style>
         * {
@@ -1661,7 +1663,52 @@
         if (!navigator.onLine) {
             document.getElementById('offlineAlert').style.display = 'block';
         }
+
+
+
+
+
+
+
+
+
+
+
+
+
+// گوش دادن به گزارشات جدید مدیران
+async function setupManagerNotifications() {
+    const subscription = supabase
+        .channel('manager-reports-channel')
+        .on('postgres_changes', 
+            { 
+                event: 'INSERT', 
+                schema: 'public', 
+                table: 'managerreports'
+            }, 
+            async (payload) => {
+                console.log('📋 گزارش جدید مدیر:', payload.new);
+                
+                await NotificationSender.notifyManagers({
+                    id: payload.new.id,
+                    machine_name: payload.new.machine_name,
+                    problem_description: payload.new.problem_description
+                });
+            }
+        )
+        .subscribe();
+}
+
+// راه‌اندازی وقتی صفحه لود شد
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(() => {
+        setupManagerNotifications();
+    }, 3000);
+});
+
+
+
+        
     </script>
-    <script src="./manager-notifier.js"></script>
 </body>
 </html>
