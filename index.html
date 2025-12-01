@@ -50,101 +50,89 @@
     <!-- ========== SERVICE WORKER ========== -->
     <!-- // جایگزین بخش Service Worker Registration موجود با این کد -->
 <script>
-// Service Worker Registration with Update Handling
+// ==================== SERVICE WORKER REGISTRATION (PWA Only) ====================
+// Service Worker Registration with PWA Detection
 if ('serviceWorker' in navigator) {
     let refreshing = false;
     
-    window.addEventListener('load', function() {
-        navigator.serviceWorker.register('/nasjpour/sw.js')
-            .then(function(registration) {
-                console.log('✅ Service Worker ثبت شد. Scope:', registration.scope);
-                
-                // چک آپدیت دوره‌ای
-                setInterval(() => {
-                    registration.update();
-                    console.log('🔄 چک آپدیت دوره‌ی Service Worker');
-                }, 60 * 60 * 1000); // هر 1 ساعت
-                
-                // گوش دادن به وضعیت انتظار
-                registration.addEventListener('updatefound', () => {
-                    const newWorker = registration.installing;
-                    console.log('🔄 آپدیت جدید Service Worker پیدا شد');
-                    
-                    newWorker.addEventListener('statechange', () => {
-                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                            console.log('📦 Service Worker جدید نصب شد - نمایش نوتیفیکیشن');
-                            showUpdateNotification();
-                        }
-                    });
-                });
-                
-                // رفرش صفحه وقتی SW جدید کنترل رو گرفت
-                navigator.serviceWorker.addEventListener('controllerchange', () => {
-                    if (!refreshing) {
-                        refreshing = true;
-                        console.log('🔄 کنترل کننده جدید - رفرش صفحه');
-                        window.location.reload();
-                    }
-                });
-            })
-            .catch(function(error) {
-                console.log('❌ خطا در ثبت Service Worker:', error);
-            });
-        
-        // گوش دادن به پیام‌های SW
-        navigator.serviceWorker.addEventListener('message', event => {
-            const { type, message, version, action } = event.data;
-            
-            switch(type) {
-                case 'SW_ACTIVATED':
-                    console.log(`🎉 Service Worker جدید فعال شد: v${version}`);
-                    break;
-                    
-                case 'CONTENT_UPDATE_AVAILABLE':
-                    console.log('📦 آپدیت محتوا موجود است:', message);
-                    showContentUpdateNotification();
-                    break;
-            }
-        });
-    });
+    // تابع تشخیص نصب‌شده بودن اپ
+    function isPWAInstalled() {
+        return window.matchMedia('(display-mode: standalone)').matches || 
+               window.navigator.standalone === true ||
+               document.referrer.includes('android-app://') ||
+               window.location.protocol === 'file:' ||
+               window.location.hostname === 'localhost' ||
+               window.location.hostname === '127.0.0.1';
+    }
     
-    // مدیریت نوتیفیکیشن‌های آپدیت
-    function showUpdateNotification() {
+    // تابع نمایش نوتیفیکیشن شیک
+    function showPWAUpdateNotification(version, type = 'update') {
+        // فقط اگر اپ نصب‌شده باشد
+        if (!isPWAInstalled()) {
+            console.log('📱 اپ نصب‌شده نیست - نوتیفیکیشن نمایش داده نمی‌شود');
+            return;
+        }
+        
         const notification = document.getElementById('updateNotification');
         const updateReloadBtn = document.getElementById('updateReloadBtn');
         const updateLaterBtn = document.getElementById('updateLaterBtn');
         const updateCloseBtn = document.getElementById('updateCloseBtn');
+        const updateProgress = document.getElementById('updateProgress');
         
-        // آپدیت متن نوتیفیکیشن
-        document.querySelector('.update-notification-title').textContent = 'آپدیت جدید برنامه!';
-        document.querySelector('.update-notification-message').textContent = 
-            'نسخه جدید برنامه آماده است. برای دریافت آخرین ویژگی‌ها و رفع اشکالات، برنامه را رفرش کنید.';
+        // تنظیم نسخه
+        document.querySelector('.update-subtitle').textContent = `نسخه ${version} منتشر شد`;
+        
+        // تنظیم بر اساس نوع آپدیت
+        if (type === 'content') {
+            document.querySelector('.update-title').textContent = 'محتویات جدید!';
+            updateReloadBtn.innerHTML = '<i class="fas fa-sync-alt"></i><span>بروزرسانی</span>';
+        } else {
+            document.querySelector('.update-title').textContent = 'آپدیت جدید برنامه!';
+            updateReloadBtn.innerHTML = '<i class="fas fa-download"></i><span>نصب آپدیت</span>';
+        }
         
         // نمایش نوتیفیکیشن
         notification.style.display = 'flex';
         
-        // اضافه کردن event listener ها
+        // Event Listeners
         updateReloadBtn.onclick = function() {
-            console.log('🔄 کاربر درخواست رفرش کرد');
-            notification.style.animation = 'fadeOut 0.3s ease';
-            setTimeout(() => {
-                notification.style.display = 'none';
-                window.location.reload();
-            }, 300);
+            console.log('🚀 درخواست نصب آپدیت');
+            
+            // نمایش نوار پیشرفت
+            updateProgress.style.display = 'block';
+            const progressFill = document.querySelector('.progress-fill');
+            
+            // شبیه‌سازی پیشرفت
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 5;
+                progressFill.style.width = progress + '%';
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        notification.style.animation = 'fadeOut 0.3s ease';
+                        setTimeout(() => {
+                            notification.style.display = 'none';
+                            window.location.reload();
+                        }, 300);
+                    }, 500);
+                }
+            }, 100);
         };
         
         updateLaterBtn.onclick = function() {
-            console.log('⏸️ کاربر موکول کرد');
+            console.log('⏰ یادآوری بعدی');
             notification.style.animation = 'fadeOut 0.3s ease';
             setTimeout(() => {
                 notification.style.display = 'none';
+                // ذخیره در localStorage برای نمایش بعدی
+                localStorage.setItem('updateRemindLater', Date.now());
             }, 300);
-            // بعد از 5 دقیقه دوباره نمایش بده
-            setTimeout(showUpdateNotification, 5 * 60 * 1000);
         };
         
         updateCloseBtn.onclick = function() {
-            console.log('❌ کاربر بست');
+            console.log('❌ کاربر نوتیفیکیشن را بست');
             notification.style.animation = 'fadeOut 0.3s ease';
             setTimeout(() => {
                 notification.style.display = 'none';
@@ -157,53 +145,100 @@ if ('serviceWorker' in navigator) {
                 notification.style.animation = 'fadeOut 0.3s ease';
                 setTimeout(() => {
                     notification.style.display = 'none';
+                    console.log('⏰ نوتیفیکیشن به صورت خودکار بسته شد');
                 }, 300);
             }
         }, 30000);
     }
     
-    function showContentUpdateNotification() {
-        const notification = document.getElementById('updateNotification');
-        const updateReloadBtn = document.getElementById('updateReloadBtn');
-        const updateLaterBtn = document.getElementById('updateLaterBtn');
-        const updateCloseBtn = document.getElementById('updateCloseBtn');
+    window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/nasjpour/sw.js')
+            .then(function(registration) {
+                console.log('✅ Service Worker ثبت شد:', registration.scope);
+                
+                // فقط برای PWA چک آپدیت کن
+                if (isPWAInstalled()) {
+                    setInterval(() => {
+                        registration.update();
+                        console.log('🔄 چک آپدیت برای PWA');
+                    }, 60 * 60 * 1000);
+                }
+                
+                // گوش دادن به آپدیت SW
+                registration.addEventListener('updatefound', () => {
+                    const newWorker = registration.installing;
+                    console.log('🔄 آپدیت جدید Service Worker پیدا شد');
+                    
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller && isPWAInstalled()) {
+                            console.log('📦 SW جدید برای PWA نصب شد');
+                            showPWAUpdateNotification('1.0.1', 'update');
+                        }
+                    });
+                });
+                
+                // رفرش خودکار
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    if (!refreshing && isPWAInstalled()) {
+                        refreshing = true;
+                        console.log('🔄 PWA در حال رفرش...');
+                        window.location.reload();
+                    }
+                });
+            })
+            .catch(function(error) {
+                console.log('❌ خطا در ثبت Service Worker:', error);
+            });
         
-        // آپدیت متن نوتیفیکیشن
-        document.querySelector('.update-notification-title').textContent = 'محتویات جدید!';
-        document.querySelector('.update-notification-message').textContent = 
-            'محتویات جدید برنامه آماده است. برای دریافت آخرین تغییرات، برنامه را رفرش کنید.';
-        
-        // نمایش نوتیفیکیشن
-        notification.style.display = 'flex';
-        
-        // اضافه کردن event listener ها
-        updateReloadBtn.onclick = function() {
-            console.log('🔄 کاربر درخواست رفرش کرد');
-            notification.style.animation = 'fadeOut 0.3s ease';
-            setTimeout(() => {
-                notification.style.display = 'none';
-                window.location.reload();
-            }, 300);
-        };
-        
-        updateLaterBtn.onclick = function() {
-            console.log('⏸️ کاربر موکول کرد');
-            notification.style.animation = 'fadeOut 0.3s ease';
-            setTimeout(() => {
-                notification.style.display = 'none';
-            }, 300);
-        };
-        
-        updateCloseBtn.onclick = function() {
-            console.log('❌ کاربر بست');
-            notification.style.animation = 'fadeOut 0.3s ease';
-            setTimeout(() => {
-                notification.style.display = 'none';
-            }, 300);
-        };
+        // گوش دادن به پیام‌های SW
+        navigator.serviceWorker.addEventListener('message', event => {
+            const { type, message, version } = event.data || {};
+            
+            if (!isPWAInstalled()) return;
+            
+            switch(type) {
+                case 'SW_ACTIVATED':
+                    console.log(`🎉 SW جدید فعال شد: v${version}`);
+                    break;
+                    
+                case 'CONTENT_UPDATE_AVAILABLE':
+                    console.log('📦 آپدیت محتوا برای PWA');
+                    showPWAUpdateNotification(version || '1.0.1', 'content');
+                    break;
+                    
+                case 'RELOAD_PAGE':
+                    if (isPWAInstalled()) {
+                        console.log('🔄 دستور رفرش برای PWA');
+                        showPWAUpdateNotification('1.0.1', 'update');
+                    }
+                    break;
+            }
+        });
+    });
+}
+
+// تست نمایش نوتیفیکیشن (فقط در PWA)
+function testPWAUpdate() {
+    function isPWAInstalled() {
+        return window.matchMedia('(display-mode: standalone)').matches || 
+               window.navigator.standalone === true;
+    }
+    
+    if (isPWAInstalled()) {
+        console.log('📱 تست نوتیفیکیشن برای PWA');
+        showPWAUpdateNotification('1.0.1', 'update');
+    } else {
+        console.log('🌐 اپ نصب‌شده نیست - برای تست در مرورگر دسکتاپ:');
+        console.log('1. روی آیکون Install کلیک کنید');
+        console.log('2. دوباره صفحه را باز کنید');
+        console.log('3. یا در کنسول: showPWAUpdateNotification("1.0.1")');
     }
 }
-</script>
+
+// برای تست دستی در کنسول
+window.showPWAUpdateNotification = showPWAUpdateNotification;
+window.testPWAUpdate = testPWAUpdate;
+</script>>
     <style>
         * {
             margin: 0;
@@ -825,115 +860,364 @@ button, .btn {
     }
 }
 /* استایل نوتیفیکیشن آپدیت */
+/* استایل نوتیفیکیشن آپدیت - نسخه شیک */
 .update-notification {
     position: fixed;
-    top: 20px;
-    right: 20px;
-    background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
-    color: white;
-    padding: 20px 25px;
-    border-radius: 12px;
-    box-shadow: 0 8px 25px rgba(39, 174, 96, 0.3);
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     z-index: 10004;
     display: none;
-    flex-direction: column;
-    gap: 15px;
-    min-width: 300px;
-    max-width: 90%;
-    animation: slideInRight 0.5s ease;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: fadeIn 0.3s ease;
 }
 
-.update-notification-content {
+.update-notification-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.update-notification-card {
+    position: relative;
+    background: linear-gradient(135deg, #1a252f 0%, #2c3e50 100%);
+    border-radius: 24px;
+    width: 100%;
+    max-width: 420px;
+    overflow: hidden;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transform-origin: center;
+}
+
+/* هدر */
+.update-notification-header {
+    padding: 25px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
     display: flex;
     align-items: center;
     gap: 15px;
+    position: relative;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.update-notification-icon {
-    font-size: 24px;
-    background: rgba(255, 255, 255, 0.2);
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
+.update-icon-container {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+    border-radius: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
+    color: white;
+    font-size: 24px;
+    box-shadow: 0 8px 25px rgba(39, 174, 96, 0.3);
 }
 
-.update-notification-text {
+.update-badge {
+    position: absolute;
+    top: -8px;
+    left: -8px;
+    background: #e74c3c;
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+    animation: pulse 2s infinite;
+}
+
+.update-header-text {
     flex: 1;
 }
 
-.update-notification-title {
+.update-title {
+    font-size: 20px;
     font-weight: 700;
-    font-size: 16px;
-    margin-bottom: 5px;
+    color: white;
+    margin-bottom: 4px;
 }
 
-.update-notification-message {
+.update-subtitle {
     font-size: 14px;
+    color: rgba(255, 255, 255, 0.8);
     opacity: 0.9;
 }
 
-.update-notification-buttons {
+.update-close-btn {
+    background: rgba(255, 71, 87, 0.2);
+    color: #ff4757;
+    border: 1px solid rgba(255, 71, 87, 0.3);
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
     display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-    margin-top: 10px;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 16px;
 }
 
-.update-notification-btn {
-    padding: 8px 20px;
-    border: none;
-    border-radius: 8px;
+.update-close-btn:hover {
+    background: #ff4757;
+    color: white;
+    transform: rotate(90deg);
+}
+
+/* بدنه */
+.update-notification-body {
+    padding: 25px;
+}
+
+.update-features {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 25px;
+    gap: 15px;
+}
+
+.update-feature {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+}
+
+.update-feature i {
+    font-size: 20px;
+    color: #27ae60;
+    background: rgba(39, 174, 96, 0.1);
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.update-feature:hover i {
+    background: rgba(39, 174, 96, 0.2);
+    transform: translateY(-5px);
+}
+
+.update-feature span {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.9);
+    text-align: center;
+    font-weight: 500;
+}
+
+.update-changelog {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 25px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.update-changelog h4 {
+    color: white;
+    font-size: 16px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.update-changelog h4:before {
+    content: '';
+    width: 4px;
+    height: 16px;
+    background: #27ae60;
+    border-radius: 2px;
+}
+
+.update-changelog ul {
+    list-style: none;
+    padding: 0;
+}
+
+.update-changelog li {
+    color: rgba(255, 255, 255, 0.9);
     font-size: 14px;
+    padding: 8px 0;
+    padding-right: 25px;
+    position: relative;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.update-changelog li:last-child {
+    border-bottom: none;
+}
+
+.update-changelog li:before {
+    content: '✓';
+    position: absolute;
+    right: 0;
+    top: 8px;
+    color: #27ae60;
+    font-weight: bold;
+}
+
+/* نوار پیشرفت */
+.update-progress {
+    margin-top: 20px;
+    display: none;
+}
+
+.progress-bar {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #27ae60 0%, #2ecc71 100%);
+    width: 0%;
+    transition: width 0.3s ease;
+    border-radius: 3px;
+}
+
+.progress-text {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 13px;
+    text-align: center;
+}
+
+/* فوتر */
+.update-notification-footer {
+    padding: 20px 25px;
+    background: rgba(0, 0, 0, 0.2);
+    display: flex;
+    gap: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.update-btn {
+    flex: 1;
+    padding: 15px;
+    border: none;
+    border-radius: 14px;
+    font-size: 15px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
     font-family: Vazirmatn, sans-serif;
 }
 
-.update-notification-close {
-    background: rgba(255, 0, 0, 0.5); 
+.update-btn-primary {
+    background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
     color: white;
+    box-shadow: 0 6px 20px rgba(39, 174, 96, 0.3);
 }
 
-.update-notification-reload {
-    background: white;
-    color: #27ae60;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+.update-btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(39, 174, 96, 0.4);
 }
 
-.update-notification-reload:hover {
-    background: #f8f9fa;
+.update-btn-primary:active {
+    transform: translateY(-1px);
+}
+
+.update-btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.update-btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.15);
     transform: translateY(-2px);
 }
 
-.update-notification-close:hover {
-    background:rgba(255, 0, 0, 0.3);
+/* انیمیشن‌ها */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
-@keyframes slideInRight {
+@keyframes slideUp {
     from {
-        transform: translateX(100%);
         opacity: 0;
+        transform: translateY(30px) scale(0.95);
     }
     to {
-        transform: translateX(0);
         opacity: 1;
+        transform: translateY(0) scale(1);
     }
 }
 
-@keyframes fadeOut {
-    from {
-        opacity: 1;
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+/* ریسپانسیو */
+@media (max-width: 480px) {
+    .update-notification {
+        padding: 15px;
     }
-    to {
-        opacity: 0;
+    
+    .update-notification-card {
+        max-width: 100%;
+        border-radius: 20px;
+    }
+    
+    .update-notification-header {
+        padding: 20px;
+    }
+    
+    .update-features {
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .update-feature {
+        flex-direction: row;
+        justify-content: flex-start;
+        gap: 15px;
+    }
+    
+    .update-feature i {
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
+    }
+    
+    .update-feature span {
+        font-size: 14px;
+        text-align: right;
+    }
+    
+    .update-notification-footer {
+        flex-direction: column;
+    }
+    
+    .update-btn {
+        padding: 12px;
     }
 }
     </style>
@@ -1060,29 +1344,73 @@ button, .btn {
     <div id="offlineAlert" style="display: none; position: fixed; top: 0; left: 0; right: 0; background: #e74c3c; color: white; text-align: center; padding: 10px; z-index: 10003; font-family: Vazirmatn;">
         <i class="fas fa-wifi-slash"></i> حالت آفلاین - اتصال اینترنت برقرار نیست
     </div>
-    <div id="updateNotification" class="update-notification">
-        <div class="update-notification-content">
-            <div class="update-notification-icon">
-                <i class="fas  fa-download"></i>
+   <!-- جایگزین کل بخش updateNotification با این کد: -->
+<div id="updateNotification" class="update-notification">
+    <div class="update-notification-overlay"></div>
+    <div class="update-notification-card">
+        <!-- هدر -->
+        <div class="update-notification-header">
+            <div class="update-icon-container">
+                <i class="fas fa-rocket"></i>
+                <div class="update-badge">NEW</div>
             </div>
-            <div class="update-notification-text">
-                <div class="update-notification-title">آپدیت جدید!</div>
-                <div class="update-notification-message">نسخه جدید برنامه آماده است. برای دریافت آخرین تغییرات، برنامه را آپدیت کنید.</div>
+            <div class="update-header-text">
+                <h3 class="update-title">آپدیت جدید!</h3>
+                <p class="update-subtitle">نسخه 1.0.1 منتشر شد</p>
             </div>
-            <button class="update-notification-close update-notification-btn" id="updateCloseBtn">
+            <button class="update-close-btn" id="updateCloseBtn" aria-label="بستن">
                 <i class="fas fa-times"></i>
             </button>
         </div>
-        <div class="update-notification-buttons">
-            <button class="update-notification-btn update-notification-close" id="updateLaterBtn">
-                بعداً
+        
+        <!-- بدنه -->
+        <div class="update-notification-body">
+            <div class="update-features">
+                <div class="update-feature">
+                    <i class="fas fa-bolt"></i>
+                    <span>سرعت 40% بیشتر</span>
+                </div>
+                <div class="update-feature">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>امنیت بهبود یافته</span>
+                </div>
+                <div class="update-feature">
+                    <i class="fas fa-magic"></i>
+                    <span>طراحی جدید</span>
+                </div>
+            </div>
+            
+            <div class="update-changelog">
+                <h4>تغییرات جدید:</h4>
+                <ul>
+                    <li>✅ بهبود عملکرد کلی برنامه</li>
+                    <li>✅ رفع مشکلات گزارش شده</li>
+                    <li>✅ بهینه‌سازی مصرف باتری</li>
+                    <li>✅ اضافه شدن ویژگی‌های جدید</li>
+                </ul>
+            </div>
+            
+            <div class="update-progress" id="updateProgress" style="display: none;">
+                <div class="progress-bar">
+                    <div class="progress-fill"></div>
+                </div>
+                <div class="progress-text">در حال آپدیت...</div>
+            </div>
+        </div>
+        
+        <!-- فوتر -->
+        <div class="update-notification-footer">
+            <button class="update-btn update-btn-secondary" id="updateLaterBtn">
+                <i class="far fa-clock"></i>
+                <span>یادآوری بعدی</span>
             </button>
-            <button class="update-notification-btn update-notification-reload" id="updateReloadBtn">
+            <button class="update-btn update-btn-primary" id="updateReloadBtn">
                 <i class="fas fa-download"></i>
-                آپدیت کن
+                <span>نصب آپدیت</span>
             </button>
         </div>
     </div>
+</div>
     <script>
         // PWA Installation Logic
         let deferredPrompt;
