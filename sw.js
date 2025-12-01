@@ -1,8 +1,13 @@
-// Service Worker - TPM PWA
-const CACHE_NAME = 'tpm-pwa-cache-v2';
+// =============================================
+// Service Worker - TPM PWA (Auto Update System)
+// =============================================
+
+// 🔢 شماره نسخه - با هر آپدیت تغییر کنه
+const APP_VERSION = '2.1.0';
+const CACHE_NAME = `tpm-cache-v${APP_VERSION}`;
 const APP_PREFIX = '/nasjpour';
 
-// فایل‌های ضروری برای کش
+// 📦 فایل‌های ضروری برای کش اولیه
 const ESSENTIAL_FILES = [
   `${APP_PREFIX}/`,
   `${APP_PREFIX}/index.html`,
@@ -17,7 +22,7 @@ const ESSENTIAL_FILES = [
   `${APP_PREFIX}/icons/apple-icon-180x180.png`
 ];
 
-// صفحاتی که نباید کش شوند
+// 🚫 صفحاتی که نباید کش شوند
 const NO_CACHE_PATHS = [
   'dashboard.html',
   'reports.html',
@@ -28,49 +33,37 @@ const NO_CACHE_PATHS = [
 
 // ==================== نصب ====================
 self.addEventListener('install', event => {
-  console.log('🚀 [SW] نصب TPM PWA...');
+  console.log(`🚀 [SW v${APP_VERSION}] در حال نصب...`);
   
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => {
-        console.log('📦 [SW] کش کردن فایل‌های ضروری...');
-        // فقط فایل‌های ضروری رو کش کن
-        return cache.addAll(ESSENTIAL_FILES);
-      })
+      .then(cache => cache.addAll(ESSENTIAL_FILES))
       .then(() => {
-        console.log('✅ [SW] نصب کامل شد');
+        console.log('✅ فایل‌های ضروری کش شدند');
+        // منتظر نمیمونیم، مستقیماً کنترل رو میگیریم
         return self.skipWaiting();
-      })
-      .catch(error => {
-        console.error('❌ [SW] خطا در نصب:', error);
       })
   );
 });
 
 // ==================== فعال‌سازی ====================
 self.addEventListener('activate', event => {
-  console.log('✅ [SW] فعال شد');
+  console.log(`🎉 [SW v${APP_VERSION}] فعال شد`);
   
   event.waitUntil(
     Promise.all([
       // حذف کش‌های قدیمی
-      caches.keys().then(cacheNames => {
-        return Promise.all(
-          cacheNames.map(cacheName => {
-            if (cacheName !== CACHE_NAME) {
-              console.log(`🗑️ [SW] حذف کش قدیمی: ${cacheName}`);
-              return caches.delete(cacheName);
-            }
-          })
-        );
-      }),
+      clearOldCaches(),
       
       // کنترل همه تب‌ها
       self.clients.claim()
     ]).then(() => {
-      console.log('🎯 [SW] آماده به کار');
-      // چک آپدیت بعد از 3 ثانیه
-      setTimeout(checkForUpdates, 3000);
+      console.log('📢 اطلاع آپدیت به کلاینت‌ها');
+      notifyClients({
+        type: 'SW_ACTIVATED',
+        version: APP_VERSION,
+        message: 'Service Worker جدید فعال شد'
+      });
     })
   );
 });
@@ -80,222 +73,215 @@ self.addEventListener('fetch', event => {
   const request = event.request;
   const url = new URL(request.url);
   
-  // فقط درخواست‌های مربوط به اپ خودت رو مدیریت کن
-  if (!url.pathname.startsWith(APP_PREFIX)) {
+  // فقط درخواست‌های اپ خودمون
+  if (!url.pathname.startsWith(APP_PREFIX)) return;
+  
+  // API و صفحات داینامیک
+  if (isExternalAPI(url) || isDynamicPage(url.pathname)) {
+    event.respondWith(fetch(request));
     return;
   }
   
-  // برای API و صفحات داینامیک، از شبکه بگیر
-  if (url.href.includes('supabase.co') || 
-      url.href.includes('/api/') ||
-      isDynamicPage(url.pathname)) {
-    event.respondWith(networkOnly(request));
-    return;
-  }
-  
-  // برای فایل‌های استاتیک: اول کش، بعد شبکه
+  // استراتژی: اول کش، بعد شبکه
   event.respondWith(
-    caches.match(request)
-      .then(response => {
-        // اگر در کش بود برگردون
-        if (response) {
-          console.log(`📦 [SW] از کش: ${getFileName(url)}`);
-          return response;
-        }
-        
-        // از شبکه بگیر و برای آینده کش کن
-        return fetch(request)
-          .then(networkResponse => {
-            // فقط GETهای موفق رو کش کن
-            if (request.method === 'GET' && networkResponse.status === 200) {
-              cacheResponse(request, networkResponse.clone());
-            }
-            return networkResponse;
-          })
-          .catch(error => {
-            console.log('🌐 [SW] خطای شبکه، حالت آفلاین:', error);
-            return offlineResponse(request);
-          });
-      })
+    cacheFirstStrategy(request)
   );
 });
 
+// ==================== سیستم آپدیت خودکار ====================
+// هر بار که SW کنترل رو می‌گیره، آپدیت رو چک می‌کنه
+self.addEventListener('controllerchange', () => {
+  console.log('🔍 کنترل تغییر کرد - چک آپدیت...');
+  checkForContentUpdates();
+});
+
+// ==================== گوش دادن به پیام‌ها ====================
+self.addEventListener('message', event => {
+  const { type, data } = event.data || {};
+  
+  switch(type) {
+    case 'SKIP_WAITING':
+      console.log('⏩ دستور نصب فوری دریافت شد');
+      self.skipWaiting();
+      break;
+      
+    case 'CHECK_UPDATE':
+      console.log('🔍 درخواست چک آپدیت');
+      checkForContentUpdates();
+      break;
+      
+    case 'GET_VERSION':
+      event.ports[0].postMessage({ version: APP_VERSION });
+      break;
+  }
+});
+
 // ==================== توابع کمکی ====================
+
+// پاک کردن کش‌های قدیمی
+async function clearOldCaches() {
+  const cacheNames = await caches.keys();
+  return Promise.all(
+    cacheNames.map(cacheName => {
+      if (cacheName !== CACHE_NAME && cacheName.startsWith('tpm-cache-')) {
+        console.log(`🗑️ حذف کش قدیمی: ${cacheName}`);
+        return caches.delete(cacheName);
+      }
+    })
+  );
+}
+
+// تشخیص API خارجی
+function isExternalAPI(url) {
+  return url.href.includes('supabase.co') || 
+         url.href.includes('/api/') ||
+         url.origin !== self.location.origin;
+}
 
 // تشخیص صفحات داینامیک
 function isDynamicPage(pathname) {
   return NO_CACHE_PATHS.some(path => pathname.includes(path));
 }
 
-// فقط از شبکه
-function networkOnly(request) {
-  return fetch(request);
+// استراتژی اول کش
+async function cacheFirstStrategy(request) {
+  try {
+    // اول از کش بگیر
+    const cachedResponse = await caches.match(request);
+    if (cachedResponse) {
+      console.log(`📦 از کش: ${getFileName(request.url)}`);
+      return cachedResponse;
+    }
+    
+    // از شبکه بگیر
+    const networkResponse = await fetch(request);
+    
+    // کش کن برای دفعات بعد
+    if (request.method === 'GET' && networkResponse.status === 200) {
+      const responseClone = networkResponse.clone();
+      caches.open(CACHE_NAME)
+        .then(cache => cache.put(request, responseClone))
+        .then(() => {
+          console.log(`💾 کش شد: ${getFileName(request.url)}`);
+        });
+    }
+    
+    return networkResponse;
+    
+  } catch (error) {
+    console.log('🌐 خطای شبکه - حالت آفلاین');
+    return offlineFallback(request);
+  }
 }
 
-// کش کردن پاسخ
-function cacheResponse(request, response) {
-  caches.open(CACHE_NAME)
-    .then(cache => {
-      cache.put(request, response);
-      console.log(`💾 [SW] کش شد: ${getFileName(new URL(request.url))}`);
-    })
-    .catch(error => {
-      console.error('❌ [SW] خطا در کش:', error);
-    });
-}
-
-// پاسخ آفلاین
-function offlineResponse(request) {
-  const url = new URL(request.url);
-  
-  // اگر صفحه HTML خواست، index.html رو برگردون
+// فالبک آفلاین
+async function offlineFallback(request) {
   if (request.headers.get('accept').includes('text/html')) {
     return caches.match(`${APP_PREFIX}/index.html`);
   }
   
-  // اگر لوگو خواست، لوگوی اپ رو برگردون
-  if (url.pathname.includes('Logo') || request.destination === 'image') {
-    return caches.match(`${APP_PREFIX}/Logo.png`);
+  if (request.destination === 'image') {
+    const icon = await caches.match(`${APP_PREFIX}/icons/icon-192x192.png`);
+    if (icon) return icon;
+    
+    const logo = await caches.match(`${APP_PREFIX}/Logo.png`);
+    if (logo) return logo;
   }
   
-  // اگر آیکون خواست، آیکون ۱۹۲ رو برگردون
-  if (url.pathname.includes('icon')) {
-    return caches.match(`${APP_PREFIX}/icons/icon-192x192.png`);
-  }
-  
-  // پیش‌فرض
-  return new Response(`
-    <!DOCTYPE html>
-    <html dir="rtl" lang="fa">
-    <head>
-        <meta charset="UTF-8">
-        <title>حالت آفلاین - TPM</title>
-        <style>
-            body { font-family: Vazirmatn, sans-serif; text-align: center; padding: 50px; }
-            h1 { color: #142d4b; }
-        </style>
-    </head>
-    <body>
-        <h1>📡 حالت آفلاین</h1>
-        <p>اتصال اینترنت برقرار نیست. لطفاً اتصال خود را بررسی کنید.</p>
-        <button onclick="window.location.reload()">تلاش مجدد</button>
-    </body>
-    </html>
-  `, {
+  return new Response('حالت آفلاین', {
     status: 503,
-    statusText: 'Service Unavailable',
-    headers: { 'Content-Type': 'text/html; charset=utf-8' }
+    headers: { 'Content-Type': 'text/plain; charset=utf-8' }
   });
 }
 
-// گرفتن نام فایل از URL
+// گرفتن نام فایل
 function getFileName(url) {
-  return url.pathname.split('/').pop() || url.pathname;
+  return url.split('/').pop() || url;
 }
 
-// ==================== سیستم آپدیت ====================
-
-// چک آپدیت
-async function checkForUpdates() {
+// چک آپدیت محتوا
+async function checkForContentUpdates() {
   try {
-    console.log('🔍 [SW] چک آپدیت...');
+    console.log('🔍 شروع چک آپدیت محتوا...');
     
-    const cache = await caches.open(CACHE_NAME);
-    const updateUrls = [
+    const urlsToCheck = [
       `${APP_PREFIX}/manifest.json`,
       `${APP_PREFIX}/index.html`
     ];
     
-    let hasUpdate = false;
+    const cache = await caches.open(CACHE_NAME);
+    let updatesFound = false;
     
-    for (const url of updateUrls) {
+    for (const url of urlsToCheck) {
       try {
         const networkResponse = await fetch(url, {
           cache: 'no-store',
           headers: { 'Cache-Control': 'no-cache' }
         });
         
-        if (networkResponse.ok) {
-          const cachedResponse = await cache.match(url);
-          
-          if (!cachedResponse) {
-            console.log(`🆕 [SW] فایل جدید: ${getFileName(new URL(url))}`);
-            hasUpdate = true;
-            break;
-          }
-          
-          // مقایسه محتوا
-          const networkText = await networkResponse.text();
-          const cachedText = await cachedResponse.text();
-          
-          if (networkText !== cachedText) {
-            console.log(`🔄 [SW] تغییر در: ${getFileName(new URL(url))}`);
-            hasUpdate = true;
-            break;
-          }
+        if (!networkResponse.ok) continue;
+        
+        const cachedResponse = await cache.match(url);
+        
+        if (!cachedResponse) {
+          console.log(`🆕 فایل جدید: ${getFileName(url)}`);
+          updatesFound = true;
+          break;
         }
+        
+        // مقایسه محتوا
+        const networkText = await networkResponse.text();
+        const cachedText = await cachedResponse.text();
+        
+        if (networkText !== cachedText) {
+          console.log(`🔄 تغییر در: ${getFileName(url)}`);
+          updatesFound = true;
+          break;
+        }
+        
       } catch (error) {
-        console.warn(`⚠️ [SW] خطا در چک ${url}:`, error);
+        console.warn(`⚠️ خطا در چک ${url}:`, error);
       }
     }
     
-    if (hasUpdate) {
-      console.log('🎯 [SW] آپدیت موجود است');
-      notifyClients();
+    if (updatesFound) {
+      console.log('🎯 آپدیت موجود است - اطلاع به کاربر');
+      notifyClients({
+        type: 'CONTENT_UPDATE_AVAILABLE',
+        message: 'محتویات جدید آماده است!',
+        action: 'reload'
+      });
     } else {
-      console.log('✅ [SW] همه چیز به‌روز است');
+      console.log('✅ همه چیز به‌روز است');
     }
     
   } catch (error) {
-    console.error('❌ [SW] خطا در چک آپدیت:', error);
+    console.error('❌ خطا در چک آپدیت:', error);
   }
 }
 
-// اطلاع به کلاینت‌ها
-function notifyClients() {
+// ارسال پیام به کلاینت‌ها
+function notifyClients(data) {
   self.clients.matchAll()
     .then(clients => {
       clients.forEach(client => {
-        client.postMessage({
-          type: 'UPDATE_AVAILABLE',
-          title: 'آپدیت جدید',
-          message: 'نسخه جدید برنامه آماده است.',
-          timestamp: new Date().toISOString()
-        });
+        client.postMessage(data);
       });
     });
 }
 
-// گوش دادن به پیام‌ها
-self.addEventListener('message', event => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    console.log('⏩ [SW] نصب فوری درخواست شد');
-    self.skipWaiting();
+// ==================== چک آپدیت دوره‌ای ====================
+// هر 5 دقیقه یکبار چک کن (فقط وقتی فعاله)
+setInterval(() => {
+  if (self.controller) {
+    checkForContentUpdates();
   }
-  
-  if (event.data && event.data.type === 'CHECK_UPDATE') {
-    console.log('🔍 [SW] درخواست چک آپدیت');
-    checkForUpdates();
+}, 5 * 60 * 1000);
+
+// ==================== چک اولیه ====================
+// بعد از 3 ثانیه اول چک کن
+setTimeout(() => {
+  if (self.controller) {
+    checkForContentUpdates();
   }
-});
-
-// وقتی نسخه جدید SW پیدا شد
-self.addEventListener('updatefound', () => {
-  console.log('🔄 [SW] نسخه جدید پیدا شد');
-  notifyClients();
-});
-
-// وقتی SW جدید کنترل رو گرفت
-self.addEventListener('controllerchange', () => {
-  console.log('🎉 [SW] نسخه جدید فعال شد');
-  
-  self.clients.matchAll()
-    .then(clients => {
-      clients.forEach(client => {
-        client.postMessage({
-          type: 'RELOAD_PAGE',
-          message: 'برای استفاده از نسخه جدید، صفحه را رفرش کنید.'
-        });
-      });
-    });
-});
+}, 3000);
