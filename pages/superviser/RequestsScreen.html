@@ -1634,7 +1634,7 @@
                             status: 'referred_to_manager',
                             manager_note: message,
                             action_type: actionType,
-                            referred_at: new Date().toISOString(),
+                            // referred_at: new Date().toISOString(),
                             updated_at: new Date().toISOString()
                         })
                         .eq('id', reportId);
@@ -1654,7 +1654,7 @@
                         action_type: actionType,
                         technician_name: report.technician_name,
                         estimated_time: report.estimated_time,
-                        supervisor_note: 'ارجاع شده توسط سرپرست',
+                        // supervisor_note: 'ارجاع شده توسط سرپرست',
                         created_at: report.created_at,
                         referred_at: new Date().toISOString()
                     };
