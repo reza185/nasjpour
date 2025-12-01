@@ -49,7 +49,7 @@
       "src": "/nasjpour/icons/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "maskable"
+      "purpose": "any maskable"
     },
     {
       "src": "/nasjpour/icons/apple-icon-180x180.png",
