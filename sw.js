@@ -6,6 +6,14 @@ const urlsToCache = [
   './Logo.png',
   './icons/icon-192x192.png',
   './icons/icon-512x512.png',
+  './icons/apple-icon-180x180.png',
+  './icons/favicon-16x16.png',
+  './icons/favicon-32x32.png',
+  './icons/icon-128×128.png',
+  './icons/icon-152×152.png',
+  './icons/icon-167×167.png',
+  './icons/icon-72x72.png',
+  './icons/icon-92×92.png',
   './manifest.json'
 ];
 
