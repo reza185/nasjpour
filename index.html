@@ -48,246 +48,82 @@
     <link rel="stylesheet" href="/nasjpour/css/styles.css">
     
     <!-- ========== SERVICE WORKER ========== -->
-     <script>
-        // 📱 سیستم مدیریت آپدیت خودکار PWA
-        class PWAAutoUpdate {
-            constructor() {
-                this.updateAvailable = false;
-                this.currentVersion = null;
-                this.init();
-            }
-            
-            async init() {
-                if (!('serviceWorker' in navigator)) {
-                    console.log('❌ Service Worker پشتیبانی نمی‌شود');
-                    return;
-                }
-                
-                // ثبت Service Worker
-                await this.registerSW();
-                
-                // راه‌اندازی گوش دادن به پیام‌ها
-                this.setupMessageListeners();
-                
-                // چک آپدیت هنگام بازگشت به صفحه
-                this.setupVisibilityHandler();
-                
-                // چک اولیه
-                setTimeout(() => this.checkForUpdates(), 2000);
-            }
-            
-            async registerSW() {
-                try {
-                    const registration = await navigator.serviceWorker.register('/nasjpour/sw.js');
-                    console.log('✅ Service Worker ثبت شد');
-                    
-                    // گوش دادن به آپدیت SW
-                    registration.addEventListener('updatefound', () => {
-                        const newWorker = registration.installing;
-                        console.log('🔄 نسخه جدید Service Worker پیدا شد');
+    <script>
+        // Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/nasjpour/sw.js')
+                    .then(function(registration) {
+                        console.log('✅ Service Worker ثبت شد. Scope:', registration.scope);
                         
-                        newWorker.addEventListener('statechange', () => {
-                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                this.showUpdateNotification('نسخه جدید برنامه آماده است!');
-                            }
-                        });
+                        // چک آپدیت دوره‌ای
+                        setInterval(() => registration.update(), 60 * 60 * 1000); // هر 1 ساعت
+                    })
+                    .catch(function(error) {
+                        console.log('❌ خطا در ثبت Service Worker:', error);
                     });
-                    
-                    return registration;
-                } catch (error) {
-                    console.error('❌ خطا در ثبت Service Worker:', error);
-                }
-            }
+            });
+        }
+        
+        // PWA Installation Detection
+        window.addEventListener('beforeinstallprompt', (e) => {
+            console.log('📱 امکان نصب PWA فراهم است');
+            e.preventDefault();
+            window.deferredPrompt = e;
             
-            setupMessageListeners() {
-                // گوش دادن به پیام‌های SW
-                navigator.serviceWorker.addEventListener('message', event => {
-                    const { type, message, version } = event.data;
-                    
-                    switch(type) {
-                        case 'SW_ACTIVATED':
-                            console.log(`🎉 SW نسخه ${version} فعال شد`);
-                            this.showToast('برنامه به‌روز شد ✓', 'success');
-                            break;
-                            
-                        case 'CONTENT_UPDATE_AVAILABLE':
-                            console.log('📦 آپدیت محتوا موجود است');
-                            this.showUpdateNotification(message);
-                            break;
+            // نمایش دکمه نصب (اختیاری)
+            showInstallButton();
+        });
+        
+        window.addEventListener('appinstalled', (evt) => {
+            console.log('🎉 اپ با موفقیت نصب شد');
+            window.deferredPrompt = null;
+        });
+        
+        // نمایش دکمه نصب
+        // function showInstallButton() {
+        //     const installBtn = document.createElement('button');
+        //     installBtn.id = 'install-pwa-btn';
+        //     installBtn.innerHTML = '📱 نصب برنامه';
+        //     installBtn.style.cssText = `
+        //         position: fixed;
+        //         bottom: 20px;
+        //         left: 50%;
+        //         transform: translateX(-50%);
+        //         background: #142d4b;
+        //         color: white;
+        //         padding: 12px 24px;
+        //         border: none;
+        //         border-radius: 25px;
+        //         font-family: Vazirmatn, sans-serif;
+        //         font-size: 14px;
+        //         cursor: pointer;
+        //         z-index: 1000;
+        //         box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        //     `;
+        //     installBtn.onclick = installPWA;
+        //     document.body.appendChild(installBtn);
+        // }
+        
+        // تابع نصب PWA
+        function installPWA() {
+            if (window.deferredPrompt) {
+                window.deferredPrompt.prompt();
+                window.deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('کاربر نصب را پذیرفت');
                     }
-                });
-                
-                // وقتی SW کنترل رو گرفت
-                navigator.serviceWorker.addEventListener('controllerchange', () => {
-                    console.log('🔄 Service Worker جدید کنترل را به دست گرفت');
-                    setTimeout(() => this.checkForUpdates(), 1000);
-                });
-            }
-            
-            setupVisibilityHandler() {
-                // هر بار که کاربر به صفحه برگشت
-                document.addEventListener('visibilitychange', () => {
-                    if (document.visibilityState === 'visible') {
-                        console.log('👀 کاربر به صفحه بازگشت - چک آپدیت');
-                        this.checkForUpdates();
-                    }
-                });
-            }
-            
-            // چک آپدیت
-            async checkForUpdates() {
-                try {
-                    const registration = await navigator.serviceWorker.getRegistration();
-                    if (registration) {
-                        // چک آپدیت SW
-                        await registration.update();
-                        
-                        // چک آپدیت محتوا
-                        if (registration.active) {
-                            registration.active.postMessage({ type: 'CHECK_UPDATE' });
-                        }
-                    }
-                } catch (error) {
-                    console.error('❌ خطا در چک آپدیت:', error);
-                }
-            }
-            
-            // نمایش نوتیفیکیشن آپدیت
-            showUpdateNotification(message = 'آپدیت جدید موجود است!') {
-                // اگر در حالت PWA هستیم، مستقیم آپدیت کن
-                if (window.matchMedia('(display-mode: standalone)').matches) {
-                    this.applyUpdate();
-                    return;
-                }
-                
-                // در حالت مرورگر، از کاربر بپرس
-                if (confirm(`🔄 ${message}\n\nآیا می‌خواهید الآن آپدیت کنید؟`)) {
-                    this.applyUpdate();
-                }
-            }
-            
-            // اعمال آپدیت
-            async applyUpdate() {
-                try {
-                    const registration = await navigator.serviceWorker.getRegistration();
-                    
-                    if (registration && registration.waiting) {
-                        // به SW بگو منتظر نباش
-                        registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-                        
-                        // بعد از 2 ثانیه رفرش کن
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 2000);
-                        
-                        this.showToast('در حال آپدیت...', 'info');
-                    } else {
-                        window.location.reload();
-                    }
-                } catch (error) {
-                    console.error('❌ خطا در اعمال آپدیت:', error);
-                    window.location.reload();
-                }
-            }
-            
-            // نمایش Toast (اختیاری)
-            showToast(message, type = 'info') {
-                // می‌تونی از کتابخونه‌های Toast استفاده کنی
-                // این یک پیاده‌سازی ساده است
-                const toast = document.createElement('div');
-                toast.textContent = message;
-                toast.style.cssText = `
-                    position: fixed;
-                    bottom: 20px;
-                    left: 50%;
-                    transform: translateX(-50%);
-                    background: ${type === 'success' ? '#4CAF50' : '#2196F3'};
-                    color: white;
-                    padding: 12px 24px;
-                    border-radius: 8px;
-                    font-family: Vazirmatn, sans-serif;
-                    z-index: 10000;
-                    animation: slideUp 0.3s ease;
-                `;
-                
-                document.body.appendChild(toast);
-                
-                setTimeout(() => {
-                    toast.remove();
-                }, 3000);
-            }
-            
-            // گرفتن نسخه فعلی
-            async getCurrentVersion() {
-                return new Promise((resolve) => {
-                    if (navigator.serviceWorker.controller) {
-                        const channel = new MessageChannel();
-                        channel.port1.onmessage = (event) => {
-                            resolve(event.data.version);
-                        };
-                        navigator.serviceWorker.controller.postMessage(
-                            { type: 'GET_VERSION' },
-                            [channel.port2]
-                        );
-                    } else {
-                        resolve(null);
-                    }
+                    window.deferredPrompt = null;
+                    document.getElementById('install-pwa-btn').remove();
                 });
             }
         }
         
-        // ==================== اجرای سیستم ====================
-        
-        // وقتی DOM لود شد
-        document.addEventListener('DOMContentLoaded', () => {
-            // راه‌اندازی سیستم آپدیت
-            window.pwaUpdater = new PWAAutoUpdate();
-            
-            // نمایش نسخه در کنسول
-            setTimeout(async () => {
-                const version = await window.pwaUpdater?.getCurrentVersion();
-                if (version) {
-                    console.log(`📱 نسخه فعلی برنامه: ${version}`);
-                }
-            }, 3000);
-            
-            // دکمه تست آپدیت (فقط در حالت توسعه)
-            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-                const testBtn = document.createElement('button');
-                testBtn.textContent = '🔍 تست آپدیت';
-                testBtn.style.cssText = `
-                    position: fixed;
-                    bottom: 20px;
-                    right: 20px;
-                    background: #FF9800;
-                    color: white;
-                    padding: 8px 16px;
-                    border-radius: 4px;
-                    border: none;
-                    cursor: pointer;
-                    z-index: 9999;
-                `;
-                testBtn.onclick = () => window.pwaUpdater?.checkForUpdates();
-                document.body.appendChild(testBtn);
-            }
-        });
-        
-        // چک آپدیت هنگام لود صفحه
-        window.addEventListener('load', () => {
-            console.log('🚀 صفحه لود شد - سیستم آپدیت فعال است');
-            
-            // اگر SW در حال انتظاره، نوتیفیکیشن نشون بده
-            navigator.serviceWorker.getRegistration().then(registration => {
-                if (registration && registration.waiting && navigator.serviceWorker.controller) {
-                    setTimeout(() => {
-                        if (confirm('نسخه جدید آماده است! آپدیت کنم؟')) {
-                            registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-                            setTimeout(() => window.location.reload(), 1000);
-                        }
-                    }, 1000);
-                }
-            });
-        });
+        // تشخیص حالت standalone
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+            console.log('📱 برنامه در حالت نصب‌شده اجرا می‌شود');
+            document.documentElement.classList.add('pwa-mode');
+        }
     </script>
     <style>
         * {
@@ -778,27 +614,6 @@
 
         .pwa-prompt-install:hover {
             background: var(--accent-light);
-        }
-         @keyframes slideUp {
-            from { transform: translateX(-50%) translateY(100%); opacity: 0; }
-            to { transform: translateX(-50%) translateY(0); opacity: 1; }
-        }
-        
-        .update-badge {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            background: #FF5722;
-            color: white;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            display: none;
-            z-index: 1000;
-        }
-        
-        .pwa-mode body {
-            padding-top: env(safe-area-inset-top);
         }
 
         /* PWA Install Success Message */
