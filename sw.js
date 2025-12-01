@@ -1,18 +1,15 @@
-// =============================================
-// Service Worker - TPM PWA (Auto Update System)
-// =============================================
-
-// 🔢 شماره نسخه - با هر آپدیت تغییر کنه
-const APP_VERSION = '1.0.0';
-const CACHE_NAME = `tpm-cache-v${APP_VERSION}`;
+// Service Worker - TPM PRO
+const APP_VERSION = '1.0.0';  // ✅ اضافه کردن شماره نسخه
+const CACHE_NAME = `tpm-pwa-v${APP_VERSION}`;  // ✅ استفاده از نسخه در نام کش
 const APP_PREFIX = '/nasjpour';
 
-// 📦 فایل‌های ضروری برای کش اولیه
-const ESSENTIAL_FILES = [
+const urlsToCache = [
   `${APP_PREFIX}/`,
-  `${APP_PREFIX}/index.html`,
+  `${APP_PREFIX}/index.html`, 
   `${APP_PREFIX}/Logo.png`,
   `${APP_PREFIX}/manifest.json`,
+  
+  // آیکون‌های اصلی
   `${APP_PREFIX}/icons/icon-72x72.png`,
   `${APP_PREFIX}/icons/icon-96x96.png`,
   `${APP_PREFIX}/icons/icon-128x128.png`,
@@ -22,7 +19,6 @@ const ESSENTIAL_FILES = [
   `${APP_PREFIX}/icons/apple-icon-180x180.png`
 ];
 
-// 🚫 صفحاتی که نباید کش شوند
 const NO_CACHE_PATHS = [
   'dashboard.html',
   'reports.html',
@@ -33,37 +29,46 @@ const NO_CACHE_PATHS = [
 
 // ==================== نصب ====================
 self.addEventListener('install', event => {
-  console.log(`🚀 [SW v${APP_VERSION}] در حال نصب...`);
+  console.log(`🚀 [SW v${APP_VERSION}] نصب اپ TPM PRO...`);
   
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(ESSENTIAL_FILES))
+      .then(cache => {
+        console.log('📦 کش کردن فایل‌های ضروری...');
+        return cache.addAll(urlsToCache);
+      })
       .then(() => {
-        console.log('✅ فایل‌های ضروری کش شدند');
-        // منتظر نمیمونیم، مستقیماً کنترل رو میگیریم
-        return self.skipWaiting();
+        console.log('✅ همه فایل‌ها کش شدند');
+        return self.skipWaiting();  // فعال شدن سریع
+      })
+      .catch(error => {
+        console.error('❌ خطا در نصب:', error);
       })
   );
 });
 
 // ==================== فعال‌سازی ====================
 self.addEventListener('activate', event => {
-  console.log(`🎉 [SW v${APP_VERSION}] فعال شد`);
+  console.log(`✅ [SW v${APP_VERSION}] فعال شد`);
   
   event.waitUntil(
     Promise.all([
       // حذف کش‌های قدیمی
       clearOldCaches(),
-      
-      // کنترل همه تب‌ها
+      // کنترل کلاینت‌ها
       self.clients.claim()
     ]).then(() => {
-      console.log('📢 اطلاع آپدیت به کلاینت‌ها');
+      console.log('🎯 کنترل کلاینت‌ها گرفته شد');
+      
+      // اطلاع به کلاینت‌ها
       notifyClients({
         type: 'SW_ACTIVATED',
         version: APP_VERSION,
         message: 'Service Worker جدید فعال شد'
       });
+      
+      // چک آپدیت بعد از فعال‌سازی
+      setTimeout(checkForContentUpdates, 2000);
     })
   );
 });
@@ -88,34 +93,6 @@ self.addEventListener('fetch', event => {
   );
 });
 
-// ==================== سیستم آپدیت خودکار ====================
-// هر بار که SW کنترل رو می‌گیره، آپدیت رو چک می‌کنه
-self.addEventListener('controllerchange', () => {
-  console.log('🔍 کنترل تغییر کرد - چک آپدیت...');
-  checkForContentUpdates();
-});
-
-// ==================== گوش دادن به پیام‌ها ====================
-self.addEventListener('message', event => {
-  const { type, data } = event.data || {};
-  
-  switch(type) {
-    case 'SKIP_WAITING':
-      console.log('⏩ دستور نصب فوری دریافت شد');
-      self.skipWaiting();
-      break;
-      
-    case 'CHECK_UPDATE':
-      console.log('🔍 درخواست چک آپدیت');
-      checkForContentUpdates();
-      break;
-      
-    case 'GET_VERSION':
-      event.ports[0].postMessage({ version: APP_VERSION });
-      break;
-  }
-});
-
 // ==================== توابع کمکی ====================
 
 // پاک کردن کش‌های قدیمی
@@ -123,7 +100,7 @@ async function clearOldCaches() {
   const cacheNames = await caches.keys();
   return Promise.all(
     cacheNames.map(cacheName => {
-      if (cacheName !== CACHE_NAME && cacheName.startsWith('tpm-cache-')) {
+      if (cacheName !== CACHE_NAME && cacheName.startsWith('tpm-pwa-')) {
         console.log(`🗑️ حذف کش قدیمی: ${cacheName}`);
         return caches.delete(cacheName);
       }
@@ -270,18 +247,47 @@ function notifyClients(data) {
     });
 }
 
-// ==================== چک آپدیت دوره‌ای ====================
-// هر 5 دقیقه یکبار چک کن (فقط وقتی فعاله)
-setInterval(() => {
-  if (self.controller) {
-    checkForContentUpdates();
+// ==================== گوش دادن به پیام‌ها ====================
+self.addEventListener('message', event => {
+  const { type, data } = event.data || {};
+  
+  switch(type) {
+    case 'SKIP_WAITING':
+      console.log('⏩ دستور نصب فوری دریافت شد');
+      self.skipWaiting();
+      break;
+      
+    case 'CHECK_UPDATE':
+      console.log('🔍 درخواست چک آپدیت');
+      checkForContentUpdates();
+      break;
+      
+    case 'GET_VERSION':
+      event.ports[0].postMessage({ version: APP_VERSION });
+      break;
   }
-}, 5 * 60 * 1000);
+});
+
+// ==================== وقتی Service Worker جدید کنترل رو گرفت ====================
+self.addEventListener('controllerchange', () => {
+  console.log('🔍 کنترل تغییر کرد - چک آپدیت...');
+  
+  // اطلاع به کاربر برای رفرش
+  notifyClients({
+    type: 'RELOAD_PAGE',
+    message: 'لطفاً صفحه را رفرش کنید تا تغییرات اعمال شود',
+    action: 'reload'
+  });
+});
+
+// ==================== چک آپدیت دوره‌ای ====================
+// هر 1 ساعت یکبار چک کن
+setInterval(() => {
+  checkForContentUpdates();
+}, 60 * 60 * 1000);
 
 // ==================== چک اولیه ====================
-// بعد از 3 ثانیه اول چک کن
+// بعد از 5 ثانیه اول چک کن
 setTimeout(() => {
-  if (self.controller) {
-    checkForContentUpdates();
-  }
-}, 3000);
+  checkForContentUpdates();
+}, 5000);
