@@ -2,8 +2,8 @@
   "name": "TPM",
   "short_name": "TPM",
   "description": "برنامه هوشمند میهن چاپ سپاهان",
-  "start_url": "/nasjpour/",  
-  "scope": "/nasjpour/",      
+  "start_url": "/nasjpour/",
+  "scope": "/nasjpour/",
   "theme_color": "#142d4b",
   "background_color": "#142d4b",
   "display": "standalone",
@@ -16,7 +16,7 @@
   
   "icons": [
     {
-      "src": "/nasjpour/icons/icon-72x72.png",  
+      "src": "/nasjpour/icons/icon-72x72.png",
       "sizes": "72x72",
       "type": "image/png",
       "purpose": "any maskable"
@@ -59,6 +59,3 @@
     }
   ]
 }
-
-
-
