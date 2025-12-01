@@ -179,72 +179,85 @@ function getFileName(url) {
 // چک آپدیت محتوا
 async function checkForContentUpdates() {
   try {
-    console.log('🔍 شروع چک آپدیت محتوا...');
-    
-    const urlsToCheck = [
-      `${APP_PREFIX}/manifest.json`,
-      `${APP_PREFIX}/index.html`
-    ];
-    
-    const cache = await caches.open(CACHE_NAME);
-    let updatesFound = false;
-    
-    for (const url of urlsToCheck) {
-      try {
-        const networkResponse = await fetch(url, {
-          cache: 'no-store',
-          headers: { 'Cache-Control': 'no-cache' }
-        });
-        
-        if (!networkResponse.ok) continue;
-        
-        const cachedResponse = await cache.match(url);
-        
-        if (!cachedResponse) {
-          console.log(`🆕 فایل جدید: ${getFileName(url)}`);
-          updatesFound = true;
-          break;
-        }
-        
-        // مقایسه محتوا
-        const networkText = await networkResponse.text();
-        const cachedText = await cachedResponse.text();
-        
-        if (networkText !== cachedText) {
-          console.log(`🔄 تغییر در: ${getFileName(url)}`);
-          updatesFound = true;
-          break;
-        }
-        
-      } catch (error) {
-        console.warn(`⚠️ خطا در چک ${url}:`, error);
+      console.log('🔍 شروع چک آپدیت محتوا...');
+      
+      const urlsToCheck = [
+          `${APP_PREFIX}/manifest.json`,
+          `${APP_PREFIX}/index.html`
+      ];
+      
+      const cache = await caches.open(CACHE_NAME);
+      let updatesFound = false;
+      
+      for (const url of urlsToCheck) {
+          try {
+              const networkResponse = await fetch(url, {
+                  cache: 'no-store',
+                  headers: { 'Cache-Control': 'no-cache' }
+              });
+              
+              if (!networkResponse.ok) continue;
+              
+              const cachedResponse = await cache.match(url);
+              
+              if (!cachedResponse) {
+                  console.log(`🆕 فایل جدید: ${getFileName(url)}`);
+                  updatesFound = true;
+                  break;
+              }
+              
+              // مقایسه محتوا
+              const networkText = await networkResponse.text();
+              const cachedText = await cachedResponse.text();
+              
+              if (networkText !== cachedText) {
+                  console.log(`🔄 تغییر در: ${getFileName(url)}`);
+                  updatesFound = true;
+                  break;
+              }
+              
+          } catch (error) {
+              console.warn(`⚠️ خطا در چک ${url}:`, error);
+          }
       }
-    }
-    
-    if (updatesFound) {
-      console.log('🎯 آپدیت موجود است - اطلاع به کاربر');
-      notifyClients({
-        type: 'CONTENT_UPDATE_AVAILABLE',
-        message: 'محتویات جدید آماده است!',
-        action: 'reload'
-      });
-    } else {
-      console.log('✅ همه چیز به‌روز است');
-    }
-    
+      
+      if (updatesFound) {
+          console.log('🎯 آپدیت موجود است - اطلاع به PWAها');
+          notifyClients({
+              type: 'CONTENT_UPDATE_AVAILABLE',
+              message: 'محتویات جدید آماده است!',
+              version: APP_VERSION,
+              action: 'reload',
+              timestamp: new Date().toISOString()
+          });
+      } else {
+          console.log('✅ همه چیز به‌روز است');
+      }
+      
   } catch (error) {
-    console.error('❌ خطا در چک آپدیت:', error);
+      console.error('❌ خطا در چک آپدیت:', error);
   }
 }
 
 // ارسال پیام به کلاینت‌ها
-function notifyClients(data) {
-  self.clients.matchAll()
-    .then(clients => {
+async function notifyClients(data) {
+  try {
+      const clients = await self.clients.matchAll();
       clients.forEach(client => {
-        client.postMessage(data);
+          // ارسال پیام فقط به PWAها (صفحات نصب‌شده)
+          // تشخیص از طریق frameType یا display-mode
+          if (client.frameType === 'top-level' || 
+              client.url.includes('standalone') ||
+              !client.url.includes('?')) { // صفحات مستقل معمولاً پارامتر URL ندارند
+              console.log(`📨 ارسال پیام به PWA: ${client.url}`);
+              client.postMessage(data);
+          } else {
+              console.log(`🚫 پیام به مرورگر معمولی ارسال نشد: ${client.url}`);
+          }
       });
-    });
+  } catch (error) {
+      console.error('❌ خطا در ارسال پیام:', error);
+  }
 }
 
 // ==================== گوش دادن به پیام‌ها ====================
