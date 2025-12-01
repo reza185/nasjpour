@@ -1,5 +1,5 @@
 // Service Worker - TPM PRO
-const APP_VERSION = '1.0.0';  // ✅ اضافه کردن شماره نسخه
+const APP_VERSION = '1.0.1';  // ✅ اضافه کردن شماره نسخه
 const CACHE_NAME = `tpm-pwa-v${APP_VERSION}`;  // ✅ استفاده از نسخه در نام کش
 const APP_PREFIX = '/nasjpour';
 
