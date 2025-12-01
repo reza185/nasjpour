@@ -6,6 +6,1779 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#2c3e50">
+    <title>TPM</title>
+    <link rel="icon" href="icons/icon-192x192.png">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="../../manifest.json">
+    <link rel="icon" href="../../icons/icon-192x192.png">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Vazirmatn', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-text-size-adjust: 100%;
+            touch-action: manipulation;
+        }
+
+        html {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            width: 100%;
+            height: 100vh;
+            height: -webkit-fill-available;
+            overflow: hidden;
+            background: #f8f9fa;
+            color: var(--dark);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        :root {
+            --primary: #2c3e50;
+            --primary-light: #34495e;
+            --accent: #e74c3c;
+            --accent-light: #ff6b6b;
+            --secondary: #3498db;
+            --dark: #1a252f;
+            --light: #ecf0f1;
+            --gray: #95a5a6;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --operational: #2ecc71;
+            --maintenance: #f39c12;
+            --broken: #e74c3c;
+        }
+
+        /* استایل‌های موجود (همانند قبل) */
+        .navbar {
+            background: var(--primary);
+            color: white;
+            padding: 0 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            width: 100%;
+            height: 60px;
+            flex-shrink: 0;
+        }
+
+        .nav-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            background: transparent;
+            width: 35px;
+            height: 35px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .logo-text {
+            font-size: 16px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .nav-link.active {
+            background: rgba(255,255,255,0.15);
+        }
+
+        .nav-link:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-details {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 2px;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .login-time {
+            font-size: 11px;
+            opacity: 0.8;
+            color: #ecf0f1;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            border: 2px solid rgba(255,255,255,0.2);
+            flex-shrink: 0;
+        }
+
+        /* محتوای اصلی */
+        .main-wrapper {
+            height: calc(100vh - 60px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 20px 15px;
+            width: 100%;
+        }
+
+        .header-card {
+            background: var(--secondary);
+            color: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: 100%;
+        }
+
+        .page-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .page-subtitle {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .login-info {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .login-info i {
+            font-size: 11px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border: 1px solid #eaeaea;
+            width: 100%;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title i {
+            color: var(--accent);
+        }
+
+        /* آمار */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .stat-item {
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .stat-number {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .stat-label {
+            opacity: 0.9;
+            font-size: 12px;
+        }
+
+        /* فیلترها */
+        .search-bar {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            background: #f8f9fa;
+            -webkit-appearance: none;
+            touch-action: manipulation;
+        }
+
+        .search-bar:focus {
+            outline: none;
+            border-color: var(--secondary);
+            background: white;
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .filter-select {
+            flex: 1;
+            padding: 10px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: #f8f9fa;
+            font-size: 14px;
+            cursor: pointer;
+            min-width: 120px;
+            -webkit-appearance: none;
+            touch-action: manipulation;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--secondary);
+            background: white;
+        }
+
+        /* لیست گزارشات */
+        .report-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .report-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px solid #eaeaea;
+            transition: transform 0.2s;
+            width: 100%;
+        }
+
+        .report-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            gap: 10px;
+        }
+
+        .report-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--primary);
+            flex: 1;
+        }
+
+        .status-container {
+            display: flex;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .status-badge, .priority-badge, .issue-type-badge {
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 600;
+            border: 2px solid;
+        }
+
+        .status-pending { border-color: #FF9800; color: #FF9800; background: #FFF3E0; }
+        .status-approved { border-color: #4CAF50; color: #4CAF50; background: #E8F5E8; }
+        .status-rejected { border-color: #F44336; color: #F44336; background: #FFEBEE; }
+        .status-in-progress { border-color: #2196F3; color: #2196F3; background: #E3F2FD; }
+        .status-completed { border-color: #4CAF50; color: #4CAF50; background: #E8F5E8; }
+        .status-referred_to_manager { border-color: #9C27B0; color: #9C27B0; background: #F3E5F5; }
+
+        .priority-low { border-color: #4CAF50; color: #4CAF50; background: #E8F5E8; }
+        .priority-medium { border-color: #FF9800; color: #FF9800; background: #FFF3E0; }
+        .priority-high { border-color: #F44336; color: #F44336; background: #FFEBEE; }
+        .priority-critical { border-color: #D32F2F; color: #D32F2F; background: #FFCDD2; }
+
+        /* استایل‌های جدید برای نوع ایراد */
+        .electrical-badge {
+            background: #f3e8fd;
+            color: #9b59b6;
+            border: 1px solid #9b59b6;
+        }
+
+        .technical-badge {
+            background: #fef5e7;
+            color: #e67e22;
+            border: 1px solid #e67e22;
+        }
+
+        .combined-badge {
+            background: #e8f4fd;
+            color: #3498db;
+            border: 1px solid #3498db;
+        }
+
+        .report-description {
+            color: #666;
+            margin-bottom: 10px;
+            line-height: 1.5;
+            font-size: 13px;
+        }
+
+        .report-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            margin-bottom: 10px;
+            font-size: 12px;
+        }
+
+        .detail-item {
+            color: #777;
+        }
+
+        .actions-section, .parts-section {
+            background: white;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            border-right: 4px solid var(--secondary);
+        }
+
+        .section-title-small {
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--primary);
+            font-size: 13px;
+        }
+
+        .action-list {
+            list-style: none;
+            padding-right: 12px;
+            font-size: 12px;
+        }
+
+        .action-list li {
+            margin-bottom: 4px;
+            color: #555;
+        }
+
+        .parts-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-top: 6px;
+        }
+
+        .part-badge {
+            padding: 3px 6px;
+            background: #e3f2fd;
+            border: 1px solid #2196F3;
+            border-radius: 10px;
+            font-size: 10px;
+            color: #1976D2;
+        }
+
+        .action-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            min-height: 36px;
+            touch-action: manipulation;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #ddd;
+            color: #666;
+        }
+
+        .btn-outline:hover {
+            border-color: #999;
+            color: #333;
+        }
+
+        .btn-danger {
+            background: #F44336;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #d32f2f;
+        }
+
+        .btn-success {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #45a049;
+        }
+
+        .btn-primary {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 30px 15px;
+            color: #666;
+        }
+
+        .empty-state i {
+            font-size: 36px;
+            margin-bottom: 12px;
+            color: #ddd;
+        }
+
+        /* پاپاپ‌ها */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 15px;
+        }
+
+        .popup-content {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .popup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .popup-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--gray);
+            padding: 5px;
+            touch-action: manipulation;
+        }
+
+        .close-btn:hover {
+            color: var(--danger);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 14px;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+            background: #f8f9fa;
+            -webkit-appearance: none;
+            touch-action: manipulation;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--secondary);
+            background: white;
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 20px;
+        }
+
+        .submit-btn {
+            flex: 1;
+            padding: 12px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-size: 14px;
+            touch-action: manipulation;
+        }
+
+        .submit-btn:hover {
+            background: var(--accent-light);
+        }
+
+        .cancel-btn {
+            flex: 1;
+            padding: 12px;
+            background: #f8f9fa;
+            color: var(--dark);
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            touch-action: manipulation;
+        }
+
+        .cancel-btn:hover {
+            background: #e9ecef;
+        }
+
+        /* رسپانسیو */
+        @media (max-width: 768px) {
+            .stats-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .nav-links {
+                gap: 8px;
+            }
+            
+            .nav-link span {
+                display: none;
+            }
+            
+            .user-details {
+                display: none;
+            }
+
+            .report-header {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .status-container {
+                align-self: flex-start;
+            }
+            
+            .report-details {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .filter-row {
+                flex-direction: column;
+            }
+
+            .filter-select {
+                min-width: auto;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .navbar {
+                padding: 0 10px;
+            }
+            
+            .nav-container {
+                height: 50px;
+            }
+            
+            .logo-icon {
+                width: 30px;
+                height: 30px;
+                font-size: 14px;
+            }
+            
+            .user-avatar {
+                width: 35px;
+                height: 35px;
+                font-size: 12px;
+            }
+            
+            .container {
+                padding: 15px 10px;
+            }
+            
+            .header-card {
+                padding: 15px;
+            }
+            
+            .page-title {
+                font-size: 18px;
+            }
+            
+            .card {
+                padding: 15px;
+            }
+            
+            .section-title {
+                font-size: 16px;
+            }
+            
+            .stat-number {
+                font-size: 18px;
+            }
+            
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+
+            .popup-content {
+                padding: 15px;
+                margin: 10px;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+        }/* در بخش رسپانسیو */
+@media (max-width: 768px) {
+    .stats-container {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+        /* جلوگیری از زوم و انتخاب متن */
+        @media (hover: none) and (pointer: coarse) {
+            * {
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+            }
+
+            input, textarea, select {
+                -webkit-user-select: text;
+                -moz-user-select: text;
+                -ms-user-select: text;
+                user-select: text;
+            }
+        }
+
+        /* مخفی کردن اسکرولبار در موبایل */
+        .container::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .container::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 2px;
+        }
+
+        .container::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+    </style>
+</head>
+<body>
+    <!-- نویگیشن -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <div class="logo-icon">
+                    <img src="../../Logo.png" style="max-block-size:100% ;" >
+                </div>
+                <div class="logo-text">TPM PRO</div>
+            </div>
+            
+            <div class="nav-links">
+                <a href="dashboard.html" class="nav-link">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>داشبورد</span>
+                </a>
+                <a href="RequestsScreen.html" class="nav-link active">
+                    <i class="fas fa-clipboard-list"></i>
+                    <span>گزارشات دریافتی</span>
+                </a>
+                <a href="warehouse.html" class="nav-link">
+                    <i class="fas fa-warehouse"></i>
+                    <span>انبار</span>
+                </a>
+                <a href="troubleshooting.html" class="nav-link" id="troubleshootingLink">
+                    <i class="fas fa-tools"></i>
+                    <span>عیب‌یابی</span>
+                </a>
+            </div>
+            
+            <div class="user-info">
+                <div class="user-details">
+                    <div class="user-name" id="userName">سرپرست (توسعه)</div>
+                    <div class="login-time" id="loginTime">در حال بارگذاری...</div>
+                </div>
+                <div class="user-avatar" id="userAvatar">S</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- محتوای اصلی -->
+   
+                
+                <!-- آمار سریع -->
+                <div class="main-wrapper">
+                    <div class="container" id="mainContainer">
+                        <!-- هدر صفحه -->
+                        <div class="header-card">
+                            <h1 class="page-title">گزارشات دریافتی</h1>
+                            <p class="page-subtitle">مدیریت و رسیدگی به گزارشات ارسالی کاربران</p>
+                            <div class="login-info">
+                                <i class="fas fa-clock"></i>
+                                آخرین ورود: <span id="lastLoginTime">در حال بارگذاری...</span>
+                            </div>
+                            
+                            <!-- آمار سریع - به‌روزرسانی شده -->
+                            <div class="stats-container" id="statsContainer">
+                                <div class="stat-item">
+                                    <div class="stat-number" style="color: #80530f;" id="pendingCount">0</div>
+                                    <div class="stat-label">در انتظار رسیدگی</div>
+                                </div>
+                                <!-- <div class="stat-item">
+                                    <div class="stat-number" style="color: #4CAF50;" id="approvedCount">0</div>
+                                    <div class="stat-label">تأیید شده</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-number" style="color: #F44336;" id="rejectedCount">0</div>
+                                    <div class="stat-label">رد شده</div>
+                                </div> -->
+                                <div class="stat-item">
+                                    <div class="stat-number" style="color: #9C27B0;" id="referredCount">0</div>
+                                    <div class="stat-label">ارجاع به مدیر</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-number" style="color: #000000;" id="totalCount">0</div>
+                                    <div class="stat-label">کل گزارشات</div>
+                                </div>
+                            </div>
+                        </div>
+
+            <!-- فیلترها و جستجو -->
+            <div class="card">
+                <h2 class="section-title">
+                    <i class="fas fa-filter"></i>
+                    فیلتر و جستجو
+                </h2>
+                
+                <input type="text" class="search-bar" placeholder="جستجو در گزارشات..." id="searchInput">
+                
+                <div class="filter-row">
+                    <select class="filter-select" id="statusFilter">
+                        <option value="all">همه وضعیت‌ها</option>
+                        <!-- <option value="pending">در انتظار رسیدگی</option>
+                        <option value="approved">تأیید شده</option>
+                        <option value="rejected">رد شده</option>
+                        <option value="in-progress">در دست اقدام</option>
+                        <option value="completed">تکمیل شده</option> -->
+                        <option value="referred_to_manager">ارجاع به مدیر</option>
+                    </select>
+                    
+                    <select class="filter-select" id="priorityFilter">
+                        <option value="all">همه اولویت‌ها</option>
+                        <option value="low">کم</option>
+                        <option value="medium">متوسط</option>
+                        <option value="high">بالا</option>
+                        <option value="critical">بحرانی</option>
+                    </select>
+
+                    <select class="filter-select" id="issueTypeFilter">
+                        <option value="all">همه نوع ایرادها</option>
+                        <option value="برق">برق</option>
+                        <option value="فنی">فنی</option>
+                        <option value="ترکیبی">ترکیبی</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- لیست گزارشات -->
+            <div class="card">
+                <h2 class="section-title">
+                    <i class="fas fa-list"></i>
+                    لیست گزارشات
+                </h2>
+                
+                <div class="report-list" id="reportList">
+                    <!-- گزارشات به صورت داینامیک لود می‌شوند -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- پاپاپ ارجاع به مدیر -->
+    <div class="popup-overlay" id="managerPopup">
+        <div class="popup-content">
+            <div class="popup-header">
+                <h3 class="popup-title">ارجاع به مدیر</h3>
+                <button class="close-btn" onclick="closeManagerPopup()">&times;</button>
+            </div>
+            
+            <form id="managerForm">
+                <input type="hidden" id="currentReportId">
+                
+                <div class="form-group">
+                    <label class="form-label" for="managerMessage">پیام به مدیر</label>
+                    <textarea id="managerMessage" class="form-textarea" placeholder="توضیحات و درخواست خود را برای مدیر بنویسید..." required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="actionType">نوع اقدام درخواستی</label>
+                    <select id="actionType" class="form-select" required>
+                        <option value="">انتخاب کنید</option>
+                        <option value="تأیید شده توسط سرپرست">تأیید شده توسط سرپرست</option>
+                        <option value="درخواست بودجه">درخواست بودجه برای رسیدگی به مشکل پیش آمده</option>
+                        <option value="درخواست منابع">درخواست منابع</option>
+                        <option value="درخواست تصمیم‌گیری">درخواست تصمیم‌گیری از سوی مدیریت</option>
+                        <option value="سایر">سایر</option>
+                    </select>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="cancel-btn" onclick="closeManagerPopup()">انصراف</button>
+                    <button type="submit" class="submit-btn">ارسال به مدیر</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- پاپاپ رسیدگی -->
+    <div class="popup-overlay" id="actionPopup">
+        <div class="popup-content">
+            <div class="popup-header">
+                <h3 class="popup-title">رسیدگی به گزارش</h3>
+                <button class="close-btn" onclick="closeActionPopup()">&times;</button>
+            </div>
+            
+            <form id="actionForm">
+                <input type="hidden" id="actionReportId">
+                <input type="hidden" id="actionTypeField">
+                
+                <div class="form-group">
+                    <label class="form-label" for="actionDescription">توضیحات اقدام</label>
+                    <textarea id="actionDescription" class="form-textarea" placeholder="توضیحات اقدام انجام شده را بنویسید..." required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="technicianName">نام تکنسین مسئول</label>
+                    <input type="text" id="technicianName" class="form-input" placeholder="نام تکنسین" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="estimatedTime">زمان تخمینی تعمیر (ساعت)</label>
+                    <input type="number" id="estimatedTime" class="form-input" placeholder="مثلاً ۲" min="1" required>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="cancel-btn" onclick="closeActionPopup()">انصراف</button>
+                    <button type="submit" class="submit-btn">ثبت اقدام</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // ==================== CUSTOM ALERT SYSTEM ====================
+        delete window.alert;
+        
+        window.alert = function(message) {
+            return new Promise((resolve) => {
+                const overlay = document.createElement('div');
+                overlay.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0,0,0,0.5);
+                    z-index: 10000;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                `;
+                
+                const dialog = document.createElement('div');
+                dialog.style.cssText = `
+                    background: white;
+                    padding: 25px;
+                    border-radius: 12px;
+                    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+                    text-align: center;
+                    min-width: 300px;
+                    max-width: 90%;
+                    font-family: Vazirmatn, sans-serif;
+                    border: 2px solid #2c3e50;
+                `;
+                
+                dialog.innerHTML = `
+                    <div style="margin-bottom: 20px; font-size: 16px; color: #2c3e50; line-height: 1.5;">${message}</div>
+                    <button id="customAlertConfirm" 
+                            style="padding: 10px 25px; background: #2c3e50; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                        تأیید
+                    </button>
+                `;
+                
+                overlay.appendChild(dialog);
+                document.body.appendChild(overlay);
+                
+                const closeAlert = function() {
+                    if (document.body.contains(overlay)) {
+                        document.body.removeChild(overlay);
+                    }
+                    resolve();
+                };
+                
+                const confirmBtn = document.getElementById('customAlertConfirm');
+                confirmBtn.addEventListener('click', closeAlert);
+                
+                overlay.onclick = function(e) {
+                    if (e.target === overlay) {
+                        // کاری نکن
+                    }
+                };
+            });
+        };
+        
+        // ==================== CUSTOM CONFIRM SYSTEM ====================
+        delete window.confirm;
+        
+        window.confirm = function(message) {
+            return new Promise((resolve) => {
+                const overlay = document.createElement('div');
+                overlay.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0,0,0,0.5);
+                    z-index: 10000;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                `;
+                
+                const dialog = document.createElement('div');
+                dialog.style.cssText = `
+                    background: white;
+                    padding: 25px;
+                    border-radius: 12px;
+                    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+                    text-align: center;
+                    min-width: 300px;
+                    max-width: 90%;
+                    font-family: Vazirmatn, sans-serif;
+                    border: 2px solid #2c3e50;
+                `;
+                
+                dialog.innerHTML = `
+                    <div style="margin-bottom: 20px; font-size: 16px; color: #2c3e50; line-height: 1.5;">${message}</div>
+                    <div style="display: flex; gap: 10px; justify-content: center;">
+                        <button id="customConfirmYes" 
+                                style="padding: 10px 25px; background: #27ae60; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                            بله
+                        </button>
+                        <button id="customConfirmNo" 
+                                style="padding: 10px 25px; background: #e74c3c; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                            خیر
+                        </button>
+                    </div>
+                `;
+                
+                overlay.appendChild(dialog);
+                document.body.appendChild(overlay);
+                
+                const closeConfirm = function(result) {
+                    if (document.body.contains(overlay)) {
+                        document.body.removeChild(overlay);
+                    }
+                    resolve(result);
+                };
+                
+                document.getElementById('customConfirmYes').addEventListener('click', () => closeConfirm(true));
+                document.getElementById('customConfirmNo').addEventListener('click', () => closeConfirm(false));
+                
+                overlay.onclick = function(e) {
+                    if (e.target === overlay) {
+                        // کاری نکن
+                    }
+                };
+            });
+        };
+        
+        // اتصال به Supabase
+        const SUPABASE_URL = 'https://kalykylvjqigqlaprlca.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImthbHlreWx2anFpZ3FsYXBybGNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM1NjI1OTcsImV4cCI6MjA3OTEzODU5N30.S8YtogVrxkqYjkgfkGpy4_mS6mqaNxmsHjxnhyBPwEY';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        let currentReports = [];
+        
+        // تابع ساده برای نمایش تاریخ و زمان فارسی
+        function getPersianDateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('fa-IR', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            const dateString = now.toLocaleDateString('fa-IR', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            });
+            return `${dateString} - ${timeString}`;
+        }
+        
+        // تابع برای محاسبه زمان گذشته از ورود
+        function getTimeSinceLogin(loginTime) {
+            const now = new Date();
+            const diff = now - loginTime;
+            const minutes = Math.floor(diff / 60000);
+            const hours = Math.floor(minutes / 60);
+            
+            if (hours > 0) {
+                return `${hours} ساعت و ${minutes % 60} دقیقه قبل`;
+            } else if (minutes > 0) {
+                return `${minutes} دقیقه قبل`;
+            } else {
+                return 'همین الان';
+            }
+        }
+        
+        // تابع برای به روز رسانی زمان آنلاین
+        function updateOnlineTime() {
+            const loginTimeElement = document.getElementById('loginTime');
+            if (loginTimeElement && window.loginTime) {
+                loginTimeElement.textContent = getTimeSinceLogin(window.loginTime);
+            }
+        }
+        
+        // جلوگیری از زوم در دستگاه‌های موبایل و مدیریت زمان ورود
+        document.addEventListener('DOMContentLoaded', function() {
+            // جلوگیری از زوم با حرکات چندلمسی
+            document.addEventListener('touchstart', function(e) {
+                if (e.touches.length > 1) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+        
+            let lastTouchEnd = 0;
+            document.addEventListener('touchend', function(e) {
+                const now = (new Date()).getTime();
+                if (now - lastTouchEnd <= 300) {
+                    e.preventDefault();
+                }
+                lastTouchEnd = now;
+            }, false);
+        
+            document.addEventListener('gesturestart', function(e) {
+                e.preventDefault();
+            });
+        
+            document.addEventListener('gesturechange', function(e) {
+                e.preventDefault();
+            });
+        
+            document.addEventListener('gestureend', function(e) {
+                e.preventDefault();
+            });
+        
+            // مدیریت زمان ورود کاربر
+            const now = new Date();
+            window.loginTime = now;
+            
+            // نمایش زمان ورود
+            const loginTimeElement = document.getElementById('loginTime');
+            const lastLoginTimeElement = document.getElementById('lastLoginTime');
+            const userNameElement = document.getElementById('userName');
+            const userAvatarElement = document.getElementById('userAvatar');
+            
+            if (loginTimeElement) {
+                loginTimeElement.textContent = getTimeSinceLogin(now);
+            }
+            
+            if (lastLoginTimeElement) {
+                lastLoginTimeElement.textContent = getPersianDateTime();
+            }
+        
+            // به روز رسانی زمان آنلاین هر دقیقه
+            setInterval(updateOnlineTime, 60000);
+        
+            // تغییر وضعیت فعال در نویگیشن
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+        
+            // بارگذاری گزارشات
+            loadReports();
+        
+            // محافظت از صفحه و نمایش اطلاعات کاربر
+            if (typeof auth !== 'undefined') {
+                if (auth.protectPageByRole('supervisor')) {
+                    // نمایش اطلاعات کاربر
+                    if (userNameElement) {
+                        userNameElement.textContent = auth.getUsername() || 'ناظر';
+                    }
+                    if (userAvatarElement) {
+                        userAvatarElement.textContent = auth.getUsername() ? auth.getUsername().charAt(0) : 'ن';
+                    }
+                }
+            } else {
+                // حالت توسعه - وقتی auth.js وجود ندارد
+                console.log('حالت توسعه: فایل auth.js یافت نشد');
+                if (userNameElement) {
+                    userNameElement.textContent = 'سرپرست (توسعه)';
+                }
+                if (userAvatarElement) {
+                    userAvatarElement.textContent = 'S';
+                }
+            }
+        });
+        
+        // جلوگیری از اسکرول هنگام زوم در iOS
+        document.addEventListener('touchmove', function(e) {
+            if(e.scale !== 1) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+        
+        // توابع کمکی
+        function getStatusText(status) {
+            const statusMap = {
+                'pending': 'در انتظار رسیدگی',
+                'approved': 'تأیید شده',
+                'rejected': 'رد شده',
+                'in-progress': 'در دست اقدام',
+                'completed': 'تکمیل شده',
+                'referred_to_manager': 'ارجاع به مدیر'
+            };
+            return statusMap[status] || status;
+        }
+        
+        function getPriorityText(priority) {
+            const priorityMap = {
+                'low': 'کم',
+                'medium': 'متوسط',
+                'high': 'بالا',
+                'critical': 'بحرانی'
+            };
+            return priorityMap[priority] || priority;
+        }
+
+        // تابع تشخیص نوع ایراد
+        function determineIssueType(problemDescription) {
+            if (!problemDescription) return 'فنی';
+            
+            const problem = problemDescription.toLowerCase();
+            
+            const electricalKeywords = [
+                'برق', 'الکتریک', 'سیم', 'کابل', 'فیوز', 'کلید', 'مدار', 
+                'ولتاژ', 'جریان', 'موتور', 'کنترل', 'تابلو', 'دستگاه اندازه گیری',
+                'اینورتر', 'میکروسوییچ', 'کنتاکتور', 'شاسی', 'چشم الکترونیکی',
+                'سنسور', 'پی‌ال‌سی', 'ال‌سی‌دی', 'کنترل پنل', 'رله', 'ترانس',
+                'الکترونیک', 'برقی', 'ولت', 'آمپر', 'وات', 'برق رسانی'
+            ];
+            
+            const technicalKeywords = [
+                'روغن', 'گیربکس', 'بلبرینگ', 'یاتاقان', 'شفت', 'گشتاور',
+                'مکانیک', 'سرویس', 'تعویض', 'بازبینی', 'قطعه', 'جوش',
+                'لاستیک', 'غلطک', 'زنجیر', 'چرخ دنده', 'تسمه', 'کوپلینگ',
+                'فن', 'رادیاتور', 'دمای روغن', 'بالانس', 'گیرکردن',
+                'اسپیندل', 'ریل', 'جک', 'پنوماتیک', 'باد', 'فشار',
+                'مکانیکی', 'فنی', 'تعمیر', 'نصب', 'سرویس', 'نگهداری',
+                'صدا', 'لرزش', 'نشت', 'فرسودگی', 'خرابی مکانیکی'
+            ];
+            
+            let electricalCount = 0;
+            let technicalCount = 0;
+            
+            electricalKeywords.forEach(keyword => {
+                if (problem.includes(keyword)) electricalCount++;
+            });
+            
+            technicalKeywords.forEach(keyword => {
+                if (problem.includes(keyword)) technicalCount++;
+            });
+            
+            if (electricalCount > technicalCount) {
+                return 'برق';
+            } else if (technicalCount > electricalCount) {
+                return 'فنی';
+            } else if (electricalCount === technicalCount && electricalCount > 0) {
+                return 'ترکیبی';
+            }
+            
+            return 'فنی';
+        }
+        
+        // لود گزارشات از Supabase
+        async function loadReports() {
+            try {
+                const { data: reports, error } = await supabase
+                    .from('operatourreports')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+        
+                if (error) throw error;
+        
+                currentReports = reports || [];
+                updateStats();
+                renderReports(currentReports);
+                
+            } catch (error) {
+                console.error('خطا در دریافت گزارشات:', error);
+                alert('خطا در دریافت گزارشات از سرور');
+            }
+        }
+        
+        // آپدیت آمار
+        function updateStats() {
+             
+            
+            const approvedCount = currentReports.filter(r => r.status === 'approved').length;
+            const rejectedCount = currentReports.filter(r => r.status === 'rejected').length;
+            const referredCount = currentReports.filter(r => r.status === 'ارجاع به مدیر').length;
+            const totalCount = currentReports.length;
+            const pendingCount =totalCount-referredCount;
+            document.getElementById('pendingCount').textContent = pendingCount;
+           
+            document.getElementById('referredCount').textContent = referredCount;
+            document.getElementById('totalCount').textContent = totalCount;
+        }
+        
+        // نمایش گزارشات
+        function renderReports(reports) {
+            const reportList = document.getElementById('reportList');
+            
+            if (!reports || reports.length === 0) {
+                reportList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <h3>گزارشی یافت نشد</h3>
+                        <p>هیچ گزارشی با فیلترهای انتخاب شده مطابقت ندارد.</p>
+                    </div>
+                `;
+                return;
+            }
+        
+            reportList.innerHTML = reports.map(report => {
+                const displayStatus = report.status || 'pending';
+                const displayPriority = report.priority || 'medium';
+                const issueType = report.action_type || determineIssueType(report.problem_description);
+                
+                const issueTypeBadge = issueType === 'برق' ? 
+                    '<span class="issue-type-badge electrical-badge">⚡ برق</span>' : 
+                    issueType === 'فنی' ? 
+                    '<span class="issue-type-badge technical-badge">🔧 فنی</span>' :
+                    '<span class="issue-type-badge combined-badge">🔰 ترکیبی</span>';
+                
+                return `
+                <div class="report-item" data-status="${displayStatus}" data-priority="${displayPriority}" data-issue-type="${issueType}">
+                    <div class="report-header">
+                        <h3 class="report-title">${report.machine_name || 'بدون عنوان'}</h3>
+                        <div class="status-container">
+                            ${issueTypeBadge}
+                            <span class="status-badge status-${displayStatus}">${getStatusText(displayStatus)}</span>
+                            <span class="priority-badge priority-${displayPriority}">${getPriorityText(displayPriority)}</span>
+                        </div>
+                    </div>
+                    
+                    <p class="report-description">${report.problem_description || 'بدون توضیحات'}</p>
+                    
+                    <div class="report-details">
+                        <div class="detail-item"><strong>گزارش‌دهنده:</strong> ${report.reporter_name || 'نامشخص'}</div>
+                        <div class="detail-item"><strong>وضعیت دستگاه:</strong> ${report.machine_status || 'نامشخص'}</div>
+                        <div class="detail-item"><strong>تاریخ ایجاد:</strong> ${new Date(report.created_at).toLocaleDateString('fa-IR')}</div>
+                        <div class="detail-item"><strong>کد گزارش:</strong> ${report.id.substring(0, 8)}</div>
+                    </div>
+                    
+                    ${report.actions_taken ? `
+                        <div class="actions-section">
+                            <div class="section-title-small">اقدامات انجام شده:</div>
+                            <p>${report.actions_taken}</p>
+                        </div>
+                    ` : ''}
+                    
+                    ${report.manager_message ? `
+                        <div class="actions-section" style="border-right-color: #FF9800;">
+                            <div class="section-title-small">یادداشت مدیر:</div>
+                            <p>${report.manager_message}</p>
+                        </div>
+                    ` : ''}
+                    
+                    <div class="action-buttons">
+                        ${(!report.status || report.status === 'pending') ? `
+                            <button class="btn btn-outline" onclick="rejectReport('${report.id}')">
+                                <i class="fas fa-times"></i>رد
+                            </button>
+                            <button class="btn btn-success" onclick="approveReport('${report.id}')">
+                                <i class="fas fa-check"></i>تأیید
+                            </button>
+                            <button class="btn btn-primary" onclick="openActionPopup('${report.id}', 'assign')">
+                                <i class="fas fa-user-cog"></i>ارجاع به تعمیرات
+                            </button>
+                        ` : ''}
+                        
+                        ${report.status === 'approved' ? `
+                            <button class="btn btn-primary" onclick="openActionPopup('${report.id}', 'assign')">
+                                <i class="fas fa-user-cog"></i>ارجاع به تکنسین
+                            </button>
+                        ` : ''}
+                        
+                        ${report.status === 'in-progress' ? `
+                            <button class="btn btn-success" onclick="completeReport('${report.id}')">
+                                <i class="fas fa-check-double"></i>تکمیل شده
+                            </button>
+                        ` : ''}
+                        
+                        <button class="btn btn-outline" onclick="openManagerPopup('${report.id}')">
+                            <i class="fas fa-paper-plane"></i>ارسال به مدیر
+                        </button>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+        
+        // توابع مدیریت گزارشات
+        async function approveReport(reportId) {
+            const result = await confirm('آیا از تأیید این گزارش اطمینان دارید؟');
+            if (!result) {
+                return;
+            }
+        
+            try {
+                const { error } = await supabase
+                    .from('operatourreports')
+                    .update({ 
+                        status: 'approved',
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', reportId);
+        
+                if (error) throw error;
+                
+                alert('گزارش تأیید شد.');
+                loadReports();
+                
+            } catch (error) {
+                console.error('خطا در تأیید گزارش:', error);
+                alert('خطا در تأیید گزارش');
+            }
+        }
+        
+        async function rejectReport(reportId) {
+            const result = await confirm('آیا از رد این گزارش اطمینان دارید؟');
+            if (!result) {
+                return;
+            }
+        
+            try {
+                const { error } = await supabase
+                    .from('operatourreports')
+                    .update({ 
+                        status: 'rejected',
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', reportId);
+        
+                if (error) throw error;
+                
+                alert('گزارش رد شد.');
+                loadReports();
+                
+            } catch (error) {
+                console.error('خطا در رد گزارش:', error);
+                alert('خطا در رد گزارش');
+            }
+        }
+        
+        async function completeReport(reportId) {
+            const result = await confirm('آیا این گزارش تکمیل شده است؟');
+            if (!result) {
+                return;
+            }
+        
+            try {
+                const report = currentReports.find(r => r.id === reportId);
+                if (report) {
+                    // آپدیت وضعیت در جدول اصلی
+                    const { error: updateError } = await supabase
+                        .from('operatourreports')
+                        .update({ 
+                            status: 'completed',
+                            completed_at: new Date().toISOString(),
+                            updated_at: new Date().toISOString()
+                        })
+                        .eq('id', reportId);
+
+                    if (updateError) throw updateError;
+
+                    // ارسال به جدول مدیران
+                    const reportData = {
+                        reporter_name: report.reporter_name,
+                        machine_name: report.machine_name,
+                        machine_status: report.machine_status,
+                        problem_description: report.problem_description,
+                        status: 'completed',
+                        priority: report.priority,
+                        actions_taken: report.actions_taken,
+                        manager_message: report.manager_message,
+                        action_type: report.action_type,
+                        technician_name: report.technician_name,
+                        estimated_time: report.estimated_time,
+                        supervisor_note: 'تکمیل شده توسط سرپرست',
+                        created_at: report.created_at,
+                        completed_at: new Date().toISOString()
+                    };
+
+                    const { error: insertError } = await supabase
+                        .from('managerreports')
+                        .insert([reportData]);
+
+                    if (insertError) throw insertError;
+                }
+                
+                alert('گزارش تکمیل و به مدیر ارسال شد.');
+                loadReports();
+                
+            } catch (error) {
+                console.error('خطا در تکمیل گزارش:', error);
+                alert('خطا در تکمیل گزارش');
+            }
+        }
+        
+        // مدیریت پاپاپ‌ها
+        function openManagerPopup(reportId) {
+            document.getElementById('currentReportId').value = reportId;
+            document.getElementById('managerPopup').style.display = 'flex';
+            document.getElementById('managerMessage').focus();
+        }
+        
+        function closeManagerPopup() {
+            document.getElementById('managerPopup').style.display = 'none';
+            document.getElementById('managerForm').reset();
+        }
+        
+        function openActionPopup(reportId, actionType) {
+            document.getElementById('actionReportId').value = reportId;
+            document.getElementById('actionTypeField').value = actionType;
+            document.getElementById('actionPopup').style.display = 'flex';
+            document.getElementById('actionDescription').focus();
+        }
+        
+        function closeActionPopup() {
+            document.getElementById('actionPopup').style.display = 'none';
+            document.getElementById('actionForm').reset();
+        }
+        
+        // ارسال به مدیر
+        document.getElementById('managerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const reportId = document.getElementById('currentReportId').value;
+            const message = document.getElementById('managerMessage').value;
+            const actionType = document.getElementById('actionType').value;
+        
+            try {
+                const report = currentReports.find(r => r.id === reportId);
+                if (report) {
+                    // آپدیت وضعیت در جدول اصلی
+                    const { error: updateError } = await supabase
+                        .from('operatourreports')
+                        .update({ 
+                            status: 'referred_to_manager',
+                            manager_note: message,
+                            action_type: actionType,
+                            referred_at: new Date().toISOString(),
+                            updated_at: new Date().toISOString()
+                        })
+                        .eq('id', reportId);
+
+                    if (updateError) throw updateError;
+
+                    // ارسال به جدول مدیران
+                    const reportData = {
+                        reporter_name: report.reporter_name,
+                        machine_name: report.machine_name,
+                        machine_status: report.machine_status,
+                        problem_description: report.problem_description,
+                        status: 'referred_to_manager',
+                        priority: report.priority,
+                        actions_taken: report.actions_taken,
+                        manager_message: message,
+                        action_type: actionType,
+                        technician_name: report.technician_name,
+                        estimated_time: report.estimated_time,
+                        supervisor_note: 'ارجاع شده توسط سرپرست',
+                        created_at: report.created_at,
+                        referred_at: new Date().toISOString()
+                    };
+
+                    const { error: insertError } = await supabase
+                        .from('managerreports')
+                        .insert([reportData]);
+
+                    if (insertError) throw insertError;
+                }
+                
+                alert('گزارش با موفقیت به مدیر ارسال شد.');
+                closeManagerPopup();
+                loadReports();
+                
+            } catch (error) {
+                console.error('خطا در ارسال به مدیر:', error);
+                alert('خطا در ارسال به مدیر');
+            }
+        });
+        
+        // ثبت اقدام
+        document.getElementById('actionForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const reportId = document.getElementById('actionReportId').value;
+            const description = document.getElementById('actionDescription').value;
+            const technician = document.getElementById('technicianName').value;
+            const estimatedTime = document.getElementById('estimatedTime').value;
+            const actionType = document.getElementById('actionTypeField').value;
+        
+            try {
+                const report = currentReports.find(r => r.id === reportId);
+                const currentActions = report.actions_taken ? 
+                    `${report.actions_taken}\nارجاع به ${technician} - زمان تخمینی: ${estimatedTime} ساعت - ${description}` :
+                    `ارجاع به ${technician} - زمان تخمینی: ${estimatedTime} ساعت - ${description}`;
+                
+                const { error } = await supabase
+                    .from('operatourreports')
+                    .update({ 
+                        status: 'in-progress',
+                        actions_taken: currentActions,
+                        technician_name: technician,
+                        estimated_time: parseInt(estimatedTime),
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', reportId);
+        
+                if (error) throw error;
+                
+                alert('اقدام با موفقیت ثبت شد.');
+                closeActionPopup();
+                loadReports();
+                
+            } catch (error) {
+                console.error('خطا در ثبت اقدام:', error);
+                alert('خطا در ثبت اقدام');
+            }
+        });
+        
+        // فیلتر کردن گزارشات
+        function filterReports() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            const priorityFilter = document.getElementById('priorityFilter').value;
+            const issueTypeFilter = document.getElementById('issueTypeFilter').value;
+        
+            const filtered = currentReports.filter(report => {
+                const machineName = report.machine_name || '';
+                const problemDescription = report.problem_description || '';
+                const reporterName = report.reporter_name || '';
+                
+                const matchesSearch = 
+                    machineName.toLowerCase().includes(searchTerm) || 
+                    problemDescription.toLowerCase().includes(searchTerm) ||
+                    reporterName.toLowerCase().includes(searchTerm);
+                
+                const reportStatus = report.status || 'pending';
+                const matchesStatus = statusFilter === 'all' || reportStatus === statusFilter;
+                
+                const reportPriority = report.priority || 'medium';
+                const matchesPriority = priorityFilter === 'all' || reportPriority === priorityFilter;
+                
+                const issueType = report.action_type || determineIssueType(report.problem_description);
+                const matchesIssueType = issueTypeFilter === 'all' || issueType === issueTypeFilter;
+                
+                return matchesSearch && matchesStatus && matchesPriority && matchesIssueType;
+            });
+        
+            renderReports(filtered);
+        }
+        
+        // رویدادهای فیلتر
+        document.getElementById('searchInput').addEventListener('input', filterReports);
+        document.getElementById('statusFilter').addEventListener('change', filterReports);
+        document.getElementById('priorityFilter').addEventListener('change', filterReports);
+        document.getElementById('issueTypeFilter').addEventListener('change', filterReports);
+        
+        // فعال کردن اسکرول فقط در container اصلی
+        const container = document.getElementById('mainContainer');
+        container.addEventListener('touchmove', function(e) {
+            e.stopPropagation();
+        }, { passive: true });
+        
+        // جلوگیری از اسکرول در body
+        document.body.addEventListener('touchmove', function(e) {
+            if (e.target === document.body) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+        
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+            document.body.style.overscrollBehavior = 'none';
+        }
+        </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#2c3e50">
     <title>گزارشات دریافتی - TPM PRO</title>
     <link rel="icon" href="icons/icon-192x192.png">
     <link rel="apple-touch-icon" href="icons/icon-192x192.png">
