@@ -1631,7 +1631,7 @@
                     const { error: updateError } = await supabase
                         .from('operatourreports')
                         .update({ 
-                            status: 'referred_to_manager',
+                            status: 'به مدیر ارجاع داده شد',
                             manager_note: message,
                             action_type: actionType,
                             // referred_at: new Date().toISOString(),
