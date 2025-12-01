@@ -4,60 +4,127 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TMP</title>
-    <link rel="icon" href="icons/icon-192x192.png">
-    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- اسپلش اسکرین برای iPhone های مختلف -->
-    <link rel="apple-touch-startup-image" href="./icons/icon-512x512.png">
-    <!-- PWA Meta Tags -->
-    <meta name="theme-color" content="#2c3e50">
+   <meta name="theme-color" content="#142d4b">
+    <meta name="msapplication-TileColor" content="#142d4b">
+    
+    <!-- Display Mode -->
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="TPM">
     
     <!-- Manifest -->
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="/nasjpour/manifest.json" crossorigin="use-credentials">
     
-    <!-- Icons -->
-    <link rel="apple-touch-icon" href="./icons/icon-192x192.png">
-<link rel="apple-touch-startup-image" href="./icons/icon-512x512.png">
+    <!-- ========== ICONS FOR ALL PLATFORMS ========== -->
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/nasjpour/icons/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/nasjpour/icons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/nasjpour/icons/favicon-16x16.png">
+    
+    <!-- Apple iOS -->
+    <link rel="apple-touch-icon" href="/nasjpour/icons/apple-icon-180x180.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/nasjpour/icons/icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="167x167" href="/nasjpour/icons/icon-167x167.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/nasjpour/icons/apple-icon-180x180.png">
+    
+    <!-- Android -->
+    <link rel="icon" type="image/png" sizes="192x192" href="/nasjpour/icons/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/nasjpour/icons/icon-512x512.png">
+    
+    <!-- Windows -->
+    <meta name="msapplication-TileImage" content="/nasjpour/icons/icon-144x144.png">
+    <meta name="msapplication-config" content="/nasjpour/browserconfig.xml">
+    
+    <!-- ========== SPLASH SCREENS (iOS) ========== -->
+    <link rel="apple-touch-startup-image" href="/nasjpour/icons/splash-640x1136.png" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="/nasjpour/icons/splash-750x1334.png" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="/nasjpour/icons/splash-1242x2208.png" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="/nasjpour/icons/splash-1125x2436.png" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+    
+    <!-- ========== STYLES & FONTS ========== -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/nasjpour/css/styles.css">
+    
+    <!-- ========== SERVICE WORKER ========== -->
     <script>
-  // ثبت Service Worker و مدیریت آپدیت
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js')
-    .then(registration => {
-      console.log('✅ Service Worker ثبت شد');
-      
-      // گوش دادن به آپدیت‌ها
-      navigator.serviceWorker.addEventListener('message', event => {
-        if (event.data.type === 'UPDATE_AVAILABLE') {
-          // نمایش الرت آپدیت زیبا
-          showUpdateAlert(event.data.message);
+        // Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/nasjpour/sw.js')
+                    .then(function(registration) {
+                        console.log('✅ Service Worker ثبت شد. Scope:', registration.scope);
+                        
+                        // چک آپدیت دوره‌ای
+                        setInterval(() => registration.update(), 60 * 60 * 1000); // هر 1 ساعت
+                    })
+                    .catch(function(error) {
+                        console.log('❌ خطا در ثبت Service Worker:', error);
+                    });
+            });
         }
         
-        if (event.data.type === 'RELOAD_PAGE') {
-          // ریلود صفحه بعد از آپدیت
-          window.location.reload();
+        // PWA Installation Detection
+        window.addEventListener('beforeinstallprompt', (e) => {
+            console.log('📱 امکان نصب PWA فراهم است');
+            e.preventDefault();
+            window.deferredPrompt = e;
+            
+            // نمایش دکمه نصب (اختیاری)
+            showInstallButton();
+        });
+        
+        window.addEventListener('appinstalled', (evt) => {
+            console.log('🎉 اپ با موفقیت نصب شد');
+            window.deferredPrompt = null;
+        });
+        
+        // نمایش دکمه نصب
+        function showInstallButton() {
+            const installBtn = document.createElement('button');
+            installBtn.id = 'install-pwa-btn';
+            installBtn.innerHTML = '📱 نصب برنامه';
+            installBtn.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #142d4b;
+                color: white;
+                padding: 12px 24px;
+                border: none;
+                border-radius: 25px;
+                font-family: Vazirmatn, sans-serif;
+                font-size: 14px;
+                cursor: pointer;
+                z-index: 1000;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            `;
+            installBtn.onclick = installPWA;
+            document.body.appendChild(installBtn);
         }
-      });
-      
-      // چک آپدیت دوره‌ای
-      setInterval(() => {
-        registration.update();
-      }, 30 * 60 * 1000); // هر 30 دقیقه
-    });
-}
-
-// تابع نمایش الرت آپدیت
-function showUpdateAlert(message) {
-  // اینجا می‌توانید الرت زیبای خودتان را پیاده‌سازی کنید
-  if (confirm(`${message}\n\nآیا می‌خواهید الآن آپدیت کنید؟`)) {
-    // ارسال درخواست آپدیت به Service Worker
-    navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
-  }
-}
-        </script>
+        
+        // تابع نصب PWA
+        function installPWA() {
+            if (window.deferredPrompt) {
+                window.deferredPrompt.prompt();
+                window.deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('کاربر نصب را پذیرفت');
+                    }
+                    window.deferredPrompt = null;
+                    document.getElementById('install-pwa-btn').remove();
+                });
+            }
+        }
+        
+        // تشخیص حالت standalone
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+            console.log('📱 برنامه در حالت نصب‌شده اجرا می‌شود');
+            document.documentElement.classList.add('pwa-mode');
+        }
+    </script>
     <style>
         * {
             margin: 0;
