@@ -1,5 +1,5 @@
 // Service Worker - TPM PRO
-const APP_VERSION = '1.0.1';
+const APP_VERSION = '1.1.1';
 const CACHE_NAME = `tpm-pwa-v${APP_VERSION}`;
 const APP_PREFIX = '/nasjpour';
 
