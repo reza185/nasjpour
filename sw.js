@@ -1,6 +1,6 @@
 // Service Worker - TPM PRO
-const APP_VERSION = '1.0.0';  // ✅ اضافه کردن شماره نسخه
-const CACHE_NAME = `tpm-pwa-v${APP_VERSION}`;  // ✅ استفاده از نسخه در نام کش
+const APP_VERSION = '1.0.1';  // ✅ فقط زمانی تغییر دهید که می‌خواهید آپدیت اجباری شود
+const CACHE_NAME = `tpm-pwa-v${APP_VERSION}`;
 const APP_PREFIX = '/nasjpour';
 
 const urlsToCache = [
@@ -60,12 +60,8 @@ self.addEventListener('activate', event => {
     ]).then(() => {
       console.log('🎯 کنترل کلاینت‌ها گرفته شد');
       
-      // اطلاع به کلاینت‌ها
-      notifyClients({
-        type: 'SW_ACTIVATED',
-        version: APP_VERSION,
-        message: 'Service Worker جدید فعال شد'
-      });
+      // اطلاع به کلاینت‌ها فقط برای نسخه جدید
+      notifyVersionChange();
       
       // چک آپدیت بعد از فعال‌سازی
       setTimeout(checkForContentUpdates, 2000);
@@ -222,7 +218,7 @@ async function checkForContentUpdates() {
       }
       
       if (updatesFound) {
-          console.log('🎯 آپدیت موجود است - اطلاع به PWAها');
+          console.log('🎯 آپدیت محتوا موجود است - اطلاع به PWAها');
           notifyClients({
               type: 'CONTENT_UPDATE_AVAILABLE',
               message: 'محتویات جدید آماده است!',
@@ -239,20 +235,36 @@ async function checkForContentUpdates() {
   }
 }
 
+// اطلاع تغییر نسخه SW
+async function notifyVersionChange() {
+  try {
+    const clients = await self.clients.matchAll();
+    
+    clients.forEach(client => {
+      // ارسال پیام فقط برای اطلاع از نسخه فعلی
+      client.postMessage({
+        type: 'SW_VERSION_INFO',
+        version: APP_VERSION,
+        timestamp: new Date().toISOString(),
+        action: 'version_check'  // فقط برای اطلاع، نه درخواست آپدیت
+      });
+    });
+  } catch (error) {
+    console.error('❌ خطا در اطلاع نسخه:', error);
+  }
+}
+
 // ارسال پیام به کلاینت‌ها
 async function notifyClients(data) {
   try {
       const clients = await self.clients.matchAll();
       clients.forEach(client => {
           // ارسال پیام فقط به PWAها (صفحات نصب‌شده)
-          // تشخیص از طریق frameType یا display-mode
           if (client.frameType === 'top-level' || 
               client.url.includes('standalone') ||
-              !client.url.includes('?')) { // صفحات مستقل معمولاً پارامتر URL ندارند
+              !client.url.includes('?')) {
               console.log(`📨 ارسال پیام به PWA: ${client.url}`);
               client.postMessage(data);
-          } else {
-              console.log(`🚫 پیام به مرورگر معمولی ارسال نشد: ${client.url}`);
           }
       });
   } catch (error) {
@@ -271,36 +283,46 @@ self.addEventListener('message', event => {
       break;
       
     case 'CHECK_UPDATE':
-      console.log('🔍 درخواست چک آپدیت');
+      console.log('🔍 درخواست چک آپدیت محتوا');
       checkForContentUpdates();
       break;
       
     case 'GET_VERSION':
-      event.ports[0].postMessage({ version: APP_VERSION });
+      if (event.ports && event.ports[0]) {
+        event.ports[0].postMessage({ 
+          version: APP_VERSION,
+          timestamp: new Date().toISOString()
+        });
+      }
+      break;
+      
+    case 'COMPARE_VERSIONS':
+      // مقایسه نسخه‌ها برای چک آپدیت
+      if (event.ports && event.ports[0]) {
+        const oldVersion = data?.oldVersion;
+        const hasUpdate = oldVersion !== APP_VERSION;
+        
+        event.ports[0].postMessage({
+          currentVersion: APP_VERSION,
+          oldVersion: oldVersion,
+          hasUpdate: hasUpdate,
+          timestamp: new Date().toISOString()
+        });
+        
+        console.log(`🔍 مقایسه نسخه: ${oldVersion} -> ${APP_VERSION} | آپدیت: ${hasUpdate}`);
+      }
       break;
   }
 });
 
-// ==================== وقتی Service Worker جدید کنترل رو گرفت ====================
-self.addEventListener('controllerchange', () => {
-  console.log('🔍 کنترل تغییر کرد - چک آپدیت...');
-  
-  // اطلاع به کاربر برای رفرش
-  notifyClients({
-    type: 'RELOAD_PAGE',
-    message: 'لطفاً صفحه را رفرش کنید تا تغییرات اعمال شود',
-    action: 'reload'
-  });
-});
-
 // ==================== چک آپدیت دوره‌ای ====================
-// هر 1 ساعت یکبار چک کن
+// فقط محتوا را چک کن (هر 2 ساعت)
 setInterval(() => {
   checkForContentUpdates();
-}, 60 * 60 * 1000);
+}, 2 * 60 * 60 * 1000);
 
 // ==================== چک اولیه ====================
-// بعد از 5 ثانیه اول چک کن
+// بعد از 10 ثانیه اول چک کن
 setTimeout(() => {
   checkForContentUpdates();
-}, 5000);
+}, 10000);
