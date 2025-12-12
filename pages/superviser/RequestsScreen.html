@@ -18,6 +18,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
+        /* همه استایل‌های قبلی به همان صورت باقی می‌مانند */
         * {
             margin: 0;
             padding: 0;
@@ -248,10 +249,66 @@
             color: var(--accent);
         }
 
+        /* تب‌ها */
+        .tabs-container {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 20px;
+            background: white;
+            border-radius: 12px;
+            padding: 5px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            width: 100%;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px 8px;
+            text-align: center;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #666;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            touch-action: manipulation;
+        }
+
+        .tab.active {
+            background: var(--secondary);
+            color: white;
+            box-shadow: 0 2px 6px rgba(52, 152, 219, 0.3);
+        }
+
+        .tab i {
+            font-size: 14px;
+        }
+
+        /* محتوای تب‌ها */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         /* آمار */
         .stats-container {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 12px;
             margin-bottom: 20px;
             width: 100%;
@@ -361,14 +418,16 @@
             display: flex;
             gap: 6px;
             flex-shrink: 0;
+            flex-wrap: wrap;
         }
 
-        .status-badge, .priority-badge, .issue-type-badge {
+        .status-badge, .priority-badge, .issue-type-badge, .workorder-status-badge {
             padding: 4px 8px;
             border-radius: 20px;
             font-size: 10px;
             font-weight: 600;
             border: 2px solid;
+            white-space: nowrap;
         }
 
         .status-pending { border-color: #FF9800; color: #FF9800; background: #FFF3E0; }
@@ -401,6 +460,14 @@
             color: #3498db;
             border: 1px solid #3498db;
         }
+
+        /* وضعیت‌های دستور کار */
+        .workorder-draft { background: #FFF3E0; color: #FF9800; border-color: #FF9800; }
+        .workorder-assigned { background: #E3F2FD; color: #2196F3; border-color: #2196F3; }
+        .workorder-in-progress { background: #E8F5E9; color: #4CAF50; border-color: #4CAF50; }
+        .workorder-on-hold { background: #FFF8E1; color: #FFC107; border-color: #FFC107; }
+        .workorder-completed { background: #E8F5E9; color: #2E7D32; border-color: #2E7D32; }
+        .workorder-cancelled { background: #FFEBEE; color: #C62828; border-color: #C62828; }
 
         .report-description {
             color: #666;
@@ -524,6 +591,15 @@
             background: #2980b9;
         }
 
+        .btn-warning {
+            background: #FF9800;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #F57C00;
+        }
+
         .empty-state {
             text-align: center;
             padding: 30px 15px;
@@ -534,6 +610,40 @@
             font-size: 36px;
             margin-bottom: 12px;
             color: #ddd;
+        }
+
+        /* جدول برای تب همه داده‌ها */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 13px;
+        }
+
+        .data-table th {
+            background: var(--primary);
+            color: white;
+            padding: 12px 8px;
+            text-align: right;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+
+        .data-table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .data-table tr:hover {
+            background: #f5f5f5;
+        }
+
+        .data-table-container {
+            overflow-x: auto;
+            border-radius: 8px;
+            border: 1px solid #eaeaea;
+            background: white;
         }
 
         /* پاپاپ‌ها */
@@ -666,6 +776,125 @@
             background: #e9ecef;
         }
 
+        /* پاپاپ وضعیت دستور کار */
+        .status-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .status-option {
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 12px;
+        }
+
+        .status-option:hover {
+            border-color: var(--secondary);
+            background: #f0f8ff;
+        }
+
+        .status-option.selected {
+            border-color: var(--secondary);
+            background: var(--secondary);
+            color: white;
+        }
+
+        /* پاپاپ ویرایش دستور کار */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        
+        .char-counter {
+            text-align: left;
+            font-size: 12px;
+            color: var(--gray);
+            margin-top: 5px;
+        }
+        
+        .char-counter.warning {
+            color: var(--warning);
+        }
+        
+        .char-counter.danger {
+            color: var(--danger);
+        }
+        
+        .alert {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .alert-danger {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--secondary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* استایل‌های جدید برای بخش قطعات مصرفی */
+        .parts-section {
+            background: #e8f5e9;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            border-right: 4px solid #4CAF50;
+        }
+
+        .parts-section .section-title-small {
+            color: #2e7d32;
+        }
+
+        .parts-section p {
+            white-space: pre-line;
+            font-size: 13px;
+            color: #2e7d32;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed !important;
+            pointer-events: none;
+        }
+
+        .btn-outline:disabled {
+            background: #f8f9fa;
+            border-color: #ddd;
+            color: #999;
+        }
+
         /* رسپانسیو */
         @media (max-width: 768px) {
             .stats-container {
@@ -707,6 +936,26 @@
 
             .filter-select {
                 min-width: auto;
+            }
+
+            .tabs-container {
+                flex-direction: column;
+            }
+
+            .tab {
+                padding: 10px;
+            }
+
+            .data-table {
+                font-size: 12px;
+            }
+
+            .status-options {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
             }
         }
 
@@ -767,18 +1016,7 @@
             .form-actions {
                 flex-direction: column;
             }
-        }/* در بخش رسپانسیو */
-@media (max-width: 768px) {
-    .stats-container {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
-
-@media (max-width: 480px) {
-    .stats-container {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
+        }
 
         /* جلوگیری از زوم و انتخاب متن */
         @media (hover: none) and (pointer: coarse) {
@@ -836,10 +1074,10 @@
                     <i class="fas fa-clipboard-list"></i>
                     <span>گزارشات دریافتی</span>
                 </a>
-                <a href="warehouse.html" class="nav-link">
+                <!-- <a href="warehouse.html" class="nav-link">
                     <i class="fas fa-warehouse"></i>
                     <span>انبار</span>
-                </a>
+                </a> -->
                 <a href="troubleshooting.html" class="nav-link" id="troubleshootingLink">
                     <i class="fas fa-tools"></i>
                     <span>عیب‌یابی</span>
@@ -857,91 +1095,185 @@
     </nav>
 
     <!-- محتوای اصلی -->
-   
+    <div class="main-wrapper">
+        <div class="container" id="mainContainer">
+            <!-- هدر صفحه -->
+            <div class="header-card">
+                <h1 class="page-title">گزارشات دریافتی</h1>
+                <p class="page-subtitle">مدیریت و رسیدگی به گزارشات ارسالی کاربران</p>
+                <div class="login-info">
+                    <i class="fas fa-clock"></i>
+                    آخرین ورود: <span id="lastLoginTime">در حال بارگذاری...</span>
+                </div>
                 
                 <!-- آمار سریع -->
-                <div class="main-wrapper">
-                    <div class="container" id="mainContainer">
-                        <!-- هدر صفحه -->
-                        <div class="header-card">
-                            <h1 class="page-title">گزارشات دریافتی</h1>
-                            <p class="page-subtitle">مدیریت و رسیدگی به گزارشات ارسالی کاربران</p>
-                            <div class="login-info">
-                                <i class="fas fa-clock"></i>
-                                آخرین ورود: <span id="lastLoginTime">در حال بارگذاری...</span>
-                            </div>
-                            
-                            <!-- آمار سریع - به‌روزرسانی شده -->
-                            <div class="stats-container" id="statsContainer">
-                                <div class="stat-item">
-                                    <div class="stat-number" style="color: #80530f;" id="pendingCount">0</div>
-                                    <div class="stat-label">در انتظار رسیدگی</div>
-                                </div>
-                                <!-- <div class="stat-item">
-                                    <div class="stat-number" style="color: #4CAF50;" id="approvedCount">0</div>
-                                    <div class="stat-label">تأیید شده</div>
-                                </div>
-                                <div class="stat-item">
-                                    <div class="stat-number" style="color: #F44336;" id="rejectedCount">0</div>
-                                    <div class="stat-label">رد شده</div>
-                                </div> -->
-                                <div class="stat-item">
-                                    <div class="stat-number" style="color: #9C27B0;" id="referredCount">0</div>
-                                    <div class="stat-label">ارجاع به مدیر</div>
-                                </div>
-                                <div class="stat-item">
-                                    <div class="stat-number" style="color: #000000;" id="totalCount">0</div>
-                                    <div class="stat-label">کل گزارشات</div>
-                                </div>
-                            </div>
-                        </div>
-
-            <!-- فیلترها و جستجو -->
-            <div class="card">
-                <h2 class="section-title">
-                    <i class="fas fa-filter"></i>
-                    فیلتر و جستجو
-                </h2>
-                
-                <input type="text" class="search-bar" placeholder="جستجو در گزارشات..." id="searchInput">
-                
-                <div class="filter-row">
-                    <select class="filter-select" id="statusFilter">
-                        <option value="all">همه وضعیت‌ها</option>
-                        <!-- <option value="pending">در انتظار رسیدگی</option>
-                        <option value="approved">تأیید شده</option>
-                        <option value="rejected">رد شده</option>
-                        <option value="in-progress">در دست اقدام</option>
-                        <option value="completed">تکمیل شده</option> -->
-                        <option value="referred_to_manager">ارجاع به مدیر</option>
-                    </select>
-                    
-                    <select class="filter-select" id="priorityFilter">
-                        <option value="all">همه اولویت‌ها</option>
-                        <option value="low">کم</option>
-                        <option value="medium">متوسط</option>
-                        <option value="high">بالا</option>
-                        <option value="critical">بحرانی</option>
-                    </select>
-
-                    <select class="filter-select" id="issueTypeFilter">
-                        <option value="all">همه نوع ایرادها</option>
-                        <option value="برق">برق</option>
-                        <option value="فنی">فنی</option>
-                        <option value="ترکیبی">ترکیبی</option>
-                    </select>
+                <div class="stats-container" id="statsContainer">
+                    <div class="stat-item">
+                        <div class="stat-number" style="color: #80530f;" id="pendingCount">0</div>
+                        <div class="stat-label">در انتظار رسیدگی</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" style="color: #9C27B0;" id="referredCount">0</div>
+                        <div class="stat-label">ارجاع به مدیر</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" style="color: #3498db;" id="workorderCount">0</div>
+                        <div class="stat-label">دستور کارها</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" style="color: #000000;" id="totalCount">0</div>
+                        <div class="stat-label">کل گزارشات</div>
+                    </div>
                 </div>
             </div>
 
-            <!-- لیست گزارشات -->
-            <div class="card">
-                <h2 class="section-title">
-                    <i class="fas fa-list"></i>
-                    لیست گزارشات
-                </h2>
-                
-                <div class="report-list" id="reportList">
-                    <!-- گزارشات به صورت داینامیک لود می‌شوند -->
+            <!-- تب‌ها -->
+            <div class="tabs-container" id="tabsContainer">
+                <button class="tab active" data-tab="reports">
+                    <i class="fas fa-clipboard-list"></i>
+                    <span>گزارشات</span>
+                </button>
+                <button class="tab" data-tab="workorders">
+                    <i class="fas fa-tasks"></i>
+                    <span>دستور کارها</span>
+                </button>
+                <button class="tab" data-tab="allData">
+                    <i class="fas fa-database"></i>
+                    <span>همه داده‌ها</span>
+                </button>
+            </div>
+
+            <!-- تب ۱: گزارشات -->
+            <div class="tab-content active" id="reportsTab">
+                <!-- فیلترها و جستجو -->
+                <div class="card">
+                    <h2 class="section-title">
+                        <i class="fas fa-filter"></i>
+                        فیلتر و جستجو
+                    </h2>
+                    
+                    <input type="text" class="search-bar" placeholder="جستجو در گزارشات..." id="searchInput">
+                    
+                    <div class="filter-row">
+                        <select class="filter-select" id="statusFilter">
+                            <option value="all">همه وضعیت‌ها</option>
+                            <option value="pending">در انتظار رسیدگی</option>
+                            <option value="approved">تأیید شده</option>
+                            <option value="rejected">رد شده</option>
+                            <option value="in-progress">در دست اقدام</option>
+                            <option value="completed">تکمیل شده</option>
+                            <option value="referred_to_manager">ارجاع به مدیر</option>
+                        </select>
+                        
+                        <select class="filter-select" id="priorityFilter">
+                            <option value="all">همه اولویت‌ها</option>
+                            <option value="low">کم</option>
+                            <option value="medium">متوسط</option>
+                            <option value="high">بالا</option>
+                            <option value="critical">بحرانی</option>
+                        </select>
+
+                        <select class="filter-select" id="issueTypeFilter">
+                            <option value="all">همه نوع ایرادها</option>
+                            <option value="برق">برق</option>
+                            <option value="فنی">فنی</option>
+                            <option value="ترکیبی">ترکیبی</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- لیست گزارشات -->
+                <div class="card">
+                    <h2 class="section-title">
+                        <i class="fas fa-list"></i>
+                        لیست گزارشات
+                    </h2>
+                    
+                    <div class="report-list" id="reportList">
+                        <!-- گزارشات به صورت داینامیک لود می‌شوند -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- تب ۲: دستور کارها -->
+            <div class="tab-content" id="workordersTab">
+                <!-- فیلترها و جستجو دستور کارها -->
+                <div class="card">
+                    <h2 class="section-title">
+                        <i class="fas fa-filter"></i>
+                        فیلتر دستور کارها
+                    </h2>
+                    
+                    <input type="text" class="search-bar" placeholder="جستجو در دستور کارها..." id="workorderSearch">
+                    
+                    <div class="filter-row">
+                        <select class="filter-select" id="workorderStatusFilter">
+                            <option value="all">همه وضعیت‌ها</option>
+                            <!-- <option value="draft">پیش‌نویس</option>
+                            <option value="assigned">واگذار شده</option> -->
+                            <option value="in-progress">در حال اجرا</option>
+                            <!-- <option value="on-hold">متوقف</option> -->
+                            <option value="completed">تکمیل شده</option>
+                            <option value="cancelled">لغو شده</option>
+                        </select>
+                        
+                        <select class="filter-select" id="workorderPriorityFilter">
+                            <option value="all">همه اولویت‌ها</option>
+                            <option value="low">کم</option>
+                            <option value="medium">متوسط</option>
+                            <option value="high">بالا</option>
+                            <option value="critical">بحرانی</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- لیست دستور کارها -->
+                <div class="card">
+                    <h2 class="section-title">
+                        <i class="fas fa-tasks"></i>
+                        لیست دستور کارها
+                    </h2>
+                    
+                    <div class="report-list" id="workorderList">
+                        <!-- دستور کارها به صورت داینامیک لود می‌شوند -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- تب ۳: همه داده‌ها -->
+            <div class="tab-content" id="allDataTab">
+                <div class="card">
+                    <h2 class="section-title">
+                        <i class="fas fa-database"></i>
+                        همه داده‌ها
+                    </h2>
+                    
+                    <div class="filter-row">
+                        <select class="filter-select" id="dataTableFilter">
+                            <option value="all">همه جدول‌ها</option>
+                            <option value="reports">گزارشات</option>
+                            <option value="workorders">دستور کارها</option>
+                        </select>
+                    </div>
+
+                    <div class="data-table-container">
+                        <table class="data-table" id="allDataTable">
+                            <thead>
+                                <tr>
+                                    <th>شناسه</th>
+                                    <th>نوع</th>
+                                    <th>عنوان</th>
+                                    <th>وضعیت</th>
+                                    <th>اولویت</th>
+                                    <th>تاریخ ایجاد</th>
+                                    <th>اقدامات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="allDataTableBody">
+                                <!-- داده‌ها به صورت داینامیک لود می‌شوند -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -973,6 +1305,25 @@
                         <option value="درخواست تصمیم‌گیری">درخواست تصمیم‌گیری از سوی مدیریت</option>
                         <option value="سایر">سایر</option>
                     </select>
+                </div>
+                
+                <!-- بخش جدید: قطعات مصرفی -->
+                <div class="form-group">
+                    <label class="form-label" for="consumableParts">
+                        <i class="fas fa-tools"></i>
+                        قطعات مصرفی مورد نیاز
+                    </label>
+                    <textarea 
+                        id="consumableParts" 
+                        class="form-textarea" 
+                        placeholder="قطعات مصرفی مورد نیاز را اینجا بنویسید (هر مورد در یک خط جدید)
+مثال:
+- بلبرینگ 6202 - 2 عدد
+- سیم برق 2.5 - 10 متر
+- لنت ترمز - 1 عدد" 
+                        rows="4"
+                    ></textarea>
+                    <div class="char-counter" id="partsCharCount">0/1000 کاراکتر</div>
                 </div>
                 
                 <div class="form-actions">
@@ -1013,6 +1364,120 @@
                 <div class="form-actions">
                     <button type="button" class="cancel-btn" onclick="closeActionPopup()">انصراف</button>
                     <button type="submit" class="submit-btn">ثبت اقدام</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- پاپاپ وضعیت دستور کار -->
+    <div class="popup-overlay" id="workorderStatusPopup">
+        <div class="popup-content">
+            <div class="popup-header">
+                <h3 class="popup-title">تغییر وضعیت دستور کار</h3>
+                <button class="close-btn" onclick="closeWorkorderStatusPopup()">&times;</button>
+            </div>
+            
+            <form id="workorderStatusForm">
+                <input type="hidden" id="workorderId">
+                
+                <div class="form-group">
+                    <label class="form-label">انتخاب وضعیت جدید</label>
+                    <div class="status-options">
+                        <!-- <div class="status-option" data-status="draft" onclick="selectWorkorderStatus('draft')">
+                            پیش‌نویس
+                        </div>
+                        <div class="status-option" data-status="assigned" onclick="selectWorkorderStatus('assigned')">
+                            واگذار شده
+                        </div> -->
+                        <div class="status-option" data-status="in-progress" onclick="selectWorkorderStatus('in-progress')">
+                            در حال اجرا
+                        </div>
+                        <!-- <div class="status-option" data-status="on-hold" onclick="selectWorkorderStatus('on-hold')">
+                            متوقف
+                        </div> -->
+                        <div class="status-option" data-status="completed" onclick="selectWorkorderStatus('completed')">
+                            تکمیل شده
+                        </div>
+                        <div class="status-option" data-status="cancelled" onclick="selectWorkorderStatus('cancelled')">
+                            لغو شده
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="cancel-btn" onclick="closeWorkorderStatusPopup()">انصراف</button>
+                    <button type="submit" class="submit-btn">تغییر وضعیت</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- پاپاپ ویرایش دستور کار -->
+    <div class="popup-overlay" id="editWorkorderPopup">
+        <div class="popup-content">
+            <div class="popup-header">
+                <h3 class="popup-title">ویرایش دستور کار</h3>
+                <button class="close-btn" onclick="closeEditWorkorderPopup()">&times;</button>
+            </div>
+            
+            <!-- هشدار فرم -->
+            <div id="formAlert" style="display: none;"></div>
+            
+            <!-- بارگذاری -->
+            <div id="loadingIndicator" style="display: none; text-align: center; padding: 20px;">
+                <div class="loading-spinner"></div>
+                <p style="margin-top: 10px; color: var(--gray);">در حال ذخیره...</p>
+            </div>
+            
+            <form id="editWorkorderForm">
+                <input type="hidden" id="editWorkorderId">
+                
+                <div class="form-group">
+                    <label class="form-label" for="editTitle">عنوان مشکل *</label>
+                    <input type="text" id="editTitle" class="form-input" placeholder="مثال: خرابی موتور دستگاه" required>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="editAssignedTo">مسئول پیگیری *</label>
+                        <select id="editAssignedTo" class="form-select" required>
+                            <option value="">انتخاب مسئول پیگیری</option>
+                            <option value="نوروزی">نوروزی</option>
+                            <option value="محمدی">محمدی</option>
+                            <option value="سایر">سایر</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="editPriority">اولویت *</label>
+                        <select id="editPriority" class="form-select" required>
+                            <option value="">انتخاب اولویت</option>
+                            <option value="low">کم</option>
+                            <option value="medium">متوسط</option>
+                            <option value="high">بالا</option>
+                            <option value="critical">بحرانی</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="editDescription">شرح مشکل *</label>
+                    <textarea id="editDescription" class="form-textarea" placeholder="شرح کامل مشکل را بنویسید..." required></textarea>
+                    <div class="char-counter" id="editCharCount">0/500 کاراکتر</div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="editNotes">یادداشت‌ها (اختیاری)</label>
+                    <textarea id="editNotes" class="form-textarea" placeholder="یادداشت‌های اضافی..."></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="cancel-btn" onclick="closeEditWorkorderPopup()">
+                        انصراف
+                    </button>
+                    <button type="submit" class="submit-btn">
+                        ذخیره تغییرات
+                    </button>
                 </div>
             </form>
         </div>
@@ -1153,6 +1618,48 @@
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
         let currentReports = [];
+        let currentWorkorders = [];
+        let allData = [];
+        
+        // تابع برای گرفتن شناسه کوتاه
+        function getShortId(id) {
+            if (!id) return 'نامشخص';
+            const idStr = String(id);
+            return idStr.length > 8 ? idStr.substring(0, 8) : idStr;
+        }
+        
+        // مدیریت تب‌ها
+        function initializeTabs() {
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabId = tab.getAttribute('data-tab');
+                    
+                    // حذف کلاس active از همه تب‌ها و محتواها
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    
+                    // اضافه کردن کلاس active به تب و محتوای انتخاب شده
+                    tab.classList.add('active');
+                    document.getElementById(`${tabId}Tab`).classList.add('active');
+                    
+                    // بارگذاری محتوای تب مورد نظر
+                    switch(tabId) {
+                        case 'reports':
+                            loadReports();
+                            break;
+                        case 'workorders':
+                            loadWorkorders();
+                            break;
+                        case 'allData':
+                            loadAllData();
+                            break;
+                    }
+                });
+            });
+        }
         
         // تابع ساده برای نمایش تاریخ و زمان فارسی
         function getPersianDateTime() {
@@ -1191,6 +1698,1141 @@
             if (loginTimeElement && window.loginTime) {
                 loginTimeElement.textContent = getTimeSinceLogin(window.loginTime);
             }
+        }
+        
+        // ==================== مدیریت شمارنده کاراکتر قطعات مصرفی ====================
+
+        function updatePartsCharCount() {
+            const textarea = document.getElementById('consumableParts');
+            const charCount = document.getElementById('partsCharCount');
+            const count = textarea.value.length;
+            charCount.textContent = `${count}/1000 کاراکتر`;
+            
+            if (count > 900) {
+                charCount.classList.add('danger');
+                charCount.classList.remove('warning');
+            } else if (count > 800) {
+                charCount.classList.add('warning');
+                charCount.classList.remove('danger');
+            } else {
+                charCount.classList.remove('warning', 'danger');
+            }
+        }
+        
+        // ==================== مدیریت گزارشات ====================
+        
+        // لود گزارشات از Supabase
+        async function loadReports() {
+            try {
+                // دریافت گزارشات
+                const { data: reports, error: reportsError } = await supabase
+                    .from('operatourreports')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (reportsError) throw reportsError;
+
+                // دریافت دستور کارها (به عنوان گزارش)
+                const { data: workorders, error: workordersError } = await supabase
+                    .from('work_orders')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (workordersError) throw workordersError;
+
+                // ترکیب داده‌ها - تبدیل دستور کارها به فرمت گزارش
+                const workordersAsReports = (workorders || []).map(workorder => ({
+                    id: workorder.id,
+                    machine_name: workorder.problem_title || workorder.title || 'دستور کار',
+                    problem_description: workorder.problem_description || workorder.description || '',
+                    status: workorder.status || 'draft',
+                    priority: workorder.priority || 'medium',
+                    reporter_name: workorder.assigned_to || 'تکنسین',
+                    machine_status: 'در حال بررسی',
+                    actions_taken: workorder.notes || '',
+                    action_type: workorder.request_type || 'فنی',
+                    technician_name: workorder.assigned_to || '',
+                    estimated_time: null,
+                    manager_message: '',
+                    consumable_parts: workorder.consumable_parts || '',
+                    created_at: workorder.created_at,
+                    updated_at: workorder.updated_at,
+                    completed_at: workorder.completed_at,
+                    is_workorder: true, // پرچم برای شناسایی دستور کار
+                    workorder_data: workorder // ذخیره داده اصلی
+                }));
+
+                // ترکیب با گزارشات اصلی
+                const allReports = [...(reports || []), ...workordersAsReports];
+                
+                // مرتب‌سازی بر اساس تاریخ
+                allReports.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                
+                currentReports = allReports;
+                updateStats();
+                renderReports(currentReports);
+                
+            } catch (error) {
+                console.error('خطا در دریافت گزارشات:', error);
+                alert('خطا در دریافت گزارشات از سرور');
+            }
+        }
+        
+        // آپدیت آمار
+        function updateStats() {
+            const totalReports = currentReports.filter(r => !r.is_workorder).length;
+            const totalWorkorders = currentReports.filter(r => r.is_workorder).length;
+            
+            const approvedCount = currentReports.filter(r => r.status === 'approved').length;
+            const rejectedCount = currentReports.filter(r => r.status === 'rejected').length;
+            const referredCount = currentReports.filter(r => 
+                r.status === 'ارجاع به مدیر' || 
+                r.status === 'referred_to_manager' ||
+                (r.is_workorder && r.status === 'completed') // دستور کارهای تکمیل شده هم ارجاع به مدیر محسوب می‌شوند
+            ).length;
+            const totalCount = currentReports.length;
+            const pendingCount = totalCount - (approvedCount + rejectedCount + referredCount);
+            
+            document.getElementById('pendingCount').textContent = pendingCount;
+            document.getElementById('referredCount').textContent = referredCount;
+            document.getElementById('totalCount').textContent = totalCount;
+            document.getElementById('workorderCount').textContent = totalWorkorders;
+        }
+        
+        // نمایش گزارشات
+        function renderReports(reports) {
+            const reportList = document.getElementById('reportList');
+            
+            if (!reports || reports.length === 0) {
+                reportList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <h3>گزارشی یافت نشد</h3>
+                        <p>هیچ گزارشی با فیلترهای انتخاب شده مطابقت ندارد.</p>
+                    </div>
+                `;
+                return;
+            }
+        
+            reportList.innerHTML = reports.map(report => {
+                const displayStatus = report.status || 'pending';
+                const displayPriority = report.priority || 'medium';
+                
+                // اگر دستور کار است، از request_type استفاده کن
+                const isWorkorder = report.is_workorder || false;
+                let issueType;
+                if (isWorkorder) {
+                    issueType = report.workorder_data?.request_type || 'فنی';
+                } else {
+                    issueType = report.action_type || determineIssueType(report.problem_description);
+                }
+                
+                const issueTypeBadge = issueType === 'برق' ? 
+                    '<span class="issue-type-badge electrical-badge">⚡ برق</span>' : 
+                    issueType === 'فنی' ? 
+                    '<span class="issue-type-badge technical-badge">🔧 فنی</span>' :
+                    '<span class="issue-type-badge combined-badge">🔰 ترکیبی</span>';
+                
+                // اضافه کردن شناسه دستور کار
+                const typeBadge = isWorkorder ? 
+                    '<span class="badge" style="background: #f3e5f5; color: #7b1fa2; padding: 2px 6px; border-radius: 10px; font-size: 10px; margin-left: 5px;">دستور کار</span>' : 
+                    '<span class="badge" style="background: #e3f2fd; color: #1976d2; padding: 2px 6px; border-radius: 10px; font-size: 10px; margin-left: 5px;">گزارش</span>';
+                
+                return `
+                <div class="report-item" data-status="${displayStatus}" data-priority="${displayPriority}" data-issue-type="${issueType}" data-is-workorder="${isWorkorder}">
+                    <div class="report-header">
+                        <h3 class="report-title">
+                            ${report.machine_name || 'بدون عنوان'}
+                            ${typeBadge}
+                        </h3>
+                        <div class="status-container">
+                            ${issueTypeBadge}
+                            <span class="status-badge status-${displayStatus}">${getStatusText(displayStatus)}</span>
+                            <span class="priority-badge priority-${displayPriority}">${getPriorityText(displayPriority)}</span>
+                        </div>
+                    </div>
+                    
+                    <p class="report-description">${report.problem_description || 'بدون توضیحات'}</p>
+                    
+                    <div class="report-details">
+                        ${isWorkorder ? 
+                            `<div class="detail-item"><strong>مسئول:</strong> ${report.reporter_name || 'نامشخص'}</div>` :
+                            `<div class="detail-item"><strong>گزارش‌دهنده:</strong> ${report.reporter_name || 'نامشخص'}</div>`
+                        }
+                        <div class="detail-item"><strong>وضعیت:</strong> ${report.machine_status || 'نامشخص'}</div>
+                        <div class="detail-item"><strong>تاریخ ایجاد:</strong> ${report.created_at ? new Date(report.created_at).toLocaleDateString('fa-IR') : 'نامشخص'}</div>
+                        <div class="detail-item"><strong>کد:</strong> ${getShortId(report.id)}</div>
+                    </div>
+                    
+                    ${report.actions_taken ? `
+                        <div class="actions-section">
+                            <div class="section-title-small">${isWorkorder ? 'یادداشت:' : 'اقدامات انجام شده:'}</div>
+                            <p style="white-space: pre-line; font-size: 13px;">${report.actions_taken}</p>
+                        </div>
+                    ` : ''}
+                    
+                    ${report.consumable_parts ? `
+                        <div class="parts-section">
+                            <div class="section-title-small">
+                                <i class="fas fa-tools"></i>
+                                قطعات مصرفی درخواستی:
+                            </div>
+                            <p style="white-space: pre-line; font-size: 13px; color: #2e7d32;">${report.consumable_parts}</p>
+                        </div>
+                    ` : ''}
+                    
+                    ${report.manager_message ? `
+                        <div class="actions-section" style="border-right-color: #FF9800;">
+                            <div class="section-title-small">یادداشت مدیر:</div>
+                            <p>${report.manager_message}</p>
+                        </div>
+                    ` : ''}
+                    
+                    <div class="action-buttons">
+                        ${isWorkorder ? 
+                            // دکمه‌های مخصوص دستور کار
+                            (displayStatus !== 'completed' && displayStatus !== 'cancelled' ? `
+                                <button class="btn btn-warning" onclick="openWorkorderStatusPopup('${String(report.id)}')">
+                                    <i class="fas fa-edit"></i>تعیین روند دستور کار
+                                </button>
+                                
+                                
+                            ` : `
+                                <button class="btn btn-outline" style="opacity: 0.5; cursor: not-allowed;" disabled>
+                                    <i class="fas fa-lock"></i>تکمیل شده
+                                </button>
+                            `)
+                        : 
+                            // دکمه‌های مخصوص گزارشات
+                            ((!report.status || report.status === 'pending') ? `
+                                <button class="btn btn-outline" onclick="rejectReport('${String(report.id)}')">
+                                    <i class="fas fa-times"></i>رد
+                                </button>
+                                <button class="btn btn-success" onclick="approveReport('${String(report.id)}')">
+                                    <i class="fas fa-check"></i>تأیید
+                                </button>
+                                <button class="btn btn-primary" onclick="openActionPopup('${String(report.id)}', 'assign')">
+                                    <i class="fas fa-user-cog"></i>ارجاع به تعمیرات
+                                </button>
+                            ` : '')
+                        }
+                        
+                        ${!isWorkorder && displayStatus === 'approved' ? `
+                            <button class="btn btn-primary" onclick="openActionPopup('${String(report.id)}', 'assign')">
+                                <i class="fas fa-user-cog"></i>ارجاع به تکنسین
+                            </button>
+                        ` : ''}
+                        
+                        ${!isWorkorder && displayStatus === 'in-progress' ? `
+                            <button class="btn btn-success" onclick="completeReport('${String(report.id)}')">
+                                <i class="fas fa-check-double"></i>تکمیل شده
+                            </button>
+                        ` : ''}
+                        
+                        ${!isWorkorder ? `
+                            <button class="btn btn-outline" onclick="openManagerPopup('${String(report.id)}')">
+                                <i class="fas fa-paper-plane"></i>ارسال به مدیر
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+        
+        // ==================== مدیریت دستور کارها ====================
+        
+        // لود دستور کارها از Supabase
+        async function loadWorkorders() {
+            try {
+                const { data: workorders, error } = await supabase
+                    .from('work_orders')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+        
+                if (error) throw error;
+        
+                currentWorkorders = workorders || [];
+                renderWorkorders(currentWorkorders);
+                
+            } catch (error) {
+                console.error('خطا در دریافت دستور کارها:', error);
+                alert('خطا در دریافت دستور کارها از سرور');
+            }
+        }
+        
+        // نمایش دستور کارها
+        function renderWorkorders(workorders) {
+            const workorderList = document.getElementById('workorderList');
+            
+            if (!workorders || workorders.length === 0) {
+                workorderList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-tasks"></i>
+                        <h3>دستور کاری یافت نشد</h3>
+                        <p>هیچ دستور کاری با فیلترهای انتخاب شده مطابقت ندارد.</p>
+                    </div>
+                `;
+                return;
+            }
+        
+            workorderList.innerHTML = workorders.map(workorder => {
+                const status = workorder.status || 'draft';
+                const priority = workorder.priority || 'medium';
+                
+                return `
+                <div class="report-item" data-status="${status}" data-priority="${priority}">
+                    <div class="report-header">
+                        
+                        <div class="status-container">
+                            <span class="workorder-status-badge ${getWorkorderStatusClass(status)}">${getStatusText(status)}</span>
+                            <span class="priority-badge priority-${priority}">${getPriorityText(priority)}</span>
+                        </div>
+                    </div>
+                    
+                    <p class="report-description">${workorder.description || workorder.problem_description || 'بدون توضیحات'}</p>
+                    
+                    <div class="report-details">
+                        <div class="detail-item"><strong>مسئول:</strong> ${workorder.assigned_to || 'واگذار نشده'}</div>
+                        <div class="detail-item"><strong>نوع درخواست:</strong> ${workorder.request_type || 'فنی'}</div>
+                        <div class="detail-item"><strong>تاریخ ایجاد:</strong> ${workorder.created_at ? new Date(workorder.created_at).toLocaleDateString('fa-IR') : 'نامشخص'}</div>
+                        <div class="detail-item"><strong>کد:</strong> ${getShortId(workorder.id)}</div>
+                    </div>
+                    
+                    ${workorder.notes ? `
+                        <div class="actions-section" style="border-right-color: #9C27B0;">
+                            <div class="section-title-small">یادداشت:</div>
+                            <p>${workorder.notes}</p>
+                        </div>
+                    ` : ''}
+                    
+                    ${workorder.consumable_parts ? `
+                        <div class="parts-section">
+                            <div class="section-title-small">
+                                <i class="fas fa-tools"></i>
+                                قطعات مصرفی درخواستی:
+                            </div>
+                            <p style="white-space: pre-line; font-size: 13px; color: #2e7d32;">${workorder.consumable_parts}</p>
+                        </div>
+                    ` : ''}
+                    
+                    <div class="action-buttons">
+                        ${status !== 'completed' && status !== 'cancelled' ? `
+                            <button class="btn btn-warning" onclick="openWorkorderStatusPopup('${String(workorder.id)}')">
+                                <i class="fas fa-edit"></i>تعیین روند انجام
+                            </button>
+                            
+                            
+                        ` : `
+                            <button class="btn btn-outline" style="opacity: 0.5; cursor: not-allowed;" disabled>
+                                <i class="fas fa-lock"></i>تکمیل شده
+                            </button>
+                        `}
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+        
+        // ==================== مدیریت همه داده‌ها ====================
+        
+        // لود همه داده‌ها
+        async function loadAllData() {
+            try {
+                // دریافت گزارشات
+                const { data: reports, error: reportsError } = await supabase
+                    .from('operatourreports')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                
+                if (reportsError) throw reportsError;
+                
+                // دریافت دستور کارها
+                const { data: workorders, error: workordersError } = await supabase
+                    .from('work_orders')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                
+                if (workordersError) throw workordersError;
+                
+                // ترکیب داده‌ها
+                allData = [
+                    ...(reports || []).map(item => ({ ...item, type: 'report' })),
+                    ...(workorders || []).map(item => ({ ...item, type: 'workorder' }))
+                ];
+                
+                // مرتب‌سازی بر اساس تاریخ
+                allData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                
+                renderAllData(allData);
+                
+            } catch (error) {
+                console.error('خطا در دریافت همه داده‌ها:', error);
+                alert('خطا در دریافت داده‌ها از سرور');
+            }
+        }
+        
+        // نمایش همه داده‌ها در جدول
+        function renderAllData(data) {
+            const tableBody = document.getElementById('allDataTableBody');
+            const filter = document.getElementById('dataTableFilter').value;
+            
+            // فیلتر کردن داده‌ها
+            const filteredData = filter === 'all' ? data : 
+                filter === 'reports' ? data.filter(item => item.type === 'report') :
+                data.filter(item => item.type === 'workorder');
+            
+            if (!filteredData || filteredData.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 30px; color: #666;">
+                            <i class="fas fa-inbox" style="font-size: 24px; margin-bottom: 10px; display: block; color: #ddd;"></i>
+                            هیچ داده‌ای یافت نشد
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+        
+            tableBody.innerHTML = filteredData.map(item => {
+                const title = item.type === 'report' ? 
+                    (item.machine_name || 'گزارش بدون عنوان') : 
+                    (item.title || item.problem_title || 'دستور کار بدون عنوان');
+                
+                const status = item.status || (item.type === 'report' ? 'pending' : 'draft');
+                const priority = item.priority || 'medium';
+                
+                return `
+                <tr>
+                    <td>${getShortId(item.id)}</td>
+                    <td>
+                        ${item.type === 'report' ? 
+                            '<span class="badge" style="background: #e3f2fd; color: #1976d2; padding: 2px 6px; border-radius: 10px; font-size: 11px;">گزارش</span>' : 
+                            '<span class="badge" style="background: #f3e5f5; color: #7b1fa2; padding: 2px 6px; border-radius: 10px; font-size: 11px;">دستور کار</span>'}
+                    </td>
+                    <td>${title}</td>
+                    <td>
+                        ${item.type === 'report' ? 
+                            `<span class="status-badge status-${status}" style="font-size: 10px;">${getStatusText(status)}</span>` :
+                            `<span class="workorder-status-badge ${getWorkorderStatusClass(status)}" style="font-size: 10px;">${getStatusText(status)}</span>`}
+                    </td>
+                    <td>
+                        <span class="priority-badge priority-${priority}" style="font-size: 10px;">${getPriorityText(priority)}</span>
+                    </td>
+                    <td>${item.created_at ? new Date(item.created_at).toLocaleDateString('fa-IR') : 'نامشخص'}</td>
+                    <td>
+                        ${item.type === 'report' ? `
+                            <button class="btn btn-outline" style="padding: 4px 8px; font-size: 11px;" onclick="viewReportDetails('${String(item.id)}')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        ` : `
+                            <button class="btn btn-outline" style="padding: 4px 8px; font-size: 11px;" onclick="openEditWorkorderPopup('${String(item.id)}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        `}
+                    </td>
+                </tr>
+                `;
+            }).join('');
+        }
+        
+        // ==================== توابع عمومی ====================
+        
+        // توابع مدیریت گزارشات
+        async function approveReport(reportId) {
+            const result = await confirm('آیا از تأیید این گزارش اطمینان دارید؟');
+            if (!result) {
+                return;
+            }
+        
+            try {
+                const { error } = await supabase
+                    .from('operatourreports')
+                    .update({ 
+                        status: 'approved',
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', reportId);
+        
+                if (error) throw error;
+                
+                alert('گزارش تأیید شد.');
+                loadReports();
+                
+            } catch (error) {
+                console.error('خطا در تأیید گزارش:', error);
+                alert('خطا در تأیید گزارش');
+            }
+        }
+        
+        async function rejectReport(reportId) {
+            const result = await confirm('آیا از رد این گزارش اطمینان دارید؟');
+            if (!result) {
+                return;
+            }
+        
+            try {
+                const { error } = await supabase
+                    .from('operatourreports')
+                    .update({ 
+                        status: 'rejected',
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', reportId);
+        
+                if (error) throw error;
+                
+                alert('گزارش رد شد.');
+                loadReports();
+                
+            } catch (error) {
+                console.error('خطا در رد گزارش:', error);
+                alert('خطا در رد گزارش');
+            }
+        }
+        
+        async function completeReport(reportId) {
+            const result = await confirm('آیا این گزارش تکمیل شده است؟');
+            if (!result) {
+                return;
+            }
+
+            try {
+                const report = currentReports.find(r => r.id === reportId);
+                
+                if (report.is_workorder) {
+                    // اگر دستور کار است
+                    const { error } = await supabase
+                        .from('work_orders')
+                        .update({ 
+                            status: 'completed',
+                            completed_at: new Date().toISOString(),
+                            updated_at: new Date().toISOString()
+                        })
+                        .eq('id', reportId);
+
+                    if (error) throw error;
+                    
+                    alert('دستور کار تکمیل شد.');
+                } else {
+                    // اگر گزارش معمولی است
+                    const { error: updateError } = await supabase
+                        .from('operatourreports')
+                        .update({ 
+                            status: 'completed',
+                            completed_at: new Date().toISOString(),
+                            updated_at: new Date().toISOString()
+                        })
+                        .eq('id', reportId);
+
+                    if (updateError) throw updateError;
+
+                    // ارسال به جدول مدیران
+                    const reportData = {
+                        reporter_name: report.reporter_name,
+                        machine_name: report.machine_name,
+                        machine_status: report.machine_status,
+                        problem_description: report.problem_description,
+                        status: 'completed',
+                        priority: report.priority,
+                        actions_taken: report.actions_taken,
+                        manager_message: report.manager_message,
+                        action_type: report.action_type,
+                        technician_name: report.technician_name,
+                        estimated_time: report.estimated_time,
+                        consumable_parts: report.consumable_parts,
+                        supervisor_note: 'تکمیل شده توسط سرپرست',
+                        created_at: report.created_at,
+                        completed_at: new Date().toISOString()
+                    };
+
+                    const { error: insertError } = await supabase
+                        .from('managerreports')
+                        .insert([reportData]);
+
+                    if (insertError) throw insertError;
+                    
+                    alert('گزارش تکمیل و به مدیر ارسال شد.');
+                }
+                
+                loadReports();
+                
+            } catch (error) {
+                console.error('خطا در تکمیل گزارش:', error);
+                alert('خطا در تکمیل گزارش');
+            }
+        }
+        
+        // ==================== پاپاپ‌ها ====================
+        
+        // مدیریت پاپاپ‌های گزارشات
+        function openManagerPopup(reportId) {
+            document.getElementById('currentReportId').value = reportId;
+            document.getElementById('managerPopup').style.display = 'flex';
+            document.getElementById('managerMessage').focus();
+            
+            // ریست کردن فیلد قطعات مصرفی
+            document.getElementById('consumableParts').value = '';
+            updatePartsCharCount();
+        }
+        
+        function closeManagerPopup() {
+            document.getElementById('managerPopup').style.display = 'none';
+            document.getElementById('managerForm').reset();
+            document.getElementById('partsCharCount').classList.remove('warning', 'danger');
+            document.getElementById('partsCharCount').textContent = '0/1000 کاراکتر';
+        }
+        
+        function openActionPopup(reportId, actionType) {
+            document.getElementById('actionReportId').value = reportId;
+            document.getElementById('actionTypeField').value = actionType;
+            document.getElementById('actionPopup').style.display = 'flex';
+            document.getElementById('actionDescription').focus();
+        }
+        
+        function closeActionPopup() {
+            document.getElementById('actionPopup').style.display = 'none';
+            document.getElementById('actionForm').reset();
+        }
+        
+        // مدیریت پاپاپ وضعیت دستور کار
+        function openWorkorderStatusPopup(workorderId) {
+            document.getElementById('workorderId').value = workorderId;
+            document.getElementById('workorderStatusPopup').style.display = 'flex';
+            
+            // حذف انتخاب‌های قبلی
+            document.querySelectorAll('.status-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+        }
+        
+        function closeWorkorderStatusPopup() {
+            document.getElementById('workorderStatusPopup').style.display = 'none';
+            document.getElementById('workorderStatusForm').reset();
+            
+            // حذف انتخاب‌های قبلی
+            document.querySelectorAll('.status-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+        }
+        
+        function selectWorkorderStatus(status) {
+            // حذف انتخاب‌های قبلی
+            document.querySelectorAll('.status-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            // انتخاب وضعیت جدید
+            const selectedOption = document.querySelector(`.status-option[data-status="${status}"]`);
+            if (selectedOption) {
+                selectedOption.classList.add('selected');
+            }
+        }
+        
+        // ==================== پاپاپ ویرایش دستور کار ====================
+        
+        function openEditWorkorderPopup(workorderId) {
+            const workorder = currentWorkorders.find(w => w.id === workorderId);
+            
+            if (!workorder) {
+                alert('دستور کار یافت نشد');
+                return;
+            }
+            
+            document.getElementById('editWorkorderId').value = workorderId;
+            document.getElementById('editTitle').value = workorder.title || workorder.problem_title || '';
+            document.getElementById('editAssignedTo').value = workorder.assigned_to || '';
+            document.getElementById('editPriority').value = workorder.priority || 'medium';
+            document.getElementById('editDescription').value = workorder.description || workorder.problem_description || '';
+            document.getElementById('editNotes').value = workorder.notes || '';
+            
+            // به روز رسانی شمارنده کاراکتر
+            updateEditCharCount();
+            
+            // مخفی کردن هشدار و بارگذاری
+            document.getElementById('formAlert').style.display = 'none';
+            document.getElementById('loadingIndicator').style.display = 'none';
+            document.getElementById('editWorkorderForm').style.display = 'block';
+            
+            document.getElementById('editWorkorderPopup').style.display = 'flex';
+            document.getElementById('editTitle').focus();
+        }
+        
+        function closeEditWorkorderPopup() {
+            document.getElementById('editWorkorderPopup').style.display = 'none';
+            document.getElementById('editWorkorderForm').reset();
+            document.getElementById('formAlert').style.display = 'none';
+            document.getElementById('loadingIndicator').style.display = 'none';
+            document.getElementById('editWorkorderForm').style.display = 'block';
+        }
+        
+        function updateEditCharCount() {
+            const textarea = document.getElementById('editDescription');
+            const charCount = document.getElementById('editCharCount');
+            const count = textarea.value.length;
+            charCount.textContent = `${count}/500 کاراکتر`;
+            
+            if (count > 450) {
+                charCount.classList.add('danger');
+                charCount.classList.remove('warning');
+            } else if (count > 400) {
+                charCount.classList.add('warning');
+                charCount.classList.remove('danger');
+            } else {
+                charCount.classList.remove('warning', 'danger');
+            }
+        }
+        
+        async function handleEditWorkorderSubmit(e) {
+            e.preventDefault();
+            
+            const workorderId = document.getElementById('editWorkorderId').value;
+            const title = document.getElementById('editTitle').value.trim();
+            const assignedTo = document.getElementById('editAssignedTo').value;
+            const priority = document.getElementById('editPriority').value;
+            const description = document.getElementById('editDescription').value.trim();
+            const notes = document.getElementById('editNotes').value.trim();
+            
+            // اعتبارسنجی
+            if (!title || !assignedTo || !priority || !description) {
+                showFormAlert('danger', 'لطفا تمام فیلدهای ضروری را پر کنید');
+                return;
+            }
+            
+            if (description.length < 10) {
+                showFormAlert('danger', 'شرح مشکل باید حداقل ۱۰ کاراکتر باشد');
+                return;
+            }
+            
+            // نمایش بارگذاری
+            document.getElementById('loadingIndicator').style.display = 'block';
+            document.getElementById('editWorkorderForm').style.display = 'none';
+            
+            try {
+                const updates = {
+                    title: title,
+                    problem_title: title,
+                    assigned_to: assignedTo,
+                    priority: priority,
+                    description: description,
+                    problem_description: description,
+                    notes: notes || null,
+                    updated_at: new Date().toISOString()
+                };
+                
+                const { data, error } = await supabase
+                    .from('work_orders')
+                    .update(updates)
+                    .eq('id', workorderId)
+                    .select();
+                
+                if (error) throw error;
+                
+                showFormAlert('success', `
+                    ✅ دستور کار با موفقیت ویرایش شد<br>
+                    <small>شناسه: ${data[0].id}</small>
+                `);
+                
+                setTimeout(() => {
+                    closeEditWorkorderPopup();
+                    loadWorkorders();
+                    loadAllData();
+                    loadReports(); // بارگذاری مجدد گزارشات برای آپدیت لیست
+                }, 2000);
+                
+            } catch (error) {
+                console.error('خطا در ویرایش دستور کار:', error);
+                showFormAlert('danger', 'خطا در ویرایش دستور کار: ' + error.message);
+                document.getElementById('loadingIndicator').style.display = 'none';
+                document.getElementById('editWorkorderForm').style.display = 'block';
+            }
+        }
+        
+        function showFormAlert(type, message) {
+            const formAlert = document.getElementById('formAlert');
+            formAlert.innerHTML = `
+                <div class="alert alert-${type}">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+                    <div style="flex: 1;">${message}</div>
+                    <button onclick="this.parentElement.remove()" 
+                            style="background: none; border: none; color: inherit; cursor: pointer; padding: 0 5px;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            formAlert.style.display = 'block';
+        }
+        
+        // ==================== رویدادهای فرم‌ها ====================
+        
+        // ==================== آپدیت تابع ارسال به مدیر با قطعات مصرفی ====================
+
+        document.getElementById('managerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const reportId = document.getElementById('currentReportId').value;
+            const message = document.getElementById('managerMessage').value;
+            const actionType = document.getElementById('actionType').value;
+            const consumableParts = document.getElementById('consumableParts').value;
+
+            try {
+                const report = currentReports.find(r => r.id === reportId);
+                if (report && !report.is_workorder) {
+                    // ایجاد متن actions_taken با اضافه کردن قطعات مصرفی
+                    let actionsTaken = report.actions_taken || '';
+                    
+                    // اگر قطعات مصرفی وارد شده، به actions_taken اضافه کن
+                    if (consumableParts.trim()) {
+                        const partsText = `\n\n📦 قطعات مصرفی مورد نیاز:\n${consumableParts}`;
+                        actionsTaken += partsText;
+                    }
+                    
+                    // آپدیت وضعیت در جدول اصلی
+                    const { error: updateError } = await supabase
+                        .from('operatourreports')
+                        .update({ 
+                            status: 'به مدیر ارجاع داده شد',
+                            manager_note: message,
+                            action_type: actionType,
+                            actions_taken: actionsTaken, // ذخیره در ستون actions_taken
+                            consumable_parts: consumableParts, // ذخیره جداگانه قطعات مصرفی
+                            updated_at: new Date().toISOString()
+                        })
+                        .eq('id', reportId);
+
+                    if (updateError) throw updateError;
+
+                    // ارسال به جدول مدیران با اطلاعات قطعات مصرفی
+                    const reportData = {
+                        reporter_name: report.reporter_name,
+                        machine_name: report.machine_name,
+                        machine_status: report.machine_status,
+                        problem_description: report.problem_description,
+                        status: 'referred_to_manager',
+                        priority: report.priority,
+                        actions_taken: actionsTaken, // شامل قطعات مصرفی
+                        consumable_parts: consumableParts, // قطعات مصرفی
+                        manager_message: message,
+                        action_type: actionType,
+                        technician_name: report.technician_name,
+                        estimated_time: report.estimated_time,
+                        created_at: report.created_at,
+                        referred_at: new Date().toISOString()
+                    };
+
+                    const { error: insertError } = await supabase
+                        .from('managerreports')
+                        .insert([reportData]);
+
+                    if (insertError) throw insertError;
+                }
+                
+                alert('گزارش با موفقیت به مدیر ارسال شد.');
+                closeManagerPopup();
+                loadReports();
+                
+            } catch (error) {
+                console.error('خطا در ارسال به مدیر:', error);
+                alert('خطا در ارسال به مدیر');
+            }
+        });
+        
+        // ثبت اقدام
+        document.getElementById('actionForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const reportId = document.getElementById('actionReportId').value;
+            const description = document.getElementById('actionDescription').value;
+            const technician = document.getElementById('technicianName').value;
+            const estimatedTime = document.getElementById('estimatedTime').value;
+            const actionType = document.getElementById('actionTypeField').value;
+        
+            try {
+                const report = currentReports.find(r => r.id === reportId);
+                const currentActions = report.actions_taken ? 
+                    `${report.actions_taken}\nارجاع به ${technician} - زمان تخمینی: ${estimatedTime} ساعت - ${description}` :
+                    `ارجاع به ${technician} - زمان تخمینی: ${estimatedTime} ساعت - ${description}`;
+                
+                const { error } = await supabase
+                    .from('operatourreports')
+                    .update({ 
+                        status: 'in-progress',
+                        actions_taken: currentActions,
+                        technician_name: technician,
+                        estimated_time: parseInt(estimatedTime),
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', reportId);
+        
+                if (error) throw error;
+                
+                alert('اقدام با موفقیت ثبت شد.');
+                closeActionPopup();
+                loadReports();
+                
+            } catch (error) {
+                console.error('خطا در ثبت اقدام:', error);
+                alert('خطا در ثبت اقدام');
+            }
+        });
+        
+        // تغییر وضعیت دستور کار
+        document.getElementById('workorderStatusForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const workorderId = document.getElementById('workorderId').value;
+            const selectedOption = document.querySelector('.status-option.selected');
+            
+            if (!selectedOption) {
+                alert('لطفا یک وضعیت انتخاب کنید');
+                return;
+            }
+            
+            const newStatus = selectedOption.getAttribute('data-status');
+            
+            try {
+                const updates = {
+                    status: newStatus,
+                    updated_at: new Date().toISOString()
+                };
+                
+                // اگر وضعیت تکمیل شده است، تاریخ تکمیل را هم اضافه کن
+                if (newStatus === 'completed') {
+                    updates.completed_at = new Date().toISOString();
+                }
+                
+                const { error } = await supabase
+                    .from('work_orders')
+                    .update(updates)
+                    .eq('id', workorderId);
+        
+                if (error) throw error;
+                
+                alert('وضعیت دستور کار با موفقیت به‌روز شد.');
+                closeWorkorderStatusPopup();
+                loadWorkorders();
+                loadAllData();
+                loadReports(); // بارگذاری مجدد گزارشات برای آپدیت لیست
+                
+            } catch (error) {
+                console.error('خطا در تغییر وضعیت دستور کار:', error);
+                alert('خطا در تغییر وضعیت دستور کار');
+            }
+        });
+        
+        // ==================== فیلترها ====================
+        
+        // فیلتر کردن گزارشات
+        function filterReports() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            const priorityFilter = document.getElementById('priorityFilter').value;
+            const issueTypeFilter = document.getElementById('issueTypeFilter').value;
+        
+            const filtered = currentReports.filter(report => {
+                const machineName = report.machine_name || '';
+                const problemDescription = report.problem_description || '';
+                const reporterName = report.reporter_name || '';
+                
+                const matchesSearch = 
+                    machineName.toLowerCase().includes(searchTerm) || 
+                    problemDescription.toLowerCase().includes(searchTerm) ||
+                    reporterName.toLowerCase().includes(searchTerm);
+                
+                const reportStatus = report.status || 'pending';
+                const matchesStatus = statusFilter === 'all' || reportStatus === statusFilter;
+                
+                const reportPriority = report.priority || 'medium';
+                const matchesPriority = priorityFilter === 'all' || reportPriority === priorityFilter;
+                
+                // تعیین نوع ایراد
+                let issueType;
+                if (report.is_workorder) {
+                    issueType = report.workorder_data?.request_type || 'فنی';
+                } else {
+                    issueType = report.action_type || determineIssueType(report.problem_description);
+                }
+                
+                const matchesIssueType = issueTypeFilter === 'all' || issueType === issueTypeFilter;
+                
+                return matchesSearch && matchesStatus && matchesPriority && matchesIssueType;
+            });
+        
+            renderReports(filtered);
+        }
+        
+        // فیلتر کردن دستور کارها
+        function filterWorkorders() {
+            const searchTerm = document.getElementById('workorderSearch').value.toLowerCase();
+            const statusFilter = document.getElementById('workorderStatusFilter').value;
+            const priorityFilter = document.getElementById('workorderPriorityFilter').value;
+        
+            const filtered = currentWorkorders.filter(workorder => {
+                const title = workorder.title || workorder.problem_title || '';
+                const description = workorder.description || workorder.problem_description || '';
+                const assignedTo = workorder.assigned_to || '';
+                
+                const matchesSearch = 
+                    title.toLowerCase().includes(searchTerm) || 
+                    description.toLowerCase().includes(searchTerm) ||
+                    assignedTo.toLowerCase().includes(searchTerm);
+                
+                const workorderStatus = workorder.status || 'draft';
+                const matchesStatus = statusFilter === 'all' || workorderStatus === statusFilter;
+                
+                const workorderPriority = workorder.priority || 'medium';
+                const matchesPriority = priorityFilter === 'all' || workorderPriority === priorityFilter;
+                
+                return matchesSearch && matchesStatus && matchesPriority;
+            });
+        
+            renderWorkorders(filtered);
+        }
+        
+        // ==================== رویدادهای فیلتر ====================
+        
+        // فیلتر گزارشات
+        document.getElementById('searchInput').addEventListener('input', filterReports);
+        document.getElementById('statusFilter').addEventListener('change', filterReports);
+        document.getElementById('priorityFilter').addEventListener('change', filterReports);
+        document.getElementById('issueTypeFilter').addEventListener('change', filterReports);
+        
+        // فیلتر دستور کارها
+        document.getElementById('workorderSearch').addEventListener('input', filterWorkorders);
+        document.getElementById('workorderStatusFilter').addEventListener('change', filterWorkorders);
+        document.getElementById('workorderPriorityFilter').addEventListener('change', filterWorkorders);
+        
+        // فیلتر جدول همه داده‌ها
+        document.getElementById('dataTableFilter').addEventListener('change', function() {
+            renderAllData(allData);
+        });
+        
+        // ==================== توابع کمکی اضافی ====================
+        
+        function viewReportDetails(reportId) {
+            // رفتن به تب گزارشات و نمایش جزئیات
+            document.querySelector('.tab[data-tab="reports"]').click();
+            
+            // اسکرول به گزارش مورد نظر
+            const reportElement = document.querySelector(`[data-status][data-priority]`);
+            if (reportElement) {
+                reportElement.scrollIntoView({ behavior: 'smooth' });
+                
+                // هایلایت موقت
+                reportElement.style.boxShadow = '0 0 0 3px rgba(52, 152, 219, 0.3)';
+                setTimeout(() => {
+                    reportElement.style.boxShadow = '';
+                }, 2000);
+            }
+        }
+        
+        function viewAttachments(workorderId) {
+            alert('این قابلیت در نسخه فعلی موجود نیست.');
+        }
+        
+        // ==================== مدیریت اسکرول ====================
+        
+        // فعال کردن اسکرول فقط در container اصلی
+        const container = document.getElementById('mainContainer');
+        container.addEventListener('touchmove', function(e) {
+            e.stopPropagation();
+        }, { passive: true });
+        
+        // جلوگیری از اسکرول در body
+        document.body.addEventListener('touchmove', function(e) {
+            if (e.target === document.body) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+        
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+            document.body.style.overscrollBehavior = 'none';
+        }
+        
+        // توابع کمکی
+        function getStatusText(status) {
+            const statusMap = {
+                'pending': 'در انتظار رسیدگی',
+                'approved': 'تأیید شده',
+                'rejected': 'رد شده',
+                'in-progress': 'در دست اقدام',
+                'completed': 'تکمیل شده',
+                'referred_to_manager': 'ارجاع به مدیر',
+                'draft': 'پیش‌نویس',
+                'assigned': 'واگذار شده',
+                'on-hold': 'متوقف',
+                'cancelled': 'لغو شده',
+                'به مدیر ارجاع داده شد': 'ارجاع به مدیر'
+            };
+            return statusMap[status] || status;
+        }
+        
+        function getPriorityText(priority) {
+            const priorityMap = {
+                'low': 'کم',
+                'medium': 'متوسط',
+                'high': 'بالا',
+                'critical': 'بحرانی'
+            };
+            return priorityMap[priority] || priority;
+        }
+        
+        function getWorkorderStatusClass(status) {
+            const statusMap = {
+                'draft': 'workorder-draft',
+                'assigned': 'workorder-assigned',
+                'in-progress': 'workorder-in-progress',
+                'on-hold': 'workorder-on-hold',
+                'completed': 'workorder-completed',
+                'cancelled': 'workorder-cancelled'
+            };
+            return statusMap[status] || 'workorder-draft';
+        }
+
+        // تابع تشخیص نوع ایراد
+        function determineIssueType(problemDescription) {
+            if (!problemDescription) return 'فنی';
+            
+            const problem = problemDescription.toLowerCase();
+            
+            const electricalKeywords = [
+                'برق', 'الکتریک', 'سیم', 'کابل', 'فیوز', 'کلید', 'مدار', 
+                'ولتاژ', 'جریان', 'موتور', 'کنترل', 'تابلو', 'دستگاه اندازه گیری',
+                'اینورتر', 'میکروسوییچ', 'کنتاکتور', 'شاسی', 'چشم الکترونیکی',
+                'سنسور', 'پی‌ال‌سی', 'ال‌سی‌دی', 'کنترل پنل', 'رله', 'ترانس',
+                'الکترونیک', 'برقی', 'ولت', 'آمپر', 'وات', 'برق رسانی'
+            ];
+            
+            const technicalKeywords = [
+                'روغن', 'گیربکس', 'بلبرینگ', 'یاتاقان', 'شفت', 'گشتاور',
+                'مکانیک', 'سرویس', 'تعویض', 'بازبینی', 'قطعه', 'جوش',
+                'لاستیک', 'غلطک', 'زنجیر', 'چرخ دنده', 'تسمه', 'کوپلینگ',
+                'فن', 'رادیاتور', 'دمای روغن', 'بالانس', 'گیرکردن',
+                'اسپیندل', 'ریل', 'جک', 'پنوماتیک', 'باد', 'فشار',
+                'مکانیکی', 'فنی', 'تعمیر', 'نصب', 'سرویس', 'نگهداری',
+                'صدا', 'لرزش', 'نشت', 'فرسودگی', 'خرابی مکانیکی'
+            ];
+            
+            let electricalCount = 0;
+            let technicalCount = 0;
+            
+            electricalKeywords.forEach(keyword => {
+                if (problem.includes(keyword)) electricalCount++;
+            });
+            
+            technicalKeywords.forEach(keyword => {
+                if (problem.includes(keyword)) technicalCount++;
+            });
+            
+            if (electricalCount > technicalCount) {
+                return 'برق';
+            } else if (technicalCount > electricalCount) {
+                return 'فنی';
+            } else if (electricalCount === technicalCount && electricalCount > 0) {
+                return 'ترکیبی';
+            }
+            
+            return 'فنی';
         }
         
         // جلوگیری از زوم در دستگاه‌های موبایل و مدیریت زمان ورود
@@ -1255,6 +2897,9 @@
         
             // بارگذاری گزارشات
             loadReports();
+            
+            // راه‌اندازی تب‌ها
+            initializeTabs();
         
             // محافظت از صفحه و نمایش اطلاعات کاربر
             if (typeof auth !== 'undefined') {
@@ -1277,498 +2922,28 @@
                     userAvatarElement.textContent = 'S';
                 }
             }
+            
+            // مدیریت شمارنده کاراکتر در ویرایش دستور کار
+            const editDescription = document.getElementById('editDescription');
+            if (editDescription) {
+                editDescription.addEventListener('input', updateEditCharCount);
+            }
+            
+            // رویداد فرم ویرایش دستور کار
+            const editForm = document.getElementById('editWorkorderForm');
+            if (editForm) {
+                editForm.addEventListener('submit', handleEditWorkorderSubmit);
+            }
+            
+            // رویداد شمارنده کاراکتر قطعات مصرفی
+            const consumablePartsTextarea = document.getElementById('consumableParts');
+            if (consumablePartsTextarea) {
+                consumablePartsTextarea.addEventListener('input', updatePartsCharCount);
+            }
         });
         
         // جلوگیری از اسکرول هنگام زوم در iOS
-        document.addEventListener('touchmove', function(e) {
-            if(e.scale !== 1) {
-                e.preventDefault();
-            }
-        }, { passive: false });
         
-        // توابع کمکی
-        function getStatusText(status) {
-            const statusMap = {
-                'pending': 'در انتظار رسیدگی',
-                'approved': 'تأیید شده',
-                'rejected': 'رد شده',
-                'in-progress': 'در دست اقدام',
-                'completed': 'تکمیل شده',
-                'referred_to_manager': 'ارجاع به مدیر'
-            };
-            return statusMap[status] || status;
-        }
-        
-        function getPriorityText(priority) {
-            const priorityMap = {
-                'low': 'کم',
-                'medium': 'متوسط',
-                'high': 'بالا',
-                'critical': 'بحرانی'
-            };
-            return priorityMap[priority] || priority;
-        }
-
-        // تابع تشخیص نوع ایراد
-        function determineIssueType(problemDescription) {
-            if (!problemDescription) return 'فنی';
-            
-            const problem = problemDescription.toLowerCase();
-            
-            const electricalKeywords = [
-                'برق', 'الکتریک', 'سیم', 'کابل', 'فیوز', 'کلید', 'مدار', 
-                'ولتاژ', 'جریان', 'موتور', 'کنترل', 'تابلو', 'دستگاه اندازه گیری',
-                'اینورتر', 'میکروسوییچ', 'کنتاکتور', 'شاسی', 'چشم الکترونیکی',
-                'سنسور', 'پی‌ال‌سی', 'ال‌سی‌دی', 'کنترل پنل', 'رله', 'ترانس',
-                'الکترونیک', 'برقی', 'ولت', 'آمپر', 'وات', 'برق رسانی'
-            ];
-            
-            const technicalKeywords = [
-                'روغن', 'گیربکس', 'بلبرینگ', 'یاتاقان', 'شفت', 'گشتاور',
-                'مکانیک', 'سرویس', 'تعویض', 'بازبینی', 'قطعه', 'جوش',
-                'لاستیک', 'غلطک', 'زنجیر', 'چرخ دنده', 'تسمه', 'کوپلینگ',
-                'فن', 'رادیاتور', 'دمای روغن', 'بالانس', 'گیرکردن',
-                'اسپیندل', 'ریل', 'جک', 'پنوماتیک', 'باد', 'فشار',
-                'مکانیکی', 'فنی', 'تعمیر', 'نصب', 'سرویس', 'نگهداری',
-                'صدا', 'لرزش', 'نشت', 'فرسودگی', 'خرابی مکانیکی'
-            ];
-            
-            let electricalCount = 0;
-            let technicalCount = 0;
-            
-            electricalKeywords.forEach(keyword => {
-                if (problem.includes(keyword)) electricalCount++;
-            });
-            
-            technicalKeywords.forEach(keyword => {
-                if (problem.includes(keyword)) technicalCount++;
-            });
-            
-            if (electricalCount > technicalCount) {
-                return 'برق';
-            } else if (technicalCount > electricalCount) {
-                return 'فنی';
-            } else if (electricalCount === technicalCount && electricalCount > 0) {
-                return 'ترکیبی';
-            }
-            
-            return 'فنی';
-        }
-        
-        // لود گزارشات از Supabase
-        async function loadReports() {
-            try {
-                const { data: reports, error } = await supabase
-                    .from('operatourreports')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-        
-                if (error) throw error;
-        
-                currentReports = reports || [];
-                updateStats();
-                renderReports(currentReports);
-                
-            } catch (error) {
-                console.error('خطا در دریافت گزارشات:', error);
-                alert('خطا در دریافت گزارشات از سرور');
-            }
-        }
-        
-        // آپدیت آمار
-        function updateStats() {
-             
-            
-            const approvedCount = currentReports.filter(r => r.status === 'approved').length;
-            const rejectedCount = currentReports.filter(r => r.status === 'rejected').length;
-            const referredCount = currentReports.filter(r => r.status === 'ارجاع به مدیر').length;
-            const totalCount = currentReports.length;
-            const pendingCount =totalCount-referredCount;
-            document.getElementById('pendingCount').textContent = pendingCount;
-           
-            document.getElementById('referredCount').textContent = referredCount;
-            document.getElementById('totalCount').textContent = totalCount;
-        }
-        
-        // نمایش گزارشات
-        function renderReports(reports) {
-            const reportList = document.getElementById('reportList');
-            
-            if (!reports || reports.length === 0) {
-                reportList.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-inbox"></i>
-                        <h3>گزارشی یافت نشد</h3>
-                        <p>هیچ گزارشی با فیلترهای انتخاب شده مطابقت ندارد.</p>
-                    </div>
-                `;
-                return;
-            }
-        
-            reportList.innerHTML = reports.map(report => {
-                const displayStatus = report.status || 'pending';
-                const displayPriority = report.priority || 'medium';
-                const issueType = report.action_type || determineIssueType(report.problem_description);
-                
-                const issueTypeBadge = issueType === 'برق' ? 
-                    '<span class="issue-type-badge electrical-badge">⚡ برق</span>' : 
-                    issueType === 'فنی' ? 
-                    '<span class="issue-type-badge technical-badge">🔧 فنی</span>' :
-                    '<span class="issue-type-badge combined-badge">🔰 ترکیبی</span>';
-                
-                return `
-                <div class="report-item" data-status="${displayStatus}" data-priority="${displayPriority}" data-issue-type="${issueType}">
-                    <div class="report-header">
-                        <h3 class="report-title">${report.machine_name || 'بدون عنوان'}</h3>
-                        <div class="status-container">
-                            ${issueTypeBadge}
-                            <span class="status-badge status-${displayStatus}">${getStatusText(displayStatus)}</span>
-                            <span class="priority-badge priority-${displayPriority}">${getPriorityText(displayPriority)}</span>
-                        </div>
-                    </div>
-                    
-                    <p class="report-description">${report.problem_description || 'بدون توضیحات'}</p>
-                    
-                    <div class="report-details">
-                        <div class="detail-item"><strong>گزارش‌دهنده:</strong> ${report.reporter_name || 'نامشخص'}</div>
-                        <div class="detail-item"><strong>وضعیت دستگاه:</strong> ${report.machine_status || 'نامشخص'}</div>
-                        <div class="detail-item"><strong>تاریخ ایجاد:</strong> ${new Date(report.created_at).toLocaleDateString('fa-IR')}</div>
-                        <div class="detail-item"><strong>کد گزارش:</strong> ${report.id.substring(0, 8)}</div>
-                    </div>
-                    
-                    ${report.actions_taken ? `
-                        <div class="actions-section">
-                            <div class="section-title-small">اقدامات انجام شده:</div>
-                            <p>${report.actions_taken}</p>
-                        </div>
-                    ` : ''}
-                    
-                    ${report.manager_message ? `
-                        <div class="actions-section" style="border-right-color: #FF9800;">
-                            <div class="section-title-small">یادداشت مدیر:</div>
-                            <p>${report.manager_message}</p>
-                        </div>
-                    ` : ''}
-                    
-                    <div class="action-buttons">
-                        ${(!report.status || report.status === 'pending') ? `
-                            <button class="btn btn-outline" onclick="rejectReport('${report.id}')">
-                                <i class="fas fa-times"></i>رد
-                            </button>
-                            <button class="btn btn-success" onclick="approveReport('${report.id}')">
-                                <i class="fas fa-check"></i>تأیید
-                            </button>
-                            <button class="btn btn-primary" onclick="openActionPopup('${report.id}', 'assign')">
-                                <i class="fas fa-user-cog"></i>ارجاع به تعمیرات
-                            </button>
-                        ` : ''}
-                        
-                        ${report.status === 'approved' ? `
-                            <button class="btn btn-primary" onclick="openActionPopup('${report.id}', 'assign')">
-                                <i class="fas fa-user-cog"></i>ارجاع به تکنسین
-                            </button>
-                        ` : ''}
-                        
-                        ${report.status === 'in-progress' ? `
-                            <button class="btn btn-success" onclick="completeReport('${report.id}')">
-                                <i class="fas fa-check-double"></i>تکمیل شده
-                            </button>
-                        ` : ''}
-                        
-                        <button class="btn btn-outline" onclick="openManagerPopup('${report.id}')">
-                            <i class="fas fa-paper-plane"></i>ارسال به مدیر
-                        </button>
-                    </div>
-                </div>
-                `;
-            }).join('');
-        }
-        
-        // توابع مدیریت گزارشات
-        async function approveReport(reportId) {
-            const result = await confirm('آیا از تأیید این گزارش اطمینان دارید؟');
-            if (!result) {
-                return;
-            }
-        
-            try {
-                const { error } = await supabase
-                    .from('operatourreports')
-                    .update({ 
-                        status: 'approved',
-                        updated_at: new Date().toISOString()
-                    })
-                    .eq('id', reportId);
-        
-                if (error) throw error;
-                
-                alert('گزارش تأیید شد.');
-                loadReports();
-                
-            } catch (error) {
-                console.error('خطا در تأیید گزارش:', error);
-                alert('خطا در تأیید گزارش');
-            }
-        }
-        
-        async function rejectReport(reportId) {
-            const result = await confirm('آیا از رد این گزارش اطمینان دارید؟');
-            if (!result) {
-                return;
-            }
-        
-            try {
-                const { error } = await supabase
-                    .from('operatourreports')
-                    .update({ 
-                        status: 'rejected',
-                        updated_at: new Date().toISOString()
-                    })
-                    .eq('id', reportId);
-        
-                if (error) throw error;
-                
-                alert('گزارش رد شد.');
-                loadReports();
-                
-            } catch (error) {
-                console.error('خطا در رد گزارش:', error);
-                alert('خطا در رد گزارش');
-            }
-        }
-        
-        async function completeReport(reportId) {
-            const result = await confirm('آیا این گزارش تکمیل شده است؟');
-            if (!result) {
-                return;
-            }
-        
-            try {
-                const report = currentReports.find(r => r.id === reportId);
-                if (report) {
-                    // آپدیت وضعیت در جدول اصلی
-                    const { error: updateError } = await supabase
-                        .from('operatourreports')
-                        .update({ 
-                            status: 'completed',
-                            completed_at: new Date().toISOString(),
-                            updated_at: new Date().toISOString()
-                        })
-                        .eq('id', reportId);
-
-                    if (updateError) throw updateError;
-
-                    // ارسال به جدول مدیران
-                    const reportData = {
-                        reporter_name: report.reporter_name,
-                        machine_name: report.machine_name,
-                        machine_status: report.machine_status,
-                        problem_description: report.problem_description,
-                        status: 'completed',
-                        priority: report.priority,
-                        actions_taken: report.actions_taken,
-                        manager_message: report.manager_message,
-                        action_type: report.action_type,
-                        technician_name: report.technician_name,
-                        estimated_time: report.estimated_time,
-                        supervisor_note: 'تکمیل شده توسط سرپرست',
-                        created_at: report.created_at,
-                        completed_at: new Date().toISOString()
-                    };
-
-                    const { error: insertError } = await supabase
-                        .from('managerreports')
-                        .insert([reportData]);
-
-                    if (insertError) throw insertError;
-                }
-                
-                alert('گزارش تکمیل و به مدیر ارسال شد.');
-                loadReports();
-                
-            } catch (error) {
-                console.error('خطا در تکمیل گزارش:', error);
-                alert('خطا در تکمیل گزارش');
-            }
-        }
-        
-        // مدیریت پاپاپ‌ها
-        function openManagerPopup(reportId) {
-            document.getElementById('currentReportId').value = reportId;
-            document.getElementById('managerPopup').style.display = 'flex';
-            document.getElementById('managerMessage').focus();
-        }
-        
-        function closeManagerPopup() {
-            document.getElementById('managerPopup').style.display = 'none';
-            document.getElementById('managerForm').reset();
-        }
-        
-        function openActionPopup(reportId, actionType) {
-            document.getElementById('actionReportId').value = reportId;
-            document.getElementById('actionTypeField').value = actionType;
-            document.getElementById('actionPopup').style.display = 'flex';
-            document.getElementById('actionDescription').focus();
-        }
-        
-        function closeActionPopup() {
-            document.getElementById('actionPopup').style.display = 'none';
-            document.getElementById('actionForm').reset();
-        }
-        
-        // ارسال به مدیر
-        document.getElementById('managerForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const reportId = document.getElementById('currentReportId').value;
-            const message = document.getElementById('managerMessage').value;
-            const actionType = document.getElementById('actionType').value;
-        
-            try {
-                const report = currentReports.find(r => r.id === reportId);
-                if (report) {
-                    // آپدیت وضعیت در جدول اصلی
-                    const { error: updateError } = await supabase
-                        .from('operatourreports')
-                        .update({ 
-                            status: 'به مدیر ارجاع داده شد',
-                            manager_note: message,
-                            action_type: actionType,
-                            // referred_at: new Date().toISOString(),
-                            updated_at: new Date().toISOString()
-                        })
-                        .eq('id', reportId);
-
-                    if (updateError) throw updateError;
-
-                    // ارسال به جدول مدیران
-                    const reportData = {
-                        reporter_name: report.reporter_name,
-                        machine_name: report.machine_name,
-                        machine_status: report.machine_status,
-                        problem_description: report.problem_description,
-                        status: 'referred_to_manager',
-                        priority: report.priority,
-                        actions_taken: report.actions_taken,
-                        manager_message: message,
-                        action_type: actionType,
-                        technician_name: report.technician_name,
-                        estimated_time: report.estimated_time,
-                        // supervisor_note: 'ارجاع شده توسط سرپرست',
-                        created_at: report.created_at,
-                        referred_at: new Date().toISOString()
-                    };
-
-                    const { error: insertError } = await supabase
-                        .from('managerreports')
-                        .insert([reportData]);
-
-                    if (insertError) throw insertError;
-                }
-                
-                alert('گزارش با موفقیت به مدیر ارسال شد.');
-                closeManagerPopup();
-                loadReports();
-                
-            } catch (error) {
-                console.error('خطا در ارسال به مدیر:', error);
-                alert('خطا در ارسال به مدیر');
-            }
-        });
-        
-        // ثبت اقدام
-        document.getElementById('actionForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const reportId = document.getElementById('actionReportId').value;
-            const description = document.getElementById('actionDescription').value;
-            const technician = document.getElementById('technicianName').value;
-            const estimatedTime = document.getElementById('estimatedTime').value;
-            const actionType = document.getElementById('actionTypeField').value;
-        
-            try {
-                const report = currentReports.find(r => r.id === reportId);
-                const currentActions = report.actions_taken ? 
-                    `${report.actions_taken}\nارجاع به ${technician} - زمان تخمینی: ${estimatedTime} ساعت - ${description}` :
-                    `ارجاع به ${technician} - زمان تخمینی: ${estimatedTime} ساعت - ${description}`;
-                
-                const { error } = await supabase
-                    .from('operatourreports')
-                    .update({ 
-                        status: 'in-progress',
-                        actions_taken: currentActions,
-                        technician_name: technician,
-                        estimated_time: parseInt(estimatedTime),
-                        updated_at: new Date().toISOString()
-                    })
-                    .eq('id', reportId);
-        
-                if (error) throw error;
-                
-                alert('اقدام با موفقیت ثبت شد.');
-                closeActionPopup();
-                loadReports();
-                
-            } catch (error) {
-                console.error('خطا در ثبت اقدام:', error);
-                alert('خطا در ثبت اقدام');
-            }
-        });
-        
-        // فیلتر کردن گزارشات
-        function filterReports() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const statusFilter = document.getElementById('statusFilter').value;
-            const priorityFilter = document.getElementById('priorityFilter').value;
-            const issueTypeFilter = document.getElementById('issueTypeFilter').value;
-        
-            const filtered = currentReports.filter(report => {
-                const machineName = report.machine_name || '';
-                const problemDescription = report.problem_description || '';
-                const reporterName = report.reporter_name || '';
-                
-                const matchesSearch = 
-                    machineName.toLowerCase().includes(searchTerm) || 
-                    problemDescription.toLowerCase().includes(searchTerm) ||
-                    reporterName.toLowerCase().includes(searchTerm);
-                
-                const reportStatus = report.status || 'pending';
-                const matchesStatus = statusFilter === 'all' || reportStatus === statusFilter;
-                
-                const reportPriority = report.priority || 'medium';
-                const matchesPriority = priorityFilter === 'all' || reportPriority === priorityFilter;
-                
-                const issueType = report.action_type || determineIssueType(report.problem_description);
-                const matchesIssueType = issueTypeFilter === 'all' || issueType === issueTypeFilter;
-                
-                return matchesSearch && matchesStatus && matchesPriority && matchesIssueType;
-            });
-        
-            renderReports(filtered);
-        }
-        
-        // رویدادهای فیلتر
-        document.getElementById('searchInput').addEventListener('input', filterReports);
-        document.getElementById('statusFilter').addEventListener('change', filterReports);
-        document.getElementById('priorityFilter').addEventListener('change', filterReports);
-        document.getElementById('issueTypeFilter').addEventListener('change', filterReports);
-        
-        // فعال کردن اسکرول فقط در container اصلی
-        const container = document.getElementById('mainContainer');
-        container.addEventListener('touchmove', function(e) {
-            e.stopPropagation();
-        }, { passive: true });
-        
-        // جلوگیری از اسکرول در body
-        document.body.addEventListener('touchmove', function(e) {
-            if (e.target === document.body) {
-                e.preventDefault();
-            }
-        }, { passive: false });
-        
-        if (window.matchMedia('(display-mode: standalone)').matches) {
-            document.body.style.overscrollBehavior = 'none';
-        }
-        </script>
+    </script>
 </body>
 </html>
