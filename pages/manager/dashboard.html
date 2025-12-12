@@ -2,20 +2,23 @@
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- بهبود viewport برای iPhone -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#2c3e50">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="TPM">
-    <title>TMP</title>
+    <!-- iOS-specific meta tags -->
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-startup-image" href="icons/icon-192x192.png">
+    <title>تحلیل خرابی دستگاه‌ها</title>
     <link rel="icon" href="icons/icon-192x192.png">
     <link rel="apple-touch-icon" href="icons/icon-192x192.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="manifest" href="../../manifest.json">
-    <link rel="apple-touch-icon" href="../../icons/icon-192x192.png">
-    <link rel="apple-touch-startup-image" href="../../icons/icon-512x512.png">
-    <!-- <script src="../../auth.js"></script> -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * {
             margin: 0;
@@ -24,6 +27,9 @@
             font-family: 'Vazirmatn', sans-serif;
             -webkit-tap-highlight-color: transparent;
             -webkit-text-size-adjust: 100%;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
             touch-action: manipulation;
         }
 
@@ -39,29 +45,55 @@
             --success: #2ecc71;
             --warning: #f39c12;
             --danger: #e74c3c;
+            --safe-area-top: env(safe-area-inset-top, 0px);
+            --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+            --safe-area-left: env(safe-area-inset-left, 0px);
+            --safe-area-right: env(safe-area-inset-right, 0px);
         }
 
         body {
             background: #f8f9fa;
             color: var(--dark);
             min-height: 100vh;
+            min-height: -webkit-fill-available;
             overflow-x: hidden;
             width: 100%;
             -webkit-overflow-scrolling: touch;
-            padding-top: env(safe-area-inset-top, 0px);
-            padding-bottom: env(safe-area-inset-bottom, 0px);
+            padding-top: var(--safe-area-top);
+            padding-bottom: var(--safe-area-bottom);
+            padding-left: var(--safe-area-left);
+            padding-right: var(--safe-area-right);
+        }
+
+        /* تنظیمات مخصوص iOS */
+        @supports (-webkit-touch-callout: none) {
+            body {
+                min-height: -webkit-fill-available;
+            }
+            
+            .chart-wrapper {
+                height: -webkit-fill-available;
+                max-height: 400px;
+            }
+            
+            /* جلوگیری از bounce effect در iOS */
+            .container {
+                overscroll-behavior: none;
+            }
         }
 
         /* نویگیشن */
         .navbar {
             background: var(--primary);
             color: white;
-            padding: 0 15px;
+            padding: 0 max(15px, var(--safe-area-right));
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             position: sticky;
             top: 0;
             z-index: 100;
             width: 100%;
+            padding-top: var(--safe-area-top);
+            height: calc(60px + var(--safe-area-top));
         }
 
         .nav-container {
@@ -162,8 +194,9 @@
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 20px 15px;
+            padding: 20px max(15px, var(--safe-area-right)) 20px max(15px, var(--safe-area-left));
             width: 100%;
+            overflow-x: hidden;
         }
 
         .header-card {
@@ -177,17 +210,18 @@
         }
 
         .page-title {
-            font-size: 22px;
+            font-size: clamp(18px, 4vw, 22px);
             font-weight: 700;
             margin-bottom: 6px;
         }
 
         .page-subtitle {
             opacity: 0.9;
-            font-size: 14px;
+            font-size: clamp(12px, 3vw, 14px);
         }
 
-        .card {
+        /* کنترل‌های فیلتر */
+        .controls-card {
             background: white;
             border-radius: 12px;
             padding: 20px;
@@ -197,8 +231,65 @@
             width: 100%;
         }
 
-        .section-title {
-            font-size: 18px;
+        .controls-row {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        .control-group {
+            flex: 1;
+            min-width: min(100%, 200px);
+        }
+
+        .control-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--primary);
+            font-size: clamp(12px, 3vw, 14px);
+        }
+
+        .control-select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: clamp(14px, 4vw, 16px);
+            background: white;
+            color: var(--dark);
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+
+        /* تنظیمات مخصوص iOS برای select */
+        @supports (-webkit-touch-callout: none) {
+            .control-select {
+                font-size: 16px; /* جلوگیری از zoom خودکار در iOS */
+                min-height: 44px; /* حداقل ارتفاع برای لمس راحت در iOS */
+            }
+        }
+
+        .control-select:focus {
+            outline: none;
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border: 1px solid #eaeaea;
+            width: 100%;
+        }
+
+        .chart-title {
+            font-size: clamp(16px, 4vw, 18px);
             font-weight: 700;
             margin-bottom: 15px;
             color: var(--primary);
@@ -207,348 +298,127 @@
             gap: 8px;
         }
 
-        .section-title i {
+        .chart-title i {
             color: var(--accent);
         }
 
-        /* KPI Cards */
-        .kpi-container {
+        .chart-wrapper {
+            position: relative;
+            height: clamp(300px, 50vh, 400px);
+            width: 100%;
+        }
+
+        .stats-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
             gap: 15px;
             margin-bottom: 20px;
-            width: 100%;
         }
 
-        .kpi-item {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            border: 1px solid #eaeaea;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .kpi-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-
-        .kpi-value {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 6px;
-        }
-
-        .kpi-label {
-            color: var(--gray);
-            font-size: 14px;
-        }
-
-        .progress-bar {
-            height: 6px;
-            background: #ecf0f1;
-            border-radius: 4px;
-            margin-top: 12px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            border-radius: 4px;
-            transition: width 0.5s ease;
-        }
-
-        /* Metrics Grid */
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin-bottom: 20px;
-            width: 100%;
-        }
-
-        .metric-card {
+        .stat-card {
             background: white;
             border-radius: 10px;
             padding: 15px;
-            text-align: center;
             box-shadow: 0 2px 6px rgba(0,0,0,0.05);
             border: 1px solid #eaeaea;
-            transition: transform 0.3s ease;
         }
 
-        .metric-card:hover {
-            transform: translateY(-2px);
+        .stat-title {
+            font-size: clamp(12px, 3vw, 14px);
+            color: var(--gray);
+            margin-bottom: 8px;
         }
 
-        .metric-value {
-            font-size: 20px;
+        .stat-value {
+            font-size: clamp(20px, 5vw, 24px);
             font-weight: 700;
             margin-bottom: 5px;
         }
 
-        .metric-label {
+        .stat-detail {
+            font-size: clamp(10px, 2.5vw, 12px);
             color: var(--gray);
-            font-size: 12px;
         }
 
-        /* جدول */
-        .table-container {
-            overflow-x: auto;
-            border-radius: 10px;
-            border: 1px solid #eaeaea;
-            width: 100%;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-            min-width: 500px;
-        }
-
-        .data-table th {
-            background: #f8f9fa;
-            padding: 12px 10px;
-            text-align: right;
-            font-weight: 600;
-            color: var(--primary);
-            border-bottom: 1px solid #eaeaea;
-            font-size: 14px;
-        }
-
-        .data-table td {
-            padding: 10px 8px;
-            border-bottom: 1px solid #eaeaea;
-            font-size: 14px;
-        }
-
-        .data-table tr:last-child td {
-            border-bottom: none;
-        }
-
-        .data-table tr:hover {
-            background: #f8f9fa;
-        }
-
-        .status-badge {
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .status-operational {
-            background: #e8f5e8;
-            color: var(--success);
-        }
-
-        .status-warning {
-            background: #fff8e1;
-            color: var(--warning);
-        }
-
-        .status-down {
-            background: #ffebee;
-            color: var(--danger);
-        }
-
-        /* Action Items */
-        .action-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .action-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            border-right: 4px solid var(--secondary);
-            transition: transform 0.3s ease;
-        }
-
-        .action-item:hover {
-            transform: translateX(-5px);
-        }
-
-        .action-icon {
-            width: 35px;
-            height: 35px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            color: white;
-            flex-shrink: 0;
-        }
-
-        .action-content {
-            flex: 1;
-        }
-
-        .action-title {
-            font-weight: 600;
-            margin-bottom: 4px;
-            font-size: 14px;
-        }
-
-        .action-desc {
-            color: var(--gray);
-            font-size: 12px;
-        }
-
-        /* Report Buttons */
-        .report-container {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            width: 100%;
-        }
-
-        .report-button {
+        /* دکمه بروزرسانی */
+        .refresh-btn {
             background: var(--primary);
             color: white;
             border: none;
+            padding: 12px 20px;
             border-radius: 8px;
-            padding: 10px 12px;
-            font-weight: 600;
+            cursor: pointer;
+            font-size: clamp(14px, 4vw, 16px);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.3s;
+            width: 100%;
+            justify-content: center;
+            min-height: 44px; /* حداقل ارتفاع برای لمس راحت در iOS */
+            -webkit-tap-highlight-color: rgba(0,0,0,0.1);
+        }
+
+        .refresh-btn:hover {
+            background: var(--primary-light);
+        }
+
+        /* استایل‌های جدید برای نمودارها */
+        .chart-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eaeaea;
+            padding-bottom: 15px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .chart-tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .chart-tab {
+            padding: 8px 16px;
+            background: #f8f9fa;
+            border: 1px solid #eaeaea;
+            border-radius: 6px;
             cursor: pointer;
             transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            font-size: 13px;
-            touch-action: manipulation;
+            font-size: clamp(12px, 3vw, 14px);
+            white-space: nowrap;
+            min-width: max-content;
+            -webkit-tap-highlight-color: rgba(0,0,0,0.1);
         }
 
-        .report-button.outlined {
-            background: transparent;
-            color: var(--primary);
-            border: 2px solid var(--primary);
-        }
-
-        .report-button:hover {
-            background: var(--primary-light);
-            transform: translateY(-2px);
-        }
-
-        .report-button.outlined:hover {
-            background: rgba(44, 62, 80, 0.05);
-        }
-
-        /* دستگاه استنتر */
-        .machine-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
-            text-align: center;
-            padding: 20px;
-        }
-
-        .machine-icon {
-            width: 120px;
-            height: 120px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 48px;
+        .chart-tab.active {
+            background: var(--primary);
             color: white;
-            margin-bottom: 10px;
-            transition: all 0.3s ease;
-            overflow: hidden;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-color: var(--primary);
         }
 
-        .machine-icon i {
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+        .chart-tab:hover {
+            background: var(--primary-light);
+            color: white;
         }
-
-        .machine-name {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 10px;
-        }
-
-        .machine-status {
-            padding: 8px 20px;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 16px;
-            margin-bottom: 15px;
-        }
-
-        .machine-details {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            justify-content: center;
-            margin-top: 15px;
-        }
-
-        .detail-item {
-            background: #f8f9fa;
-            padding: 10px 15px;
-            border-radius: 8px;
-            min-width: 150px;
-        }
-
-        .detail-label {
-            font-size: 12px;
-            color: var(--gray);
-            margin-bottom: 5px;
-        }
-
-        .detail-value {
-            font-size: 16px;
-            font-weight: 600;
-        }
-
-        .status-operational {
-            background: #e8f5e8;
-            color: var(--success);
-        }
-
-        .status-maintenance {
-            background: #fff8e1;
-            color: var(--warning);
-        }
-
-        .status-broken {
-            background: #ffebee;
-            color: var(--danger);
-        }
-
-        .bg-operational { background: var(--success); }
-        .bg-maintenance { background: var(--warning); }
-        .bg-broken { background: var(--danger); }
 
         /* لاودر */
         .loader {
             display: none;
             text-align: center;
-            padding: 20px;
+            padding: 40px;
         }
 
         .loader-spinner {
-            width: 40px;
-            height: 40px;
+            width: 50px;
+            height: 50px;
             border: 4px solid #f3f3f3;
             border-top: 4px solid var(--primary);
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
+            margin: 0 auto 20px;
         }
 
         @keyframes spin {
@@ -556,145 +426,174 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* کارایی دستگاه‌ها */
-        .performance-container {
+        .loader-text {
+            color: var(--gray);
+            font-size: clamp(12px, 3vw, 14px);
+        }
+
+        /* اعلان آفلاین */
+        .offline-alert {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #e74c3c;
+            color: white;
+            text-align: center;
+            padding: 12px;
+            z-index: 10003;
+            font-size: clamp(12px, 3vw, 14px);
+            padding-top: calc(12px + var(--safe-area-top));
+        }
+
+        /* دستگاه‌ها کارت */
+        .machines-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
             gap: 15px;
             margin-bottom: 20px;
         }
 
-        .performance-card {
+        .machine-card {
             background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
             border: 1px solid #eaeaea;
-            transition: transform 0.3s ease;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            -webkit-tap-highlight-color: rgba(0,0,0,0.1);
         }
 
-        .performance-card:hover {
+        .machine-card:hover {
             transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .machine-card.active {
+            border-color: var(--secondary);
+            background: #f8f9fa;
         }
 
         .machine-header {
             display: flex;
             align-items: center;
-            gap: 12px;
-            margin-bottom: 15px;
+            gap: 10px;
+            margin-bottom: 10px;
         }
 
         .machine-icon-small {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: var(--secondary);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
             color: white;
-            flex-shrink: 0;
+            font-size: 18px;
         }
 
-        .machine-info {
-            flex: 1;
+        .machine-name {
+            font-weight: 600;
+            font-size: clamp(14px, 4vw, 16px);
         }
 
-        .machine-title {
-            font-weight: 700;
-            font-size: 16px;
-            margin-bottom: 4px;
-        }
-
-        .machine-subtitle {
-            color: var(--gray);
-            font-size: 12px;
-        }
-
-        .performance-metrics {
+        .machine-stats {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin-bottom: 15px;
+            gap: 8px;
+            font-size: clamp(10px, 2.5vw, 12px);
         }
 
-        .metric {
-            text-align: center;
-            padding: 8px;
-            background: #f8f9fa;
-            border-radius: 6px;
-        }
-
-        .metric-value {
-            font-weight: 700;
-            font-size: 16px;
-            margin-bottom: 2px;
-        }
-
-        .metric-label {
-            color: var(--gray);
-            font-size: 11px;
-        }
-
-        .performance-bar {
-            height: 8px;
-            background: #ecf0f1;
-            border-radius: 4px;
-            margin-bottom: 8px;
-            overflow: hidden;
-        }
-
-        .performance-fill {
-            height: 100%;
-            border-radius: 4px;
-            transition: width 0.5s ease;
-        }
-
-        .performance-value {
+        .stat-item {
             display: flex;
             justify-content: space-between;
-            font-size: 12px;
+            padding: 4px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        /* گزارش ماهانه */
+        .months-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .month-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px solid #eaeaea;
+            transition: all 0.3s ease;
+        }
+        
+        .month-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .month-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--primary-light);
+        }
+        
+        .month-name {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: clamp(14px, 4vw, 16px);
+        }
+        
+        .month-count {
+            background: var(--accent);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: clamp(12px, 3vw, 14px);
+            font-weight: 600;
+        }
+        
+        .month-details {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: clamp(11px, 2.5vw, 13px);
+            padding: 4px 0;
+            border-bottom: 1px dashed #e0e0e0;
+        }
+        
+        .detail-item:last-child {
+            border-bottom: none;
+        }
+        
+        .detail-item span:first-child {
             color: var(--gray);
         }
-
-        /* رنگ‌های وضعیت */
-        .color-success { color: var(--success); }
-        .color-warning { color: var(--warning); }
-        .color-danger { color: var(--danger); }
-        .color-info { color: var(--secondary); }
-        .bg-success { background: var(--success); }
-        .bg-warning { background: var(--warning); }
-        .bg-danger { background: var(--danger); }
-        .bg-info { background: var(--secondary); }
-
-        /* رسپانسیو */
-        @media (max-width: 1024px) {
-            .kpi-container {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            
-            .report-container {
-                grid-template-columns: repeat(2, 1fr);
-            }
+        
+        .detail-item span:last-child {
+            font-weight: 600;
+            color: var(--dark);
         }
 
-        @media (max-width: 768px) {
-            .kpi-container {
-                grid-template-columns: 1fr;
-            }
-            
-            .metrics-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .report-container {
-                grid-template-columns: 1fr;
-            }
-            
-            .performance-container {
-                grid-template-columns: 1fr;
-            }
-            
+        /* رنگی برای سطوح مختلف خرابی */
+        .level-0 { background-color: #2ecc71; } /* کم */
+        .level-1 { background-color: #f1c40f; } /* متوسط */
+        .level-2 { background-color: #e67e22; } /* زیاد */
+        .level-3 { background-color: #e74c3c; } /* خیلی زیاد */
+
+        /* iPhone و دستگاه‌های کوچک */
+        @media screen and (max-width: 428px) { /* iPhone 14 Pro Max */
             .nav-links {
                 gap: 8px;
             }
@@ -707,60 +606,59 @@
                 display: none;
             }
             
-            .logo-text {
-                font-size: 14px;
-            }
-            
-            .header-card {
-                padding: 15px;
-            }
-            
-            .page-title {
-                font-size: 18px;
-            }
-            
-            .card {
-                padding: 15px;
-            }
-            
-            .section-title {
-                font-size: 16px;
-            }
-            
-            .machine-icon {
-                width: 100px;
-                height: 100px;
-                font-size: 40px;
-            }
-            
-            .machine-name {
-                font-size: 20px;
-            }
-            
-            .machine-details {
+            .controls-row {
                 flex-direction: column;
-                align-items: center;
             }
             
-            .detail-item {
-                width: 100%;
-                max-width: 250px;
+            .control-group {
+                min-width: 100%;
+            }
+            
+            .chart-wrapper {
+                height: clamp(250px, 40vh, 350px);
+            }
+            
+            .chart-tabs {
+                padding-bottom: 10px;
+            }
+            
+            .chart-tab {
+                padding: 6px 12px;
+            }
+            
+            .machines-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .months-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .header-card,
+            .controls-card,
+            .chart-container {
+                padding: 15px;
             }
         }
 
-        @media (max-width: 480px) {
-            .navbar {
-                padding: 0 10px;
+        @media screen and (max-width: 375px) { /* iPhone SE و کوچکتر */
+            .chart-wrapper {
+                height: clamp(220px, 35vh, 300px);
             }
             
-            .nav-container {
-                height: 50px;
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
             }
             
-            .logo-icon {
-                width: 30px;
-                height: 30px;
-                font-size: 14px;
+            .machine-icon-small {
+                width: 35px;
+                height: 35px;
+                font-size: 16px;
             }
             
             .user-avatar {
@@ -768,361 +666,103 @@
                 height: 35px;
                 font-size: 12px;
             }
+        }
+
+        /* تنظیمات برای iPhone X و جدیدتر با notch */
+        @media screen and (min-width: 375px) and (max-width: 428px) and (orientation: portrait) {
+            .navbar {
+                padding-top: var(--safe-area-top);
+            }
             
             .container {
-                padding: 15px 10px;
+                padding-top: calc(20px + var(--safe-area-top) * 0.5);
+            }
+        }
+
+        /* تنظیمات لنداسکیپ */
+        @media screen and (max-height: 500px) and (orientation: landscape) {
+            .chart-wrapper {
+                height: 250px;
             }
             
-            .kpi-value {
-                font-size: 20px;
+            .navbar {
+                height: 50px;
+                padding-top: var(--safe-area-top);
             }
             
-            .metric-value {
-                font-size: 18px;
+            .nav-container {
+                height: 50px;
             }
             
-            .action-item {
+            .header-card,
+            .controls-card {
                 padding: 12px;
+                margin-bottom: 12px;
             }
             
-            .action-icon {
-                width: 30px;
-                height: 30px;
-                font-size: 14px;
-            }
-        }
-
-        /* جلوگیری از زوم */
-        @media (hover: none) and (pointer: coarse) {
-            * {
-                -webkit-user-select: none;
-                -moz-user-select: none;
-                -ms-user-select: none;
-                user-select: none;
+            .page-title {
+                font-size: 16px;
             }
             
-            input, textarea, select {
-                -webkit-user-select: text;
-                -moz-user-select: text;
-                -ms-user-select: text;
-                user-select: text;
+            .page-subtitle {
+                font-size: 12px;
             }
         }
 
-        /* انیمیشن‌ها */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        /* تنظیمات برای iPad و تبلت‌ها */
+        @media screen and (min-width: 768px) and (max-width: 1024px) {
+            .chart-wrapper {
+                height: 350px;
+            }
+            
+            .container {
+                padding: 20px 30px;
+            }
         }
 
-        .card, .kpi-item, .metric-card, .performance-card {
-            animation: fadeIn 0.6s ease-out;
+        /* جلوگیری از zoom در input fields در iOS */
+        @media screen and (max-width: 768px) {
+            input, select, textarea {
+                font-size: 16px !important;
+            }
         }
 
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+        /* بهبود scroll در iOS */
+        .container {
+            -webkit-overflow-scrolling: touch;
         }
 
-        .machine-icon.pulse {
-            animation: pulse 2s infinite;
+        /* بهبود performance در iOS */
+        .machine-card,
+        .month-card,
+        .stat-card {
+            transform: translateZ(0);
+            backface-visibility: hidden;
         }
-        button, .btn {
-    -webkit-tap-highlight-color: rgba(0,0,0,0.1);
-    transition: all 0.2s ease;
-}
 
-@media (max-width: 768px) {
-    button:active, .btn:active {
-        transform: scale(0.98);
-        opacity: 0.9;
-    }
-}
-/* بهبود نمایش در iOS */
-input, select, textarea {
-    font-size: 16px; /* جلوگیری از زوم خودکار در iOS */
-}
-
-/* بهبود اسکرول جدول */
-.table-container {
-    -webkit-overflow-scrolling: touch;
-    overflow-x: auto;
-}
-
-/* بهبود نمایش دکمه‌ها در iOS */
-button {
-    min-height: 44px; /* حداقل سایز لمسی در iOS */
-}
-
-/* ========== CSS های جدید برای iOS ========== */
-
-/* بهبود نمایش در iOS - جلوگیری از زوم خودکار */
-input, select, textarea {
-    font-size: 16px !important;
-    transform: translateZ(0);
-    -webkit-user-select: text;
-    -moz-user-select: text;
-    -ms-user-select: text;
-    user-select: text;
-}
-
-/* بهبود نمایش select در iOS */
-select {
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-    background-repeat: no-repeat;
-    background-position: left 12px center;
-    background-size: 16px;
-    padding-left: 40px;
-}
-
-/* حداقل سایز لمسی برای تمام دکمه‌ها در iOS */
-button, .btn, .nav-link, .action-btn, .report-button {
-    min-height: 44px !important;
-    min-width: 44px !important;
-    cursor: pointer;
-}
-
-/* بهبود اسکرول در iOS */
-.table-container, .container {
-    -webkit-overflow-scrolling: touch !important;
-    overflow-x: auto;
-}
-
-/* جلوگیری از highlight آبی در iOS */
-* {
-    -webkit-tap-highlight-color: transparent !important;
-}
-
-/* بهبود نمایش tables در iOS */
-.data-table {
-    -webkit-overflow-scrolling: touch;
-}
-
-/* جلوگیری از bounce بیش از حد در iOS */
-body {
-    overscroll-behavior-y: none;
-    -webkit-overflow-scrolling: touch;
-}
-
-/* بهبود نمایش inputهای عددی در iOS */
-input[type="number"] {
-    -webkit-appearance: none;
-    -moz-appearance: textfield;
-}
-
-input[type="number"]::-webkit-outer-spin-button,
-input[type="number"]::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
-
-/* بهبود نمایش فرم‌ها در iOS */
-.form-input, .filter-input, .filter-select {
-    -webkit-user-select: text;
-    -moz-user-select: text;
-    -ms-user-select: text;
-    user-select: text;
-    touch-action: manipulation;
-}
-
-/* بهبود نمایش modalها در iOS */
-.popup-overlay {
-    -webkit-overflow-scrolling: touch;
-    overflow-y: auto;
-}
-
-/* بهبود نمایش navigation در iOS */
-.navbar {
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-}
-
-/* بهبود نمایش لیست‌ها در iOS */
-.action-list, .metrics-grid {
-    -webkit-overflow-scrolling: touch;
-}
-
-/* بهبود نمایش کارت‌ها در iOS */
-.card, .kpi-item, .metric-card, .performance-card {
-    -webkit-tap-highlight-color: transparent;
-}
-
-/* بهبود نمایش آیکون‌ها در iOS */
-i, .fas, .far, .fab {
-    -webkit-tap-highlight-color: transparent;
-}
-
-/* بهبود نمایش لینک‌ها در iOS */
-a {
-    -webkit-tap-highlight-color: rgba(0,0,0,0.1);
-}
-
-/* بهبود نمایش وضعیت‌ها در iOS */
-.status-badge, .machine-status {
-    -webkit-tap-highlight-color: transparent;
-}
-
-/* بهبود نمایش progress bar در iOS */
-.progress-bar, .performance-bar {
-    -webkit-appearance: none;
-}
-
-.progress-bar::-webkit-progress-bar,
-.performance-bar::-webkit-progress-bar {
-    background-color: #ecf0f1;
-    border-radius: 4px;
-}
-
-.progress-bar::-webkit-progress-value,
-.performance-bar::-webkit-progress-value {
-    background-color: var(--success);
-    border-radius: 4px;
-    transition: width 0.5s ease;
-}
-
-/* بهبود نمایش loader در iOS */
-.loader-spinner {
-    -webkit-animation: spin 1s linear infinite;
-    animation: spin 1s linear infinite;
-}
-
-/* بهبود نمایش machine icon در iOS */
-.machine-icon, .machine-icon-small {
-    -webkit-tap-highlight-color: transparent;
-    user-select: none;
-}
-
-/* بهبود نمایش جدول داده در iOS */
-.data-table th, .data-table td {
-    -webkit-user-select: none;
-    user-select: none;
-}
-
-.data-table th:active, .data-table td:active {
-    background-color: rgba(0,0,0,0.05);
-}
-
-/* بهبود نمایش دکمه‌های گزارش در iOS */
-.report-button:active {
-    transform: scale(0.98);
-    opacity: 0.9;
-}
-
-/* بهبود نمایش navigation links در iOS */
-.nav-link:active {
-    background: rgba(255,255,255,0.2) !important;
-}
-
-/* بهبود نمایش action items در iOS */
-.action-item:active {
-    transform: translateX(-5px) scale(0.98);
-}
-
-/* بهبود نمایش metric cards در iOS */
-.metric-card:active, .kpi-item:active {
-    transform: translateY(-2px) scale(0.98);
-}
-
-/* بهبود نمایش در دستگاه‌های بسیار کوچک */
-@media (max-width: 360px) {
-    .navbar {
-        padding: 0 8px;
-    }
-    
-    .nav-container {
-        height: 48px;
-    }
-    
-    .logo-icon {
-        width: 28px;
-        height: 28px;
-        font-size: 12px;
-    }
-    
-    .logo-text {
-        font-size: 12px;
-    }
-    
-    .user-avatar {
-        width: 32px;
-        height: 32px;
-        font-size: 11px;
-    }
-    
-    .container {
-        padding: 10px 8px;
-    }
-    
-    .header-card {
-        padding: 12px;
-    }
-    
-    .page-title {
-        font-size: 16px;
-    }
-    
-    .page-subtitle {
-        font-size: 12px;
-    }
-}
-
-/* بهبود نمایش در حالت landscape */
-@media (max-height: 500px) and (orientation: landscape) {
-    .navbar {
-        height: 48px;
-    }
-    
-    .nav-container {
-        height: 48px;
-    }
-    
-    .container {
-        padding: 10px 15px;
-    }
-    
-    .header-card {
-        padding: 15px;
-        margin-bottom: 15px;
-    }
-    
-    .card {
-        padding: 15px;
-        margin-bottom: 15px;
-    }
-}
-
-/* بهبود نمایش در حالت PWA (نصب شده) */
-@media all and (display-mode: standalone) {
-    body {
-        height: 100vh;
-        height: -webkit-fill-available;
-        height: fill-available;
-    }
-    
-    .navbar {
-        padding-top: env(safe-area-inset-top);
-    }
-    
-    .container {
-        padding-bottom: env(safe-area-inset-bottom);
-    }
-}
+        /* تنظیمات برای دکمه‌ها در iOS */
+        button, 
+        .chart-tab,
+        .machine-card,
+        .refresh-btn {
+            cursor: pointer;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
     </style>
 </head>
 <body>
+    <!-- کد HTML شما بدون تغییر باقی می‌ماند -->
     <!-- نویگیشن -->
     <nav class="navbar">
         <div class="nav-container">
             <div class="logo">
                 <div class="logo-icon">
-                    <img src="../../Logo.png" style="max-block-size:100% ;" >
+                    <i class="fas fa-chart-line"></i>
                 </div>
-                <div class="logo-text">TPM PRO</div>
+                <div class="logo-text">تحلیل خرابی دستگاه‌ها</div>
             </div>
             
             <div class="nav-links">
@@ -1130,19 +770,19 @@ a {
                     <i class="fas fa-tachometer-alt"></i>
                     <span>داشبورد</span>
                 </a>
-                <a href="reports.html" class="nav-link">
+                <a href="reports.html" class="nav-link ">
                     <i class="fas fa-chart-bar"></i>
-                    <span>گزارشات</span>
+                    <span>گزارشات </span>
                 </a>
-                <a href="warehouse.html" class="nav-link">
-                    <i class="fas fa-warehouse"></i>
-                    <span>انبار</span>
+                <a href="work-order.html" class="nav-link">
+                    <i class="fas fa-clipboard-list"></i>
+                    <span>دستورکار</span>
                 </a>
             </div>
             
             <div class="user-info">
                 <div class="user-details">
-                    <div class="user-name">مدیر (توسعه)</div>
+                    <div class="user-name">مدیر سیستم</div>
                     <div class="login-time" id="loginTime">در حال بارگذاری...</div>
                 </div>
                 <div class="user-avatar">M</div>
@@ -1154,428 +794,1291 @@ a {
     <div class="container">
         <!-- هدر صفحه -->
         <div class="header-card">
-            <h1 class="page-title">داشبورد مدیر</h1>
-            <p class="page-subtitle">نمای کلی عملکرد کارخانه - آخرین ورود: <span id="lastLoginTime"></span></p>
+            <h1 class="page-title">تحلیل خرابی قطعات مصرفی</h1>
+            <p class="page-subtitle">تحلیل روزانه و ماهانه خرابی‌ها بر اساس گزارش‌های مدیران - آخرین بروزرسانی: <span id="lastUpdateTime"></span></p>
         </div>
 
-        <!-- شاخص‌های کلیدی عملکرد -->
-       
-
-        <!-- دستگاه استنتر -->
-        <div class="card">
-            <h2 class="section-title">
-                <i class="fas fa-industry"></i>
-                وضعیت دستگاه استنتر
-            </h2>
-            
-            <div class="loader" id="loader">
-                <div class="loader-spinner"></div>
-                <p>در حال دریافت اطلاعات از سرور...</p>
+        <!-- کنترل‌های فیلتر -->
+        <div class="controls-card">
+            <div class="controls-row">
+                <div class="control-group">
+                    <label class="control-label">
+                        <i class="fas fa-filter"></i>
+                        انتخاب دستگاه
+                    </label>
+                    <select id="machineSelect" class="control-select">
+                        <option value="">در حال بارگذاری دستگاه‌ها...</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label class="control-label">
+                        <i class="fas fa-calendar-alt"></i>
+                        بازه زمانی
+                    </label>
+                    <select id="timeRangeSelect" class="control-select">
+                        <option value="30">آخرین 30 روز</option>
+                        <option value="60">آخرین 60 روز</option>
+                        <option value="90">آخرین 90 روز</option>
+                        <option value="180">آخرین 6 ماه</option>
+                        <option value="365">آخرین یک سال</option>
+                    </select>
+                </div>
             </div>
             
-            <div class="machine-container" id="machineContainer" style="display: none;">
-                <div class="machine-icon" id="machineIcon">
+            <div class="controls-row">
+                <div class="control-group">
+                    <button id="refreshBtn" class="refresh-btn">
+                        <i class="fas fa-sync-alt"></i>
+                        بروزرسانی داده‌ها
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- لاودر -->
+        <div class="loader" id="loader">
+            <div class="loader-spinner"></div>
+            <div class="loader-text">در حال دریافت و تحلیل داده‌ها...</div>
+        </div>
+
+        <!-- آمار کلی -->
+        <div class="stats-grid" id="statsGrid" style="display: none;">
+            <div class="stat-card">
+                <div class="stat-title">تعداد کل خرابی‌ها</div>
+                <div class="stat-value" id="totalFailures">0</div>
+                <div class="stat-detail">در بازه انتخابی</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-title">قطعات مختلف</div>
+                <div class="stat-value" id="uniqueParts">0</div>
+                <div class="stat-detail">انواع قطعات خراب شده</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-title">میانگین خرابی</div>
+                <div class="stat-value" id="avgFailures">0</div>
+                <div class="stat-detail">در هر روز</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-title">قطعه پرتکرار</div>
+                <div class="stat-value" id="expensivePart">-</div>
+                <div class="stat-detail">بیشترین تکرار خرابی</div>
+            </div>
+        </div>
+
+        <!-- تب‌های نمودار -->
+        <div class="chart-container" style="display: none;" id="chartsTabsContainer">
+            <div class="chart-tabs">
+                <button class="chart-tab active" data-chart="daily">
+                    <i class="fas fa-calendar-day"></i>
+                    نمودار روزانه
+                </button>
+                <button class="chart-tab" data-chart="monthly">
+                    <i class="fas fa-calendar-alt"></i>
+                    نمودار ماهانه
+                </button>
+                <button class="chart-tab" data-chart="parts">
                     <i class="fas fa-cogs"></i>
-                </div>
-                
-                <div class="machine-name">دستگاه استنتر</div>
-                
-                <div class="machine-status" id="machineStatus">
-                    در حال بارگذاری...
-                </div>
-                
-                <div class="machine-details">
-                    <div class="detail-item">
-                        <div class="detail-label">آخرین بروزرسانی</div>
-                        <div class="detail-value" id="lastUpdate">-</div>
-                    </div>
-                    
-                    <div class="detail-item">
-                        <div class="detail-label">سرپرست</div>
-                        <div class="detail-value" id="operatorName">نوروزی</div>
-                    </div>
-                    
-                    <div class="detail-item">
-                        <div class="detail-label">تاریخ گزارش</div>
-                        <div class="detail-value" id="reportDate">-</div>
-                    </div>
-                </div>
+                    نمودار قطعات
+                </button>
+                <button class="chart-tab" data-chart="trend">
+                    <i class="fas fa-chart-line"></i>
+                    روند خرابی
+                </button>
+            </div>
+            
+            <!-- نمودار روزانه -->
+            <div class="chart-wrapper" id="dailyChartContainer">
+                <canvas id="dailyChart"></canvas>
+            </div>
+            
+            <!-- نمودار ماهانه -->
+            <div class="chart-wrapper" id="monthlyChartContainer" style="display: none;">
+                <canvas id="monthlyChart"></canvas>
+            </div>
+            
+            <!-- نمودار قطعات -->
+            <div class="chart-wrapper" id="partsChartContainer" style="display: none;">
+                <canvas id="partsChart"></canvas>
+            </div>
+            
+            <!-- نمودار روند -->
+            <div class="chart-wrapper" id="trendChartContainer" style="display: none;">
+                <canvas id="trendChart"></canvas>
             </div>
         </div>
 
-        <!-- کارایی دستگاه‌ها -->
-        
-
-       
-        <div id="offlineAlert" style="display: none; position: fixed; top: 0; left: 0; right: 0; background: #e74c3c; color: white; text-align: center; padding: 10px; z-index: 10003; font-family: Vazirmatn;">
-            <i class="fas fa-wifi-slash"></i> حالت آفلاین - اتصال اینترنت برقرار نیست
+        <!-- لیست دستگاه‌ها -->
+        <div class="chart-container" id="machinesContainer" style="display: none;">
+            <h2 class="chart-title">
+                <i class="fas fa-industry"></i>
+                دستگاه‌های کارخانه
+            </h2>
+            <div class="machines-grid" id="machinesGrid">
+                <!-- دستگاه‌ها اینجا لود می‌شوند -->
+            </div>
         </div>
-    <!-- اسکریپت Supabase -->
+
+        <!-- گزارش ماهانه -->
+        <div class="chart-container" id="monthsContainer" style="display: none;">
+            <h2 class="chart-title">
+                <i class="fas fa-chart-line"></i>
+                آمار ماهانه خرابی‌ها
+            </h2>
+            <div class="months-grid" id="monthsGrid">
+                <!-- کارت‌های ماهانه اینجا لود می‌شوند -->
+            </div>
+        </div>
+    </div>
+
+    <!-- اعلان آفلاین -->
+    <div class="offline-alert" id="offlineAlert">
+        <i class="fas fa-wifi-slash"></i> حالت آفلاین - اتصال اینترنت برقرار نیست
+    </div>
+
+    <!-- اسکریپت Supabase و Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // تنظیمات Supabase
+        // JavaScript شما بدون تغییر باقی می‌ماند
+        delete window.alert;
+        
+        window.alert = function(message) {
+            return new Promise((resolve) => {
+                const overlay = document.createElement('div');
+                overlay.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0,0,0,0.5);
+                    z-index: 10000;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding-top: var(--safe-area-top);
+                    padding-bottom: var(--safe-area-bottom);
+                `;
+                
+                const dialog = document.createElement('div');
+                dialog.style.cssText = `
+                    background: white;
+                    padding: 25px;
+                    border-radius: 12px;
+                    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+                    text-align: center;
+                    min-width: min(300px, 90vw);
+                    max-width: 90%;
+                    font-family: Vazirmatn, sans-serif;
+                    border: 2px solid #2c3e50;
+                    margin: auto;
+                `;
+                
+                dialog.innerHTML = `
+                    <div style="margin-bottom: 20px; font-size: 16px; color: #2c3e50; line-height: 1.5;">${message}</div>
+                    <button id="customAlertConfirm" 
+                            style="padding: 12px 25px; background: #2c3e50; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; min-height: 44px;">
+                        تأیید
+                    </button>
+                `;
+                
+                overlay.appendChild(dialog);
+                document.body.appendChild(overlay);
+                
+                const closeAlert = function() {
+                    if (document.body.contains(overlay)) {
+                        document.body.removeChild(overlay);
+                    }
+                    resolve();
+                };
+                
+                const confirmBtn = document.getElementById('customAlertConfirm');
+                confirmBtn.addEventListener('click', closeAlert);
+                
+                overlay.onclick = function(e) {
+                    if (e.target === overlay) {
+                        // کاری نکن
+                    }
+                };
+            });
+        };
+        
+        // بقیه کد JavaScript شما...
+        // ==================== تنظیمات اولیه ====================
         const SUPABASE_URL = 'https://kalykylvjqigqlaprlca.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImthbHlreWx2anFpZ3FsYXBybGNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM1NjI1OTcsImV4cCI6MjA3OTEzODU5N30.S8YtogVrxkqYjkgfkGpy4_mS6mqaNxmsHjxnhyBPwEY';
         
-        // ایجاد کلاینت Supabase
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
-        // تابع برای فرمت کردن تاریخ و زمان به فارسی
-        function formatPersianDateTime(date) {
-            const options = {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            };
-            return new Intl.DateTimeFormat('fa-IR', options).format(date);
+        let dailyChart = null;
+        let monthlyChart = null;
+        let partsChart = null;
+        let trendChart = null;
+        let allData = [];
+        let machines = [];
+        
+        // ==================== توابع تبدیل تاریخ ====================
+        function gregorianToJalali(gy, gm, gd) {
+            let g_d_m = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
+            let jy = (gy <= 1600) ? 0 : 979;
+            gy -= (gy <= 1600) ? 621 : 1600;
+            let gy2 = (gm > 2) ? (gy + 1) : gy;
+            let days = (365 * gy) + parseInt((gy2 + 3) / 4) - parseInt((gy2 + 99) / 100) + parseInt((gy2 + 399) / 400) - 80 + gd + g_d_m[gm - 1];
+            jy += 33 * parseInt(days / 12053);
+            days %= 12053;
+            jy += 4 * parseInt(days / 1461);
+            days %= 1461;
+            jy += parseInt((days - 1) / 365);
+            if (days > 365) days = (days - 1) % 365;
+            let jm = (days < 186) ? 1 + parseInt(days / 31) : 7 + parseInt((days - 186) / 30);
+            let jd = 1 + ((days < 186) ? (days % 31) : ((days - 186) % 30));
+            return [jy, jm, jd];
         }
-
-        // تابع برای محاسبه زمان گذشته از ورود
-        function getTimeSinceLogin(loginTime) {
-            const now = new Date();
-            const diff = now - loginTime;
-            const minutes = Math.floor(diff / 60000);
-            const hours = Math.floor(minutes / 60);
-            
-            if (hours > 0) {
-                return `${hours} ساعت و ${minutes % 60} دقیقه قبل`;
-            } else {
-                return `${minutes} دقیقه قبل`;
-            }
+        
+        function formatJalaliDate(dateArray) {
+            const [year, month, day] = dateArray;
+            return `${year}/${month.toString().padStart(2, '0')}/${day.toString().padStart(2, '0')}`;
         }
-
-        // تابع برای به روز رسانی زمان آنلاین
-        function updateOnlineTime() {
-            const loginTimeElement = document.getElementById('loginTime');
-            if (loginTimeElement && window.loginTime) {
-                loginTimeElement.textContent = getTimeSinceLogin(window.loginTime);
-            }
-        }
-
-        // تابع برای دریافت آخرین وضعیت دستگاه استنتر
-        async function getLatestMachineStatus() {
+        
+        function getJalaliFromISO(isoDate) {
             try {
-                // نمایش لاودر
-                document.getElementById('loader').style.display = 'block';
-                document.getElementById('machineContainer').style.display = 'none';
-                
-                // دریافت داده‌ها از جدول operatorreports
-                const { data, error } = await supabase
-                    .from('operatourreports')
-                    .select('*')
-                    .order('created_at', { ascending: false })
-                    .limit(1);
-                
-                if (error) {
-                    throw error;
+                const date = new Date(isoDate);
+                if (isNaN(date.getTime())) {
+                    return '1403/01/01';
                 }
-                
-                // پنهان کردن لاودر و نمایش اطلاعات
-                document.getElementById('loader').style.display = 'none';
-                document.getElementById('machineContainer').style.display = 'flex';
-                
-                if (data && data.length > 0) {
-                    const latestReport = data[0];
-                    updateMachineStatus(latestReport);
-                } else {
-                    // اگر داده‌ای وجود ندارد
-                    showNoDataMessage();
-                }
+                const [jy, jm, jd] = gregorianToJalali(
+                    date.getFullYear(),
+                    date.getMonth() + 1,
+                    date.getDate()
+                );
+                return formatJalaliDate([jy, jm, jd]);
             } catch (error) {
-                console.error('خطا در دریافت اطلاعات:', error);
-                document.getElementById('loader').style.display = 'none';
-                showErrorMessage('خطا در اتصال به سرور');
+                console.error('خطا در تبدیل تاریخ:', error);
+                return '1403/01/01';
             }
         }
-
-        // تابع برای به روز رسانی وضعیت دستگاه استنتر
-        function updateMachineStatus(report) {
-            const machineStatus = report.machine_status;
-            const machineIcon = document.getElementById('machineIcon');
-            const machineStatusElement = document.getElementById('machineStatus');
-            const lastUpdateElement = document.getElementById('lastUpdate');
-            const operatorNameElement = document.getElementById('operatorName');
-            const reportDateElement = document.getElementById('reportDate');
-            
-            // تنظیم وضعیت دستگاه
-            if (machineStatus === 'سالم') {
-                machineStatusElement.textContent = 'سالم و عملیاتی';
-                machineStatusElement.className = 'machine-status status-operational';
-                machineIcon.className = 'machine-icon bg-operational pulse';
-                machineIcon.innerHTML = '<i class="fas fa-check-circle"></i>';
-            } else if (machineStatus === 'در حال تعمیر') {
-                machineStatusElement.textContent = 'در حال تعمیر';
-                machineStatusElement.className = 'machine-status status-maintenance';
-                machineIcon.className = 'machine-icon bg-maintenance';
-                machineIcon.innerHTML = '<i class="fas fa-tools"></i>';
-            } else if (machineStatus === 'خراب') {
-                machineStatusElement.textContent = 'خراب و غیرفعال';
-                machineStatusElement.className = 'machine-status status-broken';
-                machineIcon.className = 'machine-icon bg-broken';
-                machineIcon.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
-            } else {
-                machineStatusElement.textContent = machineStatus || 'نامشخص';
-                machineStatusElement.className = 'machine-status status-maintenance';
-                machineIcon.className = 'machine-icon bg-maintenance';
-                machineIcon.innerHTML = '<i class="fas fa-question-circle"></i>';
-            }
-            
-            // تنظیم اطلاعات دیگر
-            lastUpdateElement.textContent = formatPersianDateTime(new Date());
-            operatorNameElement.textContent = 'نوروزی';
-            reportDateElement.textContent = report.created_at ? 
-                formatPersianDateTime(new Date(report.created_at)) : 'نامشخص';
-        }
-
-        // تابع برای تولید کارت‌های کارایی دستگاه‌ها
-        function generatePerformanceCards() {
-            const performanceContainer = document.getElementById('performanceContainer');
-            
-            // داده‌های نمونه برای دستگاه‌ها
-            const machines = [
-                {
-                    id: 1,
-                    name: 'دستگاه فرز CNC #1',
-                    type: 'فرز CNC',
-                    oee: 92,
-                    availability: 95,
-                    performance: 96,
-                    quality: 98,
-                    status: 'عملیاتی'
-                },
-                {
-                    id: 2,
-                    name: 'پرس هیدرولیک #3',
-                    type: 'پرس هیدرولیک',
-                    oee: 88,
-                    availability: 90,
-                    performance: 92,
-                    quality: 95,
-                    status: 'عملیاتی'
-                },
-                {
-                    id: 3,
-                    name: 'دستگاه تزریق پلاستیک #2',
-                    type: 'تزریق پلاستیک',
-                    oee: 76,
-                    availability: 80,
-                    performance: 85,
-                    quality: 90,
-                    status: 'هشدار'
-                },
-                {
-                    id: 4,
-                    name: 'دستگاه برش لیزری #1',
-                    type: 'برش لیزری',
-                    oee: 65,
-                    availability: 70,
-                    performance: 75,
-                    quality: 85,
-                    status: 'هشدار'
-                },
-                {
-                    id: 5,
-                    name: 'کوره حرارتی #2',
-                    type: 'کوره حرارتی',
-                    oee: 45,
-                    availability: 50,
-                    performance: 60,
-                    quality: 75,
-                    status: 'متوقف'
-                }
+        
+        function getMonthName(monthNumber) {
+            const monthNames = [
+                'فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور',
+                'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'
             ];
+            return monthNames[monthNumber - 1] || monthNumber;
+        }
+        
+        // ==================== توابع استخراج قطعات ====================
+        function extractPartsFromText(text) {
+            if (!text) return [];
             
-            // پاک کردن محتوای قبلی
-            performanceContainer.innerHTML = '';
+            const actionWords = ['تعویض', 'تعمیر', 'سرویس', 'روغن‌کاری', 'بازسازی', 'تنظیم', 'تعمیرات', 'تعویض شد', 'تعویض کرد', 'عوض کرد'];
+            const reasonWords = ['به دلیل', 'به علت', 'به خاطر', 'چون', 'زیرا', 'بدلیل', 'بعلت'];
+            const connectorWords = ['و', 'با', 'در', 'برای', 'از', 'به'];
             
-            // ایجاد کارت برای هر دستگاه
-            machines.forEach(machine => {
-                const card = document.createElement('div');
-                card.className = 'performance-card';
+            let cleanText = text.toString();
+            
+            actionWords.forEach(word => {
+                const regex = new RegExp(word, 'gi');
+                cleanText = cleanText.replace(regex, '|');
+            });
+            
+            reasonWords.forEach(word => {
+                const regex = new RegExp(word + '\\s+', 'gi');
+                cleanText = cleanText.replace(regex, '|');
+            });
+            
+            connectorWords.forEach(word => {
+                const regex = new RegExp('\\s+' + word + '\\s+', 'gi');
+                cleanText = cleanText.replace(regex, '|');
+            });
+            
+            const parts = cleanText.split('|')
+                .map(part => part.trim())
+                .filter(part => part.length > 2)
+                .filter(part => !/^\d+$/.test(part))
+                .filter(part => part.length < 50);
+            
+            if (parts.length === 0) {
+                let simpleText = text.toString();
+                actionWords.forEach(word => {
+                    const regex = new RegExp(word, 'gi');
+                    simpleText = simpleText.replace(regex, '');
+                });
+                const trimmedText = simpleText.trim();
+                return trimmedText.length > 0 ? [trimmedText.substring(0, 40)] : [];
+            }
+            
+            return parts;
+        }
+        
+        // ==================== توابع تحلیل داده ====================
+        async function loadData() {
+            try {
+                showLoader(true);
                 
-                // تعیین رنگ و آیکون بر اساس وضعیت
-                let statusColor, statusIcon, statusClass;
-                if (machine.status === 'عملیاتی') {
-                    statusColor = 'var(--success)';
-                    statusIcon = 'fa-check-circle';
-                    statusClass = 'status-operational';
-                } else if (machine.status === 'هشدار') {
-                    statusColor = 'var(--warning)';
-                    statusIcon = 'fa-exclamation-triangle';
-                    statusClass = 'status-warning';
-                } else {
-                    statusColor = 'var(--danger)';
-                    statusIcon = 'fa-times-circle';
-                    statusClass = 'status-down';
-                }
+                const timeRange = parseInt(document.getElementById('timeRangeSelect').value) || 30;
+                const daysAgo = new Date();
+                daysAgo.setDate(daysAgo.getDate() - timeRange);
+                
+                const { data, error } = await supabase
+                    .from('managerreports')
+                    .select('*')
+                    .gte('created_at', daysAgo.toISOString())
+                    .order('created_at', { ascending: false });
+                
+                if (error) throw error;
+                
+                allData = data || [];
+                
+                document.getElementById('lastUpdateTime').textContent = formatPersianDateTime(new Date());
+                
+                machines = [...new Set(allData.map(item => item.machine_name).filter(name => name))];
+                
+                updateMachineSelect();
+                updateMachinesGrid();
+                updateStats();
+                updateAllCharts();
+                
+                showLoader(false);
+            } catch (error) {
+                console.error('خطا در بارگذاری داده‌ها:', error);
+                showLoader(false);
+                alert('خطا در دریافت داده‌ها از سرور. لطفاً اتصال اینترنت را بررسی کنید.');
+            }
+        }
+        
+        function updateMachineSelect() {
+            const select = document.getElementById('machineSelect');
+            select.innerHTML = '<option value="all">همه دستگاه‌ها</option>';
+            
+            machines.forEach(machine => {
+                const option = document.createElement('option');
+                option.value = machine;
+                option.textContent = machine;
+                select.appendChild(option);
+            });
+        }
+        
+        function updateMachinesGrid() {
+            const grid = document.getElementById('machinesGrid');
+            grid.innerHTML = '';
+            
+            machines.forEach(machine => {
+                const machineData = allData.filter(item => item.machine_name === machine);
+                const failures = machineData.length;
+                
+                if (failures === 0) return;
+                
+                const allParts = machineData.flatMap(item => extractPartsFromText(item.actions_taken));
+                const uniqueParts = [...new Set(allParts)].length;
+                
+                const partCounts = {};
+                allParts.forEach(part => {
+                    if (part) {
+                        partCounts[part] = (partCounts[part] || 0) + 1;
+                    }
+                });
+                
+                const frequentPart = Object.entries(partCounts)
+                    .sort((a, b) => b[1] - a[1])[0];
+                
+                const card = document.createElement('div');
+                card.className = 'machine-card';
+                card.dataset.machine = machine;
                 
                 card.innerHTML = `
                     <div class="machine-header">
-                        <div class="machine-icon-small" style="background: ${statusColor}">
-                            <i class="fas ${statusIcon}"></i>
+                        <div class="machine-icon-small">
+                            <i class="fas fa-cog"></i>
                         </div>
-                        <div class="machine-info">
-                            <div class="machine-title">${machine.name}</div>
-                            <div class="machine-subtitle">${machine.type}</div>
-                        </div>
-                        <span class="status-badge ${statusClass}">${machine.status}</span>
+                        <div class="machine-name">${machine}</div>
                     </div>
-                    
-                    <div class="performance-metrics">
-                        <div class="metric">
-                            <div class="metric-value color-success">${machine.availability}%</div>
-                            <div class="metric-label">در دسترس بودن</div>
+                    <div class="machine-stats">
+                        <div class="stat-item">
+                            <span>خرابی‌ها:</span>
+                            <span>${failures}</span>
                         </div>
-                        <div class="metric">
-                            <div class="metric-value color-info">${machine.performance}%</div>
-                            <div class="metric-label">کارایی</div>
+                        <div class="stat-item">
+                            <span>قطعات:</span>
+                            <span>${uniqueParts}</span>
                         </div>
-                        <div class="metric">
-                            <div class="metric-value color-warning">${machine.quality}%</div>
-                            <div class="metric-label">کیفیت</div>
+                        <div class="stat-item">
+                            <span>قطعه پرتکرار:</span>
+                            <span>${frequentPart ? frequentPart[0].substring(0, 12) + (frequentPart[0].length > 12 ? '...' : '') : '--'}</span>
                         </div>
-                        <div class="metric">
-                            <div class="metric-value" style="color: ${statusColor}">${machine.oee}%</div>
-                            <div class="metric-label">OEE</div>
+                        <div class="stat-item">
+                            <span>تکرار:</span>
+                            <span>${frequentPart ? frequentPart[1] : 0}</span>
                         </div>
-                    </div>
-                    
-                    <div class="performance-bar">
-                        <div class="performance-fill" style="width: ${machine.oee}%; background: ${statusColor}"></div>
-                    </div>
-                    <div class="performance-value">
-                        <span>کارایی کلی تجهیزات (OEE)</span>
-                        <span>${machine.oee}%</span>
                     </div>
                 `;
                 
-                performanceContainer.appendChild(card);
+                card.addEventListener('click', () => {
+                    document.querySelectorAll('.machine-card').forEach(c => c.classList.remove('active'));
+                    card.classList.add('active');
+                    document.getElementById('machineSelect').value = machine;
+                    updateStats();
+                    updateAllCharts();
+                });
+                
+                card.addEventListener('touchstart', () => {
+                    card.style.transform = 'translateY(-1px)';
+                });
+                
+                card.addEventListener('touchend', () => {
+                    card.style.transform = '';
+                });
+                
+                grid.appendChild(card);
+            });
+            
+            document.getElementById('machinesContainer').style.display = 'block';
+        }
+        
+        function updateStats() {
+            const selectedMachine = document.getElementById('machineSelect').value;
+            const filteredData = selectedMachine === 'all' 
+                ? allData 
+                : allData.filter(item => item.machine_name === selectedMachine);
+            
+            const allParts = filteredData.flatMap(item => extractPartsFromText(item.actions_taken));
+            
+            document.getElementById('totalFailures').textContent = filteredData.length;
+            
+            const uniqueParts = [...new Set(allParts.filter(part => part))];
+            document.getElementById('uniqueParts').textContent = uniqueParts.length;
+            
+            const uniqueDays = [...new Set(filteredData.map(item => getJalaliFromISO(item.created_at)))];
+            const avgFailures = uniqueDays.length > 0 
+                ? (filteredData.length / uniqueDays.length).toFixed(1)
+                : 0;
+            document.getElementById('avgFailures').textContent = avgFailures;
+            
+            const partCounts = {};
+            allParts.forEach(part => {
+                if (part) {
+                    partCounts[part] = (partCounts[part] || 0) + 1;
+                }
+            });
+            
+            const expensivePart = Object.entries(partCounts)
+                .sort((a, b) => b[1] - a[1])[0];
+            
+            document.getElementById('expensivePart').textContent = expensivePart 
+                ? `${expensivePart[0].substring(0, 15)}... (${expensivePart[1]} بار)`
+                : '-';
+            
+            document.getElementById('statsGrid').style.display = 'grid';
+        }
+        
+        function updateAllCharts() {
+            const selectedMachine = document.getElementById('machineSelect').value;
+            const filteredData = selectedMachine === 'all' 
+                ? allData 
+                : allData.filter(item => item.machine_name === selectedMachine);
+            
+            // گروه‌بندی داده‌ها
+            const dailyData = {};
+            const monthlyData = {};
+            
+            filteredData.forEach(item => {
+                const jalaliDate = getJalaliFromISO(item.created_at);
+                const [year, month, day] = jalaliDate.split('/').map(Number);
+                
+                const dayKey = jalaliDate;
+                const monthKey = `${year}/${month.toString().padStart(2, '0')}`;
+                
+                // روزانه
+                if (!dailyData[dayKey]) {
+                    dailyData[dayKey] = {
+                        count: 0,
+                        parts: []
+                    };
+                }
+                dailyData[dayKey].count++;
+                dailyData[dayKey].parts.push(...extractPartsFromText(item.actions_taken));
+                
+                // ماهانه
+                if (!monthlyData[monthKey]) {
+                    monthlyData[monthKey] = {
+                        count: 0,
+                        days: {},
+                        monthName: getMonthName(month),
+                        year: year
+                    };
+                }
+                monthlyData[monthKey].count++;
+                
+                if (!monthlyData[monthKey].days[dayKey]) {
+                    monthlyData[monthKey].days[dayKey] = 0;
+                }
+                monthlyData[monthKey].days[dayKey]++;
+            });
+            
+            // ایجاد همه نمودارها
+            createDailyChart(dailyData, selectedMachine);
+            createMonthlyChart(monthlyData, selectedMachine);
+            createPartsChart(filteredData);
+            createTrendChart(dailyData, selectedMachine);
+            updateMonthlyStats(monthlyData);
+            
+            // نمایش تب‌ها
+            document.getElementById('chartsTabsContainer').style.display = 'block';
+        }
+        
+        function createDailyChart(dailyData, selectedMachine) {
+            if (dailyChart) {
+                dailyChart.destroy();
+            }
+            
+            const sortedDays = Object.keys(dailyData).sort();
+            let displayDays = sortedDays;
+            if (sortedDays.length > 30) {
+                displayDays = sortedDays.slice(-30);
+            }
+            
+            const dailyCounts = displayDays.map(day => dailyData[day].count);
+            
+            // ایجاد رنگ‌های پویا
+            const getColorByLevel = (count) => {
+                if (count === 0) return '#95a5a6';
+                if (count <= 2) return '#2ecc71';
+                if (count <= 5) return '#f1c40f';
+                if (count <= 10) return '#e67e22';
+                return '#e74c3c';
+            };
+            
+            const backgroundColors = dailyCounts.map(count => getColorByLevel(count));
+            
+            const ctx = document.getElementById('dailyChart').getContext('2d');
+            dailyChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: displayDays.map(day => {
+                        const [y, m, d] = day.split('/');
+                        return `${d}/${m}`;
+                    }),
+                    datasets: [{
+                        label: 'تعداد خرابی‌ها',
+                        data: dailyCounts,
+                        backgroundColor: backgroundColors,
+                        borderColor: backgroundColors.map(color => color.replace('0.7', '1')),
+                        borderWidth: 1,
+                        borderRadius: 4,
+                        borderSkipped: false,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: `گزارش روزانه خرابی‌ها - ${selectedMachine === 'all' ? 'همه دستگاه‌ها' : selectedMachine}`,
+                            font: {
+                                size: window.innerWidth <= 768 ? 14 : 16,
+                                family: 'Vazirmatn',
+                                weight: 'bold'
+                            },
+                            padding: {
+                                bottom: 20
+                            }
+                        },
+                        legend: {
+                            display: false,
+                        },
+                        tooltip: {
+                            rtl: true,
+                            titleFont: {
+                                family: 'Vazirmatn',
+                                size: window.innerWidth <= 768 ? 11 : 12
+                            },
+                            bodyFont: {
+                                family: 'Vazirmatn',
+                                size: window.innerWidth <= 768 ? 11 : 12
+                            },
+                            callbacks: {
+                                label: function(context) {
+                                    const dayIndex = context.dataIndex;
+                                    const day = displayDays[dayIndex];
+                                    const count = dailyData[day].count;
+                                    const parts = [...new Set(dailyData[day].parts)].slice(0, 3);
+                                    
+                                    let tooltipText = [
+                                        `تعداد خرابی: ${count}`,
+                                        `تاریخ: ${day}`
+                                    ];
+                                    
+                                    if (parts.length > 0) {
+                                        tooltipText.push(`قطعات: ${parts.join('، ')}${dailyData[day].parts.length > 3 ? '...' : ''}`);
+                                    }
+                                    
+                                    return tooltipText;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'روز / ماه',
+                                font: {
+                                    family: 'Vazirmatn',
+                                    size: window.innerWidth <= 768 ? 11 : 12,
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                font: {
+                                    family: 'Vazirmatn',
+                                    size: window.innerWidth <= 768 ? 10 : 11
+                                },
+                                maxRotation: window.innerWidth <= 768 ? 90 : 45,
+                                minRotation: window.innerWidth <= 768 ? 90 : 45
+                            },
+                            grid: {
+                                display: false
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'تعداد خرابی',
+                                font: {
+                                    family: 'Vazirmatn',
+                                    size: window.innerWidth <= 768 ? 11 : 12,
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                font: {
+                                    family: 'Vazirmatn',
+                                    size: window.innerWidth <= 768 ? 10 : 11
+                                },
+                                precision: 0,
+                                stepSize: 1
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeOutQuart'
+                    }
+                }
             });
         }
-
-        // تابع برای نمایش پیام عدم وجود داده
-        function showNoDataMessage() {
-            document.getElementById('machineContainer').style.display = 'flex';
-            document.getElementById('machineStatus').textContent = 'داده‌ای یافت نشد';
-            document.getElementById('machineStatus').className = 'machine-status status-maintenance';
-            document.getElementById('machineIcon').className = 'machine-icon bg-maintenance';
-            document.getElementById('machineIcon').innerHTML = '<i class="fas fa-database"></i>';
-        }
-
-        // تابع برای نمایش پیام خطا
-        function showErrorMessage(message) {
-            document.getElementById('machineContainer').style.display = 'flex';
-            document.getElementById('machineStatus').textContent = message;
-            document.getElementById('machineStatus').className = 'machine-status status-broken';
-            document.getElementById('machineIcon').className = 'machine-icon bg-broken';
-            document.getElementById('machineIcon').innerHTML = '<i class="fas fa-exclamation-circle"></i>';
-        }
-
-        // اجرا پس از لود صفحه
-        document.addEventListener('DOMContentLoaded', function() {
-            // جلوگیری از زوم با حرکات چندلمسی
-            document.addEventListener('touchstart', function(e) {
-                if (e.touches.length > 1) {
-                    e.preventDefault();
+        
+        function createMonthlyChart(monthlyData, selectedMachine) {
+            if (monthlyChart) {
+                monthlyChart.destroy();
+            }
+            
+            const sortedMonths = Object.keys(monthlyData).sort();
+            const monthlyCounts = sortedMonths.map(month => monthlyData[month].count);
+            const monthLabels = sortedMonths.map(month => {
+                const [y, m] = month.split('/');
+                return `${getMonthName(parseInt(m))} ${y}`;
+            });
+            
+            // رنگ‌های گرادیان برای نمودار ماهانه
+            const ctx = document.getElementById('monthlyChart').getContext('2d');
+            
+            // ایجاد گرادیان
+            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(52, 152, 219, 0.8)');
+            gradient.addColorStop(1, 'rgba(52, 152, 219, 0.1)');
+            
+            monthlyChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: monthLabels,
+                    datasets: [{
+                        label: 'تعداد خرابی‌ها',
+                        data: monthlyCounts,
+                        backgroundColor: gradient,
+                        borderColor: 'rgba(52, 152, 219, 1)',
+                        borderWidth: 2,
+                        borderRadius: 6,
+                        borderSkipped: false,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: `گزارش ماهانه خرابی‌ها - ${selectedMachine === 'all' ? 'همه دستگاه‌ها' : selectedMachine}`,
+                            font: {
+                                size: window.innerWidth <= 768 ? 14 : 16,
+                                family: 'Vazirmatn',
+                                weight: 'bold'
+                            },
+                            padding: {
+                                bottom: 20
+                            }
+                        },
+                        legend: {
+                            display: false,
+                        },
+                        tooltip: {
+                            rtl: true,
+                            titleFont: {
+                                family: 'Vazirmatn',
+                                size: window.innerWidth <= 768 ? 11 : 12
+                            },
+                            bodyFont: {
+                                family: 'Vazirmatn',
+                                size: window.innerWidth <= 768 ? 11 : 12
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'ماه',
+                                font: {
+                                    family: 'Vazirmatn',
+                                    size: window.innerWidth <= 768 ? 11 : 12,
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                font: {
+                                    family: 'Vazirmatn',
+                                    size: window.innerWidth <= 768 ? 10 : 11
+                                }
+                            },
+                            grid: {
+                                display: false
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'تعداد خرابی',
+                                font: {
+                                    family: 'Vazirmatn',
+                                    size: window.innerWidth <= 768 ? 11 : 12,
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                font: {
+                                    family: 'Vazirmatn',
+                                    size: window.innerWidth <= 768 ? 10 : 11
+                                },
+                                precision: 0
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeOutQuart'
+                    }
                 }
-            }, { passive: false });
-
+            });
+        }
+        
+        function createPartsChart(filteredData) {
+            if (partsChart) {
+                partsChart.destroy();
+            }
+            
+            const allParts = filteredData.flatMap(item => extractPartsFromText(item.actions_taken));
+            const partCounts = {};
+            allParts.forEach(part => {
+                if (part && part.trim().length > 0) {
+                    const cleanPart = part.trim();
+                    partCounts[cleanPart] = (partCounts[cleanPart] || 0) + 1;
+                }
+            });
+            
+            const sortedParts = Object.entries(partCounts)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 8);
+            
+            const ctx = document.getElementById('partsChart').getContext('2d');
+            
+            // رنگ‌های جذاب برای نمودار قطعات
+            const colors = [
+                '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
+                '#9966FF', '#FF9F40', '#8AC926', '#1982C4'
+            ];
+            
+            partsChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: sortedParts.map(p => {
+                        const label = p[0];
+                        return label.length > 20 ? label.substring(0, 20) + '...' : label;
+                    }),
+                    datasets: [{
+                        data: sortedParts.map(p => p[1]),
+                        backgroundColor: colors,
+                        borderWidth: 2,
+                        borderColor: '#fff',
+                        hoverOffset: 15
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '۸ قطعه پرتکرار خرابی',
+                            font: {
+                                size: window.innerWidth <= 768 ? 14 : 16,
+                                family: 'Vazirmatn',
+                                weight: 'bold'
+                            },
+                            padding: {
+                                bottom: 20
+                            }
+                        },
+                        legend: {
+                            position: window.innerWidth <= 768 ? 'top' : 'left',
+                            rtl: true,
+                            labels: {
+                                font: {
+                                    family: 'Vazirmatn',
+                                    size: window.innerWidth <= 768 ? 10 : 11
+                                },
+                                padding: 15,
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        },
+                        tooltip: {
+                            rtl: true,
+                            titleFont: {
+                                family: 'Vazirmatn',
+                                size: window.innerWidth <= 768 ? 11 : 12
+                            },
+                            bodyFont: {
+                                family: 'Vazirmatn',
+                                size: window.innerWidth <= 768 ? 11 : 12
+                            },
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${label}: ${value} بار (${percentage}%)`;
+                                }
+                            }
+                        }
+                    },
+                    animation: {
+                        animateScale: true,
+                        animateRotate: true,
+                        duration: 1500
+                    }
+                }
+            });
+        }
+        
+        function createTrendChart(dailyData, selectedMachine) {
+            if (trendChart) {
+                trendChart.destroy();
+            }
+            
+            const sortedDays = Object.keys(dailyData).sort();
+            let displayDays = sortedDays;
+            if (sortedDays.length > 30) {
+                displayDays = sortedDays.slice(-30);
+            }
+            
+            const dailyCounts = displayDays.map(day => dailyData[day].count);
+            
+            // محاسبه میانگین متحرک
+            const movingAverage = [];
+            for (let i = 0; i < dailyCounts.length; i++) {
+                const start = Math.max(0, i - 2);
+                const end = i + 1;
+                const slice = dailyCounts.slice(start, end);
+                const avg = slice.reduce((a, b) => a + b, 0) / slice.length;
+                movingAverage.push(avg.toFixed(1));
+            }
+            
+            const ctx = document.getElementById('trendChart').getContext('2d');
+            
+            // ایجاد گرادیان برای خط
+            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(231, 76, 60, 0.8)');
+            gradient.addColorStop(1, 'rgba(231, 76, 60, 0.1)');
+            
+            trendChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: displayDays.map(day => {
+                        const [y, m, d] = day.split('/');
+                        return `${d}/${m}`;
+                    }),
+                    datasets: [
+                        {
+                            label: 'تعداد خرابی‌های روزانه',
+                            data: dailyCounts,
+                            borderColor: '#e74c3c',
+                            backgroundColor: gradient,
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointBackgroundColor: '#e74c3c',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: window.innerWidth <= 768 ? 4 : 5,
+                            pointHoverRadius: window.innerWidth <= 768 ? 6 : 7
+                        },
+                        {
+                            label: 'میانگین متحرک (۳ روزه)',
+                            data: movingAverage,
+                            borderColor: '#3498db',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            fill: false,
+                            tension: 0.4,
+                            pointBackgroundColor: '#3498db',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: window.innerWidth <= 768 ? 3 : 4,
+                            pointHoverRadius: window.innerWidth <= 768 ? 5 : 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: `روند خرابی‌ها - ${selectedMachine === 'all' ? 'همه دستگاه‌ها' : selectedMachine}`,
+                            font: {
+                                size: window.innerWidth <= 768 ? 14 : 16,
+                                family: 'Vazirmatn',
+                                weight: 'bold'
+                            },
+                            padding: {
+                                bottom: 20
+                            }
+                        },
+                        legend: {
+                            rtl: true,
+                            labels: {
+                                font: {
+                                    family: 'Vazirmatn',
+                                    size: window.innerWidth <= 768 ? 10 : 11
+                                }
+                            }
+                        },
+                        tooltip: {
+                            rtl: true,
+                            titleFont: {
+                                family: 'Vazirmatn',
+                                size: window.innerWidth <= 768 ? 11 : 12
+                            },
+                            bodyFont: {
+                                family: 'Vazirmatn',
+                                size: window.innerWidth <= 768 ? 11 : 12
+                            },
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'روز / ماه',
+                                font: {
+                                    family: 'Vazirmatn',
+                                    size: window.innerWidth <= 768 ? 11 : 12,
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                font: {
+                                    family: 'Vazirmatn',
+                                    size: window.innerWidth <= 768 ? 10 : 11
+                                },
+                                maxRotation: window.innerWidth <= 768 ? 90 : 45,
+                                minRotation: window.innerWidth <= 768 ? 90 : 45
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'تعداد خرابی',
+                                font: {
+                                    family: 'Vazirmatn',
+                                    size: window.innerWidth <= 768 ? 11 : 12,
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                font: {
+                                    family: 'Vazirmatn',
+                                    size: window.innerWidth <= 768 ? 10 : 11
+                                },
+                                precision: 0
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
+                    animation: {
+                        duration: 2000,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            });
+        }
+        
+        function updateMonthlyStats(monthlyData) {
+            const sortedMonths = Object.keys(monthlyData).sort().reverse();
+            
+            if (sortedMonths.length === 0) {
+                document.getElementById('monthsContainer').style.display = 'none';
+                return;
+            }
+            
+            const monthsGrid = document.getElementById('monthsGrid');
+            monthsGrid.innerHTML = '';
+            
+            sortedMonths.slice(0, 6).forEach(monthKey => {
+                const monthData = monthlyData[monthKey];
+                const avgPerDay = (monthData.count / Object.keys(monthData.days).length).toFixed(1);
+                const maxPerDay = Math.max(...Object.values(monthData.days));
+                
+                // تعیین رنگ کارت بر اساس تعداد خرابی
+                let cardClass = 'month-card';
+                if (monthData.count > 50) {
+                    cardClass += ' level-3';
+                } else if (monthData.count > 20) {
+                    cardClass += ' level-2';
+                } else if (monthData.count > 5) {
+                    cardClass += ' level-1';
+                } else {
+                    cardClass += ' level-0';
+                }
+                
+                const monthCard = document.createElement('div');
+                monthCard.className = cardClass;
+                monthCard.innerHTML = `
+                    <div class="month-header">
+                        <div class="month-name">${monthData.monthName} ${monthData.year}</div>
+                        <div class="month-count">${monthData.count} خرابی</div>
+                    </div>
+                    <div class="month-details">
+                        <div class="detail-item">
+                            <span>روزهای خرابی:</span>
+                            <span>${Object.keys(monthData.days).length}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span>میانگین روزانه:</span>
+                            <span>${avgPerDay}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span>بیشترین در روز:</span>
+                            <span>${maxPerDay}</span>
+                        </div>
+                    </div>
+                `;
+                
+                monthsGrid.appendChild(monthCard);
+            });
+            
+            document.getElementById('monthsContainer').style.display = 'block';
+        }
+        
+        // ==================== توابع کمکی ====================
+        function showLoader(show) {
+            document.getElementById('loader').style.display = show ? 'block' : 'none';
+            if (show) {
+                document.getElementById('chartsTabsContainer').style.display = 'none';
+                document.getElementById('statsGrid').style.display = 'none';
+                document.getElementById('machinesContainer').style.display = 'none';
+                document.getElementById('monthsContainer').style.display = 'none';
+            }
+        }
+        
+        function formatPersianDateTime(date) {
+            try {
+                const options = {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                };
+                return new Intl.DateTimeFormat('fa-IR', options).format(date);
+            } catch (error) {
+                return date.toLocaleString('fa-IR');
+            }
+        }
+        
+        // ==================== رویدادها ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            const now = new Date();
+            document.getElementById('loginTime').textContent = formatPersianDateTime(now);
+            document.getElementById('lastUpdateTime').textContent = formatPersianDateTime(now);
+            
+            loadData();
+            
+            document.getElementById('machineSelect').addEventListener('change', function() {
+                updateStats();
+                updateAllCharts();
+                
+                document.querySelectorAll('.machine-card').forEach(card => {
+                    card.classList.toggle('active', card.dataset.machine === this.value);
+                });
+            });
+            
+            document.getElementById('timeRangeSelect').addEventListener('change', loadData);
+            
+            document.getElementById('refreshBtn').addEventListener('click', loadData);
+            
+            // بهبود touch events برای iOS
+            document.getElementById('refreshBtn').addEventListener('touchstart', function() {
+                this.style.opacity = '0.8';
+            });
+            
+            document.getElementById('refreshBtn').addEventListener('touchend', function() {
+                this.style.opacity = '1';
+            });
+            
+            window.addEventListener('online', () => {
+                document.getElementById('offlineAlert').style.display = 'none';
+                loadData();
+            });
+            
+            window.addEventListener('offline', () => {
+                document.getElementById('offlineAlert').style.display = 'block';
+            });
+            
+            if (!navigator.onLine) {
+                document.getElementById('offlineAlert').style.display = 'block';
+            }
+            
+            setInterval(() => {
+                if (navigator.onLine) {
+                    loadData();
+                }
+            }, 300000);
+            
+            // مدیریت تب‌های نمودار
+            document.querySelectorAll('.chart-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const chartType = this.dataset.chart;
+                    
+                    document.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    document.querySelectorAll('.chart-wrapper').forEach(wrapper => {
+                        wrapper.style.display = 'none';
+                    });
+                    
+                    document.getElementById(`${chartType}ChartContainer`).style.display = 'block';
+                });
+                
+                // بهبود touch events برای iOS
+                tab.addEventListener('touchstart', function() {
+                    this.style.opacity = '0.8';
+                });
+                
+                tab.addEventListener('touchend', function() {
+                    this.style.opacity = '1';
+                });
+            });
+            
+            // جلوگیری از double-tap zoom در iOS
             let lastTouchEnd = 0;
-            document.addEventListener('touchend', function(e) {
-                const now = (new Date()).getTime();
+            document.addEventListener('touchend', function(event) {
+                const now = Date.now();
                 if (now - lastTouchEnd <= 300) {
-                    e.preventDefault();
+                    event.preventDefault();
                 }
                 lastTouchEnd = now;
             }, false);
-
-            document.addEventListener('gesturestart', function(e) {
-                e.preventDefault();
-            });
-
-            document.addEventListener('gesturechange', function(e) {
-                e.preventDefault();
-            });
-
-            document.addEventListener('gestureend', function(e) {
-                e.preventDefault();
-            });
-
-            // مدیریت زمان ورود کاربر
-            const now = new Date();
-            window.loginTime = now;
             
-            // نمایش زمان ورود
-            const loginTimeElement = document.getElementById('loginTime');
-            const lastLoginTimeElement = document.getElementById('lastLoginTime');
-            
-            if (loginTimeElement) {
-                loginTimeElement.textContent = formatPersianDateTime(now);
-            }
-            
-            if (lastLoginTimeElement) {
-                lastLoginTimeElement.textContent = formatPersianDateTime(now);
-            }
-
-            // به روز رسانی زمان آنلاین هر دقیقه
-            setInterval(updateOnlineTime, 60000);
-
-            // تغییر وضعیت فعال در نویگیشن
-            const navLinks = document.querySelectorAll('.nav-link');
-            navLinks.forEach(link => {
-                link.addEventListener('click', function() {
-                    navLinks.forEach(l => l.classList.remove('active'));
-                    this.classList.add('active');
-                });
-            });
-            
-            // نمایش اعلان برای دکمه‌ها
-            const buttons = document.querySelectorAll('.report-button');
-            buttons.forEach(button => {
-                button.addEventListener('click', function() {
-                    const text = this.textContent.trim();
-                    alert(`گزارش "${text}" در حال آماده‌سازی است...`);
-                });
-            });
-
-            // دریافت وضعیت دستگاه استنتر
-            getLatestMachineStatus();
-            
-            // تولید کارت‌های کارایی دستگاه‌ها
-            generatePerformanceCards();
-            
-            // به روز رسانی خودکار وضعیت دستگاه هر 30 ثانیه
-            setInterval(getLatestMachineStatus, 30000);
+            // بهبود scroll در iOS
+            document.addEventListener('touchmove', function(event) {
+                if (event.scale !== 1) {
+                    event.preventDefault();
+                }
+            }, { passive: false });
         });
-
-        // جلوگیری از اسکرول هنگام زوم در iOS
         
-
-
-        // سرویس ورکر
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function() {
-        navigator.serviceWorker.register('../sw.js');
-    });
-}
-
-// مدیریت آفلاین
-window.addEventListener('online', function() {
-    document.getElementById('offlineAlert').style.display = 'none';
-});
-
-window.addEventListener('offline', function() {
-    document.getElementById('offlineAlert').style.display = 'block';
-});
-
-if (!navigator.onLine) {
-    document.getElementById('offlineAlert').style.display = 'block';
-}
-
-
-
+        function handleMobileView() {
+            const chartWrappers = document.querySelectorAll('.chart-wrapper');
+            const isMobile = window.innerWidth <= 768;
+            const isLandscape = window.innerWidth > window.innerHeight;
+            
+            let height;
+            if (isMobile && isLandscape) {
+                height = '250px';
+            } else if (isMobile) {
+                height = 'clamp(250px, 40vh, 350px)';
+            } else {
+                height = '400px';
+            }
+            
+            chartWrappers.forEach(el => {
+                el.style.height = height;
+            });
+            
+            // به‌روزرسانی font-size در نمودارها
+            if (dailyChart) {
+                dailyChart.options.plugins.title.font.size = isMobile ? 14 : 16;
+                dailyChart.update();
+            }
+            
+            if (monthlyChart) {
+                monthlyChart.options.plugins.title.font.size = isMobile ? 14 : 16;
+                monthlyChart.update();
+            }
+            
+            if (partsChart) {
+                partsChart.options.plugins.title.font.size = isMobile ? 14 : 16;
+                partsChart.options.plugins.legend.position = isMobile ? 'top' : 'left';
+                partsChart.update();
+            }
+            
+            if (trendChart) {
+                trendChart.options.plugins.title.font.size = isMobile ? 14 : 16;
+                trendChart.update();
+            }
+        }
+        
+        window.addEventListener('resize', handleMobileView);
+        window.addEventListener('orientationchange', function() {
+            setTimeout(handleMobileView, 100);
+        });
+        
+        handleMobileView();
     </script>
 </body>
 </html>
