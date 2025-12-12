@@ -26,7 +26,7 @@ const urlsToCache = [
 const NO_CACHE_PATHS = [
   'dashboard.html',
   'reports.html',
-  'warehouse.html',
+  'work-order.html',
   'troubleshooting.html',
   'RequestsScreen.html'
 ];
