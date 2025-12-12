@@ -667,7 +667,7 @@
         <i class="fas fa-wifi-slash"></i> حالت آفلاین - اتصال اینترنت برقرار نیست
     </div>
     <!-- دکمه دیباگ -->
-    <button class="debug-btn" onclick="debugStatus()">دیباگ وضعیت</button>
+   
 
     <!-- اسکریپت Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -957,7 +957,7 @@
         function showErrorMessage(message) {
             console.log('💥 نمایش پیام خطا:', message);
             document.getElementById('machineContainer').style.display = 'flex';
-            document.getElementById('machineStatus').textContent = message;
+            document.getElementById('machineStatus').textContent = "اتصال اینترنت نائایدار است";
             document.getElementById('machineStatus').className = 'machine-status status-broken';
             document.getElementById('machineIcon').className = 'machine-icon bg-broken';
             document.getElementById('machineIcon').innerHTML = '<i class="fas fa-exclamation-circle"></i>';
