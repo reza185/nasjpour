@@ -833,9 +833,9 @@
                     <i class="fas fa-chart-bar"></i>
                     <span>گزارشات</span>
                 </a>
-                <a href="warehouse.html" class="nav-link">
-                    <i class="fas fa-warehouse"></i>
-                    <span>انبار</span>
+                <a href="work-order.html" class="nav-link ">
+                    <i class="fas fa-clipboard-list"></i>
+                    <span>دستورکار</span>
                 </a>
             </div>
             
@@ -1343,33 +1343,40 @@
                 
                 return `
                 <div class="report-item">
-                    <div class="report-info">
-                        <div class="report-icon" style="background: ${priorityColor}">
-                            <i class="fas fa-clipboard-check"></i>
-                        </div>
-                        <div class="report-content">
-                            <div class="report-title">${report.machine_name || 'بدون عنوان'}</div>
-                            <div class="report-desc">${report.problem_description || 'بدون توضیحات'}</div>
-                            <div style="display: flex; gap: 10px; margin-top: 6px; font-size: 11px; color: #666; flex-wrap: wrap;">
-                                <span><strong>گزارش‌دهنده:</strong> ${report.reporter_name || 'نامشخص'}</span>
-                                <span><strong>وضعیت:</strong> ${getStatusText(status)}</span>
-                                <span><strong>اولویت:</strong> ${getPriorityText(priority)}</span>
-                                <span><strong>تاریخ:</strong> ${new Date(report.created_at).toLocaleDateString('fa-IR')}</span>
-                            </div>
-                            ${report.manager_message ? `
-                                <div style="margin-top: 6px; padding: 6px; background: #fff3cd; border-radius: 4px; font-size: 11px;">
-                                    <strong>یادداشت مدیر:</strong> ${report.manager_message}
-                                </div>
-                            ` : ''}
-                        </div>
+    <div class="report-info">
+        <div class="report-icon" style="background: ${priorityColor}">
+            <i class="fas fa-clipboard-check"></i>
+        </div>
+        <div class="report-content">
+            <div class="report-title">${report.machine_name || 'بدون عنوان'}</div>
+            <div class="report-desc">${report.problem_description || 'بدون توضیحات'}</div>
+            <div style="display: flex; gap: 10px; margin-top: 6px; font-size: 11px; color: #666; flex-wrap: wrap;">
+                <span><strong>گزارش‌دهنده:</strong> ${report.reporter_name || 'نامشخص'}</span>
+                <span><strong>وضعیت:</strong> ${getStatusText(status)}</span>
+                <span><strong>اولویت:</strong> ${getPriorityText(priority)}</span>
+                <span><strong>تاریخ:</strong> ${new Date(report.created_at).toLocaleDateString('fa-IR')}</span>
+            </div>
+            ${report.manager_message || report.actions_taken ? `
+                ${report.manager_message ? `
+                    <div style="margin-top: 6px; padding: 6px; background: #fff3cd; border-radius: 4px; font-size: 11px;">
+                        <strong>یادداشت مدیر:</strong> ${report.manager_message}
                     </div>
-                    <div style="display: flex; gap: 8px;">
-                        <button class="download-btn" onclick="downloadSingleReport('${report.id}')" title="دانلود این گزارش">
-                            <i class="fas fa-download"></i>
-                            دانلود
-                        </button>
+                ` : ''}
+                ${report.actions_taken ? `
+                    <div style="margin-top: 6px; padding: 6px; background: #fff3cd; border-radius: 4px; font-size: 11px;">
+                        <strong>قطعات مصرفی:</strong> ${report.actions_taken}
                     </div>
-                </div>
+                ` : ''}
+            ` : ''}
+        </div>
+    </div>
+    <div style="display: flex; gap: 8px;">
+        <button class="download-btn" onclick="downloadSingleReport('${report.id}')" title="دانلود این گزارش">
+            <i class="fas fa-download"></i>
+            دانلود
+        </button>
+    </div>
+</div>
                 `;
             }).join('');
         }
