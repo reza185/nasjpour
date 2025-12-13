@@ -2811,17 +2811,17 @@ ${report.consumable_quantity > 0 ? `
         // ==================== مدیریت اسکرول ====================
         
         // فعال کردن اسکرول فقط در container اصلی
-        const container = document.getElementById('mainContainer');
-        container.addEventListener('touchmove', function(e) {
-            e.stopPropagation();
-        }, { passive: true });
+        // const container = document.getElementById('mainContainer');
+        // container.addEventListener('touchmove', function(e) {
+        //     e.stopPropagation();
+        // }, { passive: true });
         
-        // جلوگیری از اسکرول در body
-        document.body.addEventListener('touchmove', function(e) {
-            if (e.target === document.body) {
-                e.preventDefault();
-            }
-        }, { passive: false });
+        // // جلوگیری از اسکرول در body
+        // document.body.addEventListener('touchmove', function(e) {
+        //     if (e.target === document.body) {
+        //         e.preventDefault();
+        //     }
+        // }, { passive: false });
         
         if (window.matchMedia('(display-mode: standalone)').matches) {
             document.body.style.overscrollBehavior = 'none';
@@ -3021,11 +3021,11 @@ ${report.consumable_quantity > 0 ? `
         });
         
         // جلوگیری از اسکرول هنگام زوم در iOS
-        document.addEventListener('touchmove', function(e) {
-            if(e.scale !== 1) {
-                e.preventDefault();
-            }
-        }, { passive: false });
+        // document.addEventListener('touchmove', function(e) {
+        //     if(e.scale !== 1) {
+        //         e.preventDefault();
+        //     }
+        // }, { passive: false });
     </script>
 </body>
 </html>
