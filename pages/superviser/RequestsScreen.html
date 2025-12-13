@@ -1318,13 +1318,35 @@
                         class="form-textarea" 
                         placeholder="قطعات مصرفی مورد نیاز را اینجا بنویسید (هر مورد در یک خط جدید)
 مثال:
-- بلبرینگ 6202 - 2 عدد
-- سیم برق 2.5 - 10 متر
-- لنت ترمز - 1 عدد" 
+- بلبرینگ 6202 - 
+- سیم برق 2.5 - 
+- لنت ترمز - " 
                         rows="4"
                     ></textarea>
                     <div class="char-counter" id="partsCharCount">0/1000 کاراکتر</div>
                 </div>
+                <!-- در پاپاپ managerPopup بعد از فیلد قطعات مصرفی -->
+<div class="form-group">
+    <label class="form-label" for="partsQuantity">
+        <i class="fas fa-hashtag"></i>
+        تعداد قطعات مصرفی
+    </label>
+    <input type="number" 
+           id="partsQuantity" 
+           class="form-input" 
+           placeholder="مثال: 3" 
+           min="0" 
+           value="0"
+           oninput="updatePartsSummary()">
+</div>
+
+<div class="form-group">
+    <label class="form-label">خلاصه قطعات:</label>
+    <div id="partsSummary" style="background: #f8f9fa; padding: 10px; border-radius: 6px; border: 1px solid #ddd; font-size: 13px; color: #2e7d32;">
+        قطعات: <span id="partsList">بلبرینگ</span><br>
+        تعداد: <span id="partsQty">0</span> عدد
+    </div>
+</div>
                 
                 <div class="form-actions">
                     <button type="button" class="cancel-btn" onclick="closeManagerPopup()">انصراف</button>
@@ -1701,7 +1723,40 @@
         }
         
         // ==================== مدیریت شمارنده کاراکتر قطعات مصرفی ====================
+// اضافه کردن این توابع
 
+let partsList = ''; // برای ذخیره لیست قطعات
+let partsQuantity = 0; // برای ذخیره تعداد
+
+// تابع به‌روزرسانی خلاصه
+function updatePartsSummary() {
+    const partsTextarea = document.getElementById('consumableParts');
+    const quantityInput = document.getElementById('partsQuantity');
+    
+    partsList = partsTextarea.value.trim();
+    partsQuantity = parseInt(quantityInput.value) || 0;
+    
+    // به‌روزرسانی نمایش
+    document.getElementById('partsList').textContent = 
+        partsList || 'هیچ قطعه‌ای وارد نشده';
+    document.getElementById('partsQty').textContent = partsQuantity;
+}
+
+// مقداردهی اولیه
+document.getElementById('consumableParts').addEventListener('input', updatePartsSummary);
+document.getElementById('partsQuantity').addEventListener('input', updatePartsSummary);
+
+// در تابع openManagerPopup اضافه کنید:
+function openManagerPopup(reportId) {
+    document.getElementById('currentReportId').value = reportId;
+    document.getElementById('managerPopup').style.display = 'flex';
+    document.getElementById('managerMessage').focus();
+    
+    // ریست کردن فیلدها
+    document.getElementById('consumableParts').value = '';
+    document.getElementById('partsQuantity').value = '0';
+    updatePartsSummary();
+}
         function updatePartsCharCount() {
             const textarea = document.getElementById('consumableParts');
             const charCount = document.getElementById('partsCharCount');
@@ -1866,7 +1921,7 @@
                     
                     ${report.actions_taken ? `
                         <div class="actions-section">
-                            <div class="section-title-small">${isWorkorder ? 'یادداشت:' : 'اقدامات انجام شده:'}</div>
+                            <div class="section-title-small">${isWorkorder ? 'یادداشت:' : 'یادداشت اپراتور  :'}</div>
                             <p style="white-space: pre-line; font-size: 13px;">${report.actions_taken}</p>
                         </div>
                     ` : ''}
@@ -1887,6 +1942,29 @@
                             <p>${report.manager_message}</p>
                         </div>
                     ` : ''}
+                    
+${report.consumable_quantity > 0 ? `
+    <div class="parts-section">
+        <div class="section-title-small">
+            <i class="fas fa-tools"></i>
+            قطعات مصرفی:
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0;">
+            <span>تعداد قطعات مورد نیاز:</span>
+            <span class="badge" style="background: #4CAF50; color: white; padding: 4px 10px; border-radius: 12px;">
+                ${report.consumable_quantity} عدد
+            </span>
+        </div>
+        ${report.actions_taken && report.actions_taken.includes('قطعات مصرفی') ? `
+            <div style="margin-top: 10px; padding: 10px; background: white; border-radius: 6px; border: 1px solid #ddd;">
+                <strong>لیست قطعات:</strong>
+                <p style="white-space: pre-line; font-size: 13px; margin-top: 5px;">
+                    ${extractPartsText(report.actions_taken)}
+                </p>
+            </div>
+        ` : ''}
+    </div>
+` : ''}
                     
                     <div class="action-buttons">
                         ${isWorkorder ? 
@@ -2240,7 +2318,7 @@
                         action_type: report.action_type,
                         technician_name: report.technician_name,
                         estimated_time: report.estimated_time,
-                        consumable_parts: report.consumable_parts,
+                        consumable_parts: report.actions_taken,
                         supervisor_note: 'تکمیل شده توسط سرپرست',
                         created_at: report.created_at,
                         completed_at: new Date().toISOString()
@@ -2468,74 +2546,74 @@
         // ==================== آپدیت تابع ارسال به مدیر با قطعات مصرفی ====================
 
         document.getElementById('managerForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
+    e.preventDefault();
+    
+    const reportId = document.getElementById('currentReportId').value;
+    const message = document.getElementById('managerMessage').value;
+    const actionType = document.getElementById('actionType').value;
+    const partsText = document.getElementById('consumableParts').value;
+    const partsQty = parseInt(document.getElementById('partsQuantity').value) || 0;
+
+    try {
+        const report = currentReports.find(r => r.id === reportId);
+        if (report && !report.is_workorder) {
+            // 1. ایجاد متن actions_taken
+            let actionsTaken = report.actions_taken || '';
             
-            const reportId = document.getElementById('currentReportId').value;
-            const message = document.getElementById('managerMessage').value;
-            const actionType = document.getElementById('actionType').value;
-            const consumableParts = document.getElementById('consumableParts').value;
-
-            try {
-                const report = currentReports.find(r => r.id === reportId);
-                if (report && !report.is_workorder) {
-                    // ایجاد متن actions_taken با اضافه کردن قطعات مصرفی
-                    let actionsTaken = report.actions_taken || '';
-                    
-                    // اگر قطعات مصرفی وارد شده، به actions_taken اضافه کن
-                    if (consumableParts.trim()) {
-                        const partsText = `\n\n📦 قطعات مصرفی مورد نیاز:\n${consumableParts}`;
-                        actionsTaken += partsText;
-                    }
-                    
-                    // آپدیت وضعیت در جدول اصلی
-                    const { error: updateError } = await supabase
-                        .from('operatourreports')
-                        .update({ 
-                            status: 'به مدیر ارجاع داده شد',
-                            manager_note: message,
-                            action_type: actionType,
-                            actions_taken: actionsTaken, // ذخیره در ستون actions_taken
-                            consumable_parts: consumableParts, // ذخیره جداگانه قطعات مصرفی
-                            updated_at: new Date().toISOString()
-                        })
-                        .eq('id', reportId);
-
-                    if (updateError) throw updateError;
-
-                    // ارسال به جدول مدیران با اطلاعات قطعات مصرفی
-                    const reportData = {
-                        reporter_name: report.reporter_name,
-                        machine_name: report.machine_name,
-                        machine_status: report.machine_status,
-                        problem_description: report.problem_description,
-                        status: 'referred_to_manager',
-                        priority: report.priority,
-                        actions_taken: actionsTaken, // شامل قطعات مصرفی
-                        consumable_parts: consumableParts, // قطعات مصرفی
-                        manager_message: message,
-                        action_type: actionType,
-                        technician_name: report.technician_name,
-                        estimated_time: report.estimated_time,
-                        created_at: report.created_at,
-                        referred_at: new Date().toISOString()
-                    };
-
-                    const { error: insertError } = await supabase
-                        .from('managerreports')
-                        .insert([reportData]);
-
-                    if (insertError) throw insertError;
-                }
-                
-                alert('گزارش با موفقیت به مدیر ارسال شد.');
-                closeManagerPopup();
-                loadReports();
-                
-            } catch (error) {
-                console.error('خطا در ارسال به مدیر:', error);
-                alert('خطا در ارسال به مدیر');
+            // اگر قطعات وارد شده
+            if (partsText.trim()) {
+                const partsSummary = partsText;
+                actionsTaken = partsSummary;
             }
-        });
+            
+            // 2. آپدیت گزارش اصلی
+            const { error: updateError } = await supabase
+                .from('operatourreports')
+                .update({ 
+                    status: 'ارجاع به مدیر',
+                    manager_note: message,
+                    action_type: actionType,
+                    actions_taken: actionsTaken,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', reportId);
+
+            if (updateError) throw updateError;
+
+            // 3. ارسال به جدول مدیران با QUANTITY
+            const reportData = {
+                reporter_name: report.reporter_name,
+                machine_name: report.machine_name,
+                machine_status: report.machine_status,
+                problem_description: report.problem_description,
+                status: 'ارجاع به مدیر',
+                priority: report.priority,
+                actions_taken: actionsTaken, // شامل لیست قطعات و تعداد
+                consumable_quantity: partsQty, // تعداد جداگانه
+                manager_message: message,
+                action_type: actionType,
+                technician_name: report.technician_name,
+                estimated_time: report.estimated_time,
+                created_at: report.created_at,
+                referred_at: new Date().toISOString()
+            };
+
+            const { error: insertError } = await supabase
+                .from('managerreports')
+                .insert([reportData]);
+
+            if (insertError) throw insertError;
+        }
+        
+        alert('گزارش با  موفقیت به مدیر ارسال شد.');
+        closeManagerPopup();
+        loadReports();
+        
+    } catch (error) {
+        console.error('خطا در ارسال به مدیر:', error);
+        alert('خطا در ارسال به مدیر');
+    }
+});
         
         // ثبت اقدام
         document.getElementById('actionForm').addEventListener('submit', async function(e) {
@@ -2943,7 +3021,11 @@
         });
         
         // جلوگیری از اسکرول هنگام زوم در iOS
-        
+        document.addEventListener('touchmove', function(e) {
+            if(e.scale !== 1) {
+                e.preventDefault();
+            }
+        }, { passive: false });
     </script>
 </body>
 </html>
