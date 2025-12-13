@@ -2299,11 +2299,11 @@
         }, { passive: true });
         
         // جلوگیری از اسکرول در body
-        document.body.addEventListener('touchmove', function(e) {
-            if (e.target === document.body) {
-                e.preventDefault();
-            }
-        }, { passive: false });
+        // document.body.addEventListener('touchmove', function(e) {
+        //     if (e.target === document.body) {
+        //         e.preventDefault();
+        //     }
+        // }, { passive: false });
         
         if (window.matchMedia('(display-mode: standalone)').matches) {
             document.body.style.overscrollBehavior = 'none';
