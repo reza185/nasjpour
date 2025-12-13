@@ -16,7 +16,6 @@
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     
     <style>
-        /* استایل‌های شما بدون تغییر */
         * {
             margin: 0;
             padding: 0;
@@ -554,21 +553,114 @@
                 overflow-x: auto;
             }
             
+            /* بهبود پاپاپ‌ها برای iPhone */
+            .popup-overlay {
+                padding: 10px;
+                align-items: flex-start;
+                padding-top: 20px;
+            }
+            
+            .popup-content {
+                padding: 15px;
+                max-height: 85vh;
+                width: 95%;
+                margin: 0 auto;
+            }
+            
+            .popup-title {
+                font-size: 16px;
+            }
+            
+            /* بهبود دکمه‌های فرم در پاپاپ برای iPhone */
             .form-actions {
                 flex-direction: column;
+                gap: 10px;
             }
             
             .form-actions .btn {
                 width: 100%;
+                margin: 0;
+                padding: 14px 16px;
+                font-size: 15px;
+                min-height: 46px;
+            }
+            
+            /* بهبود فرم‌ها */
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .form-input, .form-select, .form-textarea {
+                padding: 14px;
+                font-size: 16px;
+            }
+            
+            .form-textarea {
+                min-height: 120px;
+            }
+            
+            /* بهبود دکمه‌های پاپاپ جزئیات */
+            #detailsContent .form-actions {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            #detailsContent .form-actions .btn {
+                width: 100%;
+                margin: 0;
+                justify-content: center;
+                padding: 14px;
+                min-height: 46px;
             }
         }
+        
+        /* تنظیمات خاص برای iPhone در حالت لنداسکیپ */
+        @media screen and (max-height: 500px) and (orientation: landscape) {
+            .popup-overlay {
+                padding-top: 10px;
+                align-items: flex-start;
+            }
+            
+            .popup-content {
+                max-height: 90vh;
+                overflow-y: auto;
+            }
+            
+            .form-actions {
+                flex-direction: row;
+                gap: 8px;
+            }
+            
+            .form-actions .btn {
+                padding: 10px 12px;
+                font-size: 13px;
+                min-height: 44px;
+            }
+        }
+        
+        /* جلوگیری از زوم در input fields در iOS */
+        @media screen and (max-width: 768px) {
+            input, select, textarea {
+                font-size: 16px !important;
+            }
+        }
+        
+        /* بهبود لمس در iOS */
+        .btn, .form-actions .btn {
+            cursor: pointer;
+            -webkit-tap-highlight-color: rgba(0,0,0,0.1);
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        
         @supports (padding: max(0px)) {
-  body {
-    padding-top: env(safe-area-inset-top);
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
-  }
-}
+            body {
+                padding-top: env(safe-area-inset-top);
+                padding-left: env(safe-area-inset-left);
+                padding-right: env(safe-area-inset-right);
+            }
+        }
     </style>
 </head>
 <body>
@@ -1438,7 +1530,7 @@
             updateCharCount();
             
             // تغییر عنوان و تنظیمات فرم
-            document.querySelector('#workOrderPopup .popup-title').textContent = 'ویرایش دستورکار';
+            
             
             // ذخیره ID برای استفاده در ارسال
             document.getElementById('workOrderPopup').dataset.editingId = workOrder.id;
@@ -1449,9 +1541,7 @@
             document.getElementById('formAlert').style.display = 'none';
             
             // تغییر متن دکمه ثبت
-            const submitBtn = document.querySelector('#workOrderForm button[type="submit"]');
-            submitBtn.innerHTML = '<i class="fas fa-save"></i> ذخیره تغییرات';
-            submitBtn.dataset.editing = 'true';
+           
         }
         
         function openDetailsPopup(workOrder) {
@@ -1529,27 +1619,7 @@
                 </div>
                 
                 <div class="form-actions">
-                    ${workOrder.status === 'pending' ? `
-                    <button type="button" class="btn btn-secondary" onclick="changeStatus(${workOrder.id}, 'in-progress')">
-                        <i class="fas fa-play"></i> شروع کار
-                    </button>
-                    ` : ''}
-                    
-                    ${workOrder.status === 'in-progress' ? `
-                    <button type="button" class="btn btn-secondary" onclick="changeStatus(${workOrder.id}, 'completed')">
-                        <i class="fas fa-check"></i> تکمیل
-                    </button>
-                    ` : ''}
-                    
-                    ${workOrder.status !== 'cancelled' && workOrder.status !== 'completed' ? `
-                    <button type="button" class="btn btn-secondary" onclick="changeStatus(${workOrder.id}, 'cancelled')">
-                        <i class="fas fa-times"></i> لغو
-                    </button>
-                    ` : ''}
-                    
-                    <button type="button" class="btn btn-secondary" onclick="editWorkOrderUI(${JSON.stringify(workOrder).replace(/"/g, '&quot;')})">
-                        <i class="fas fa-edit"></i> تغییر درخواست
-                    </button>
+                  
                     
                     <button type="button" class="btn btn-primary" onclick="deleteWorkOrderUI(${workOrder.id})">
                         <i class="fas fa-trash"></i> حذف
