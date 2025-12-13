@@ -13,8 +13,18 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="TPM">
     
+
+<!-- اضافه کردن این meta tag ها: -->
+<meta name="application-name" content="TPM PRO">
+
+<meta name="msapplication-starturl" content="/nasjpour/">
+<meta name="theme-color" content="#142d4b" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d1a26" media="(prefers-color-scheme: dark)">
+
+<!-- برای بهبود PWA در اندروید: -->
+
     <!-- Manifest -->
-    <link rel="manifest" href="/nasjpour/manifest.json" crossorigin="use-credentials">
+    <link rel="manifest" href="/nasjpour/manifest.json" >
     
     <!-- ========== ICONS FOR ALL PLATFORMS ========== -->
     <!-- Favicon -->
@@ -31,7 +41,8 @@
     <!-- Android -->
     <link rel="icon" type="image/png" sizes="192x192" href="/nasjpour/icons/icon-192x192.png">
     <link rel="icon" type="image/png" sizes="512x512" href="/nasjpour/icons/icon-512x512.png">
-    
+    <meta name="google" content="notranslate">
+<meta name="format-detection" content="telephone=no">
     <!-- Windows -->
     <meta name="msapplication-TileImage" content="/nasjpour/icons/icon-144x144.png">
     <meta name="msapplication-config" content="/nasjpour/browserconfig.xml">
@@ -50,194 +61,337 @@
     <!-- ========== SERVICE WORKER ========== -->
     <!-- // جایگزین بخش Service Worker Registration موجود با این کد -->
 <script>
-// ==================== SERVICE WORKER REGISTRATION (PWA Only) ====================
-// Service Worker Registration with PWA Detection
-if ('serviceWorker' in navigator) {
-    let refreshing = false;
+// ==================== سیستم مدیریت نسخه هوشمند ====================
+const VersionManager = {
+  // تنظیمات
+  APP_VERSION: '1.0.0',
+  CHECK_INTERVAL: 24 * 60 * 60 * 1000, // 24 ساعت
+  STORAGE_KEYS: {
+    LAST_CHECK: 'tpm_version_last_check',
+    DISMISSED: 'tpm_version_dismissed',
+    INSTALLED_VERSION: 'tpm_installed_version'
+  },
+  
+  // مقداردهی اولیه
+  async init() {
+    console.log('🔧 سیستم مدیریت نسخه راه‌اندازی شد');
     
-    // تابع تشخیص نصب‌شده بودن اپ
-    function isPWAInstalled() {
-        return window.matchMedia('(display-mode: standalone)').matches || 
-               window.navigator.standalone === true ||
-               document.referrer.includes('android-app://') ||
-               window.location.protocol === 'file:' ||
-               window.location.hostname === 'localhost' ||
-               window.location.hostname === '127.0.0.1';
+    // فقط اگر PWA نصب‌شده باشد
+    if (!this.isPWAInstalled()) {
+      console.log('🌐 حالت مرورگر - چک نسخه غیرفعال');
+      return;
     }
     
-    // تابع نمایش نوتیفیکیشن شیک
-    function showPWAUpdateNotification(version, type = 'update') {
-        // فقط اگر اپ نصب‌شده باشد
-        if (!isPWAInstalled()) {
-            console.log('📱 اپ نصب‌شده نیست - نوتیفیکیشن نمایش داده نمی‌شود');
-            return;
-        }
-        
-        const notification = document.getElementById('updateNotification');
-        const updateReloadBtn = document.getElementById('updateReloadBtn');
-        const updateLaterBtn = document.getElementById('updateLaterBtn');
-        const updateCloseBtn = document.getElementById('updateCloseBtn');
-        const updateProgress = document.getElementById('updateProgress');
-        
-        // تنظیم نسخه
-        document.querySelector('.update-subtitle').textContent = `نسخه ${version} منتشر شد`;
-        
-        // تنظیم بر اساس نوع آپدیت
-        if (type === 'content') {
-            document.querySelector('.update-title').textContent = 'محتویات جدید!';
-            updateReloadBtn.innerHTML = '<i class="fas fa-sync-alt"></i><span>بروزرسانی</span>';
-        } else {
-            document.querySelector('.update-title').textContent = 'آپدیت جدید برنامه!';
-            updateReloadBtn.innerHTML = '<i class="fas fa-download"></i><span>نصب آپدیت</span>';
-        }
-        
-        // نمایش نوتیفیکیشن
-        notification.style.display = 'flex';
-        
-        // Event Listeners
-        updateReloadBtn.onclick = function() {
-            console.log('🚀 درخواست نصب آپدیت');
-            
-            // نمایش نوار پیشرفت
-            updateProgress.style.display = 'block';
-            const progressFill = document.querySelector('.progress-fill');
-            
-            // شبیه‌سازی پیشرفت
-            let progress = 0;
-            const interval = setInterval(() => {
-                progress += 5;
-                progressFill.style.width = progress + '%';
-                
-                if (progress >= 100) {
-                    clearInterval(interval);
-                    setTimeout(() => {
-                        notification.style.animation = 'fadeOut 0.3s ease';
-                        setTimeout(() => {
-                            notification.style.display = 'none';
-                            window.location.reload();
-                        }, 300);
-                    }, 500);
-                }
-            }, 100);
-        };
-        
-        updateLaterBtn.onclick = function() {
-            console.log('⏰ یادآوری بعدی');
-            notification.style.animation = 'fadeOut 0.3s ease';
-            setTimeout(() => {
-                notification.style.display = 'none';
-                // ذخیره در localStorage برای نمایش بعدی
-                localStorage.setItem('updateRemindLater', Date.now());
-            }, 300);
-        };
-        
-        updateCloseBtn.onclick = function() {
-            console.log('❌ کاربر نوتیفیکیشن را بست');
-            notification.style.animation = 'fadeOut 0.3s ease';
-            setTimeout(() => {
-                notification.style.display = 'none';
-            }, 300);
-        };
-        
-        // بستن خودکار بعد از 30 ثانیه
-        setTimeout(() => {
-            if (notification.style.display === 'flex') {
-                notification.style.animation = 'fadeOut 0.3s ease';
-                setTimeout(() => {
-                    notification.style.display = 'none';
-                    console.log('⏰ نوتیفیکیشن به صورت خودکار بسته شد');
-                }, 300);
-            }
-        }, 30000);
-    }
+    // ذخیره نسخه نصب‌شده
+    this.saveInstalledVersion();
     
-    window.addEventListener('load', function() {
-        navigator.serviceWorker.register('/nasjpour/sw.js')
-            .then(function(registration) {
-                console.log('✅ Service Worker ثبت شد:', registration.scope);
-                
-                // فقط برای PWA چک آپدیت کن
-                if (isPWAInstalled()) {
-                    setInterval(() => {
-                        registration.update();
-                        console.log('🔄 چک آپدیت برای PWA');
-                    }, 60 * 60 * 1000);
-                }
-                
-                // گوش دادن به آپدیت SW
-                registration.addEventListener('updatefound', () => {
-                    const newWorker = registration.installing;
-                    console.log('🔄 آپدیت جدید Service Worker پیدا شد');
-                    
-                    newWorker.addEventListener('statechange', () => {
-                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller && isPWAInstalled()) {
-                            console.log('📦 SW جدید برای PWA نصب شد');
-                            showPWAUpdateNotification('1.0.1', 'update');
-                        }
-                    });
-                });
-                
-                // رفرش خودکار
-                navigator.serviceWorker.addEventListener('controllerchange', () => {
-                    if (!refreshing && isPWAInstalled()) {
-                        refreshing = true;
-                        console.log('🔄 PWA در حال رفرش...');
-                        window.location.reload();
-                    }
-                });
-            })
-            .catch(function(error) {
-                console.log('❌ خطا در ثبت Service Worker:', error);
-            });
-        
-        // گوش دادن به پیام‌های SW
-        navigator.serviceWorker.addEventListener('message', event => {
-            const { type, message, version } = event.data || {};
-            
-            if (!isPWAInstalled()) return;
-            
-            switch(type) {
-                case 'SW_ACTIVATED':
-                    console.log(`🎉 SW جدید فعال شد: v${version}`);
-                    break;
-                    
-                case 'CONTENT_UPDATE_AVAILABLE':
-                    console.log('📦 آپدیت محتوا برای PWA');
-                    showPWAUpdateNotification(version || '1.0.1', 'content');
-                    break;
-                    
-                case 'RELOAD_PAGE':
-                    if (isPWAInstalled()) {
-                        console.log('🔄 دستور رفرش برای PWA');
-                        showPWAUpdateNotification('1.0.1', 'update');
-                    }
-                    break;
-            }
-        });
-    });
-}
-
-// تست نمایش نوتیفیکیشن (فقط در PWA)
-function testPWAUpdate() {
-    function isPWAInstalled() {
-        return window.matchMedia('(display-mode: standalone)').matches || 
-               window.navigator.standalone === true;
-    }
-    
-    if (isPWAInstalled()) {
-        console.log('📱 تست نوتیفیکیشن برای PWA');
-        showPWAUpdateNotification('1.0.1', 'update');
+    // چک زمان‌بندی‌شده
+    if (await this.shouldCheckForUpdate()) {
+      await this.checkForUpdate();
+      this.saveLastCheckTime();
     } else {
-        console.log('🌐 اپ نصب‌شده نیست - برای تست در مرورگر دسکتاپ:');
-        console.log('1. روی آیکون Install کلیک کنید');
-        console.log('2. دوباره صفحه را باز کنید');
-        console.log('3. یا در کنسول: showPWAUpdateNotification("1.0.1")');
+      console.log('⏰ هنوز زمان چک نرسیده');
     }
+  },
+  
+  // تشخیص PWA نصب‌شده
+  isPWAInstalled() {
+    return window.matchMedia('(display-mode: standalone)').matches || 
+           window.navigator.standalone === true ||
+           document.referrer.includes('android-app://');
+  },
+  
+  // ذخیره زمان آخرین چک
+  saveLastCheckTime() {
+    localStorage.setItem(this.STORAGE_KEYS.LAST_CHECK, Date.now().toString());
+    console.log('✅ زمان چک ذخیره شد');
+  },
+  
+  // ذخیره نسخه نصب‌شده
+  saveInstalledVersion() {
+    const current = localStorage.getItem(this.STORAGE_KEYS.INSTALLED_VERSION);
+    if (current !== this.APP_VERSION) {
+      localStorage.setItem(this.STORAGE_KEYS.INSTALLED_VERSION, this.APP_VERSION);
+      console.log(`💾 نسخه نصب‌شده ذخیره شد: ${this.APP_VERSION}`);
+    }
+  },
+  
+  // بررسی اینکه آیا باید چک کرد
+  async shouldCheckForUpdate() {
+    const lastCheck = localStorage.getItem(this.STORAGE_KEYS.LAST_CHECK);
+    
+    // اگر اولین بار است
+    if (!lastCheck) {
+      console.log('🆕 اولین چک نسخه');
+      return true;
+    }
+    
+    const timeSinceLastCheck = Date.now() - parseInt(lastCheck);
+    
+    // اگر بیشتر از 24 ساعت گذشته
+    if (timeSinceLastCheck > this.CHECK_INTERVAL) {
+      console.log(`⏰ ${Math.floor(timeSinceLastCheck / 3600000)} ساعت از آخرین چک گذشته`);
+      return true;
+    }
+    
+    return false;
+  },
+  
+  // چک آپدیت
+  async checkForUpdate() {
+    console.log('🔍 شروع چک آپدیت...');
+    
+    if (!navigator.serviceWorker || !navigator.serviceWorker.controller) {
+      console.log('❌ Service Worker در دسترس نیست');
+      return false;
+    }
+    
+    return new Promise((resolve) => {
+      const channel = new MessageChannel();
+      
+      navigator.serviceWorker.controller.postMessage({
+        type: 'CHECK_VERSION_UPDATE',
+        data: { clientVersion: this.APP_VERSION }
+      }, [channel.port2]);
+      
+      // تایم‌اوت برای عدم پاسخ
+      const timeoutId = setTimeout(() => {
+        console.log('⏰ تایم‌اوت چک آپدیت');
+        channel.port1.close();
+        resolve(false);
+      }, 5000);
+      
+      channel.port1.onmessage = (event) => {
+        clearTimeout(timeoutId);
+        const { hasUpdate, clientVersion, serverVersion, forceUpdate } = event.data;
+        
+        if (hasUpdate) {
+          console.log(`🆕 آپدیت موجود: ${clientVersion} → ${serverVersion}`);
+          
+          // چک کنید اگر کاربر قبلاً این نسخه را رد کرده
+          const dismissedVersion = localStorage.getItem(this.STORAGE_KEYS.DISMISSED);
+          if (dismissedVersion === serverVersion) {
+            console.log(`🚫 کاربر نسخه ${serverVersion} را رد کرده`);
+            resolve(false);
+            return;
+          }
+          
+          // نمایش نوتیفیکیشن آپدیت
+          this.showUpdateNotification(serverVersion, forceUpdate);
+          resolve(true);
+        } else {
+          console.log('✅ نسخه به‌روز است');
+          resolve(false);
+        }
+      };
+      
+      channel.port1.onmessageerror = () => {
+        clearTimeout(timeoutId);
+        console.log('❌ خطا در دریافت پاسخ');
+        resolve(false);
+      };
+    });
+  },
+  
+  // نمایش نوتیفیکیشن آپدیت (همان کد قبلی شما)
+  showUpdateNotification(version, forceUpdate = false) {
+    const notification = document.getElementById('updateNotification');
+    const updateReloadBtn = document.getElementById('updateReloadBtn');
+    const updateLaterBtn = document.getElementById('updateLaterBtn');
+    const updateCloseBtn = document.getElementById('updateCloseBtn');
+    const updateProgress = document.getElementById('updateProgress');
+    
+    // تنظیم نسخه
+    document.querySelector('.update-subtitle').textContent = `نسخه ${version} منتشر شد`;
+    
+    // نمایش نوتیفیکیشن
+    notification.style.display = 'flex';
+    
+    // Event Listeners
+    updateReloadBtn.onclick = () => {
+      console.log('🚀 درخواست نصب آپدیت');
+      
+      // نمایش نوار پیشرفت
+      updateProgress.style.display = 'block';
+      const progressFill = document.querySelector('.progress-fill');
+      
+      // شبیه‌سازی پیشرفت
+      let progress = 0;
+      const interval = setInterval(() => {
+        progress += 5;
+        progressFill.style.width = progress + '%';
+        
+        if (progress >= 100) {
+          clearInterval(interval);
+          setTimeout(() => {
+            notification.style.animation = 'fadeOut 0.3s ease';
+            setTimeout(() => {
+              notification.style.display = 'none';
+              window.location.reload();
+            }, 300);
+          }, 500);
+        }
+      }, 100);
+    };
+    
+    updateLaterBtn.onclick = () => {
+      console.log('⏰ یادآوری بعدی');
+      notification.style.animation = 'fadeOut 0.3s ease';
+      setTimeout(() => {
+        notification.style.display = 'none';
+        // ذخیره در localStorage برای نمایش بعدی
+        localStorage.setItem('updateRemindLater', Date.now());
+      }, 300);
+    };
+    
+    updateCloseBtn.onclick = () => {
+      console.log(`❌ کاربر نسخه ${version} را رد کرد`);
+      notification.style.animation = 'fadeOut 0.3s ease';
+      setTimeout(() => {
+        notification.style.display = 'none';
+        // ذخیره اینکه کاربر این نسخه را رد کرده
+        localStorage.setItem(this.STORAGE_KEYS.DISMISSED, version);
+      }, 300);
+    };
+    
+    // بستن خودکار بعد از 30 ثانیه (فقط اگر آپدیت اجباری نباشد)
+    if (!forceUpdate) {
+      setTimeout(() => {
+        if (notification.style.display === 'flex') {
+          notification.style.animation = 'fadeOut 0.3s ease';
+          setTimeout(() => {
+            notification.style.display = 'none';
+            console.log('⏰ نوتیفیکیشن به صورت خودکار بسته شد');
+          }, 300);
+        }
+      }, 30000);
+    }
+  },
+  
+  // ریست کردن تاریخچه چک (برای تست)
+  resetCheckHistory() {
+    localStorage.removeItem(this.STORAGE_KEYS.LAST_CHECK);
+    localStorage.removeItem(this.STORAGE_KEYS.DISMISSED);
+    console.log('🔄 تاریخچه چک ریست شد');
+  }
+};
+
+// ==================== Service Worker Registration ====================
+if ('serviceWorker' in navigator) {
+  let refreshing = false;
+  
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/nasjpour/sw.js')
+      .then(function(registration) {
+        console.log('✅ Service Worker ثبت شد:', registration.scope);
+        
+        // راه‌اندازی سیستم مدیریت نسخه
+        VersionManager.init();
+        
+        // فقط برای PWA چک آپدیت کن
+        if (VersionManager.isPWAInstalled()) {
+          setInterval(() => {
+            registration.update();
+            console.log('🔄 چک آپدیت دوره‌ای برای PWA');
+          }, 60 * 60 * 1000);
+        }
+        
+        // گوش دادن به آپدیت SW
+        registration.addEventListener('updatefound', () => {
+          const newWorker = registration.installing;
+          console.log('🔄 آپدیت جدید Service Worker پیدا شد');
+          
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller && VersionManager.isPWAInstalled()) {
+              console.log('📦 SW جدید برای PWA نصب شد');
+              // اینجا دیگر به صورت خودکار نوتیفیکیشن نشان نمی‌دهیم
+              // سیستم مدیریت نسخه به صورت زمان‌بندی‌شده چک می‌کند
+            }
+          });
+        });
+        
+        // رفرش خودکار
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (!refreshing && VersionManager.isPWAInstalled()) {
+            refreshing = true;
+            console.log('🔄 PWA در حال رفرش...');
+            window.location.reload();
+          }
+        });
+      })
+      .catch(function(error) {
+        console.log('❌ خطا در ثبت Service Worker:', error);
+      });
+    
+    // گوش دادن به پیام‌های SW
+    navigator.serviceWorker.addEventListener('message', event => {
+      const { type, message, version } = event.data || {};
+      
+      if (!VersionManager.isPWAInstalled()) return;
+      
+      switch(type) {
+        case 'SW_VERSION_INFO':
+          console.log(`📋 اطلاعات نسخه SW: v${version}`);
+          break;
+          
+        case 'CONTENT_UPDATE_AVAILABLE':
+          console.log('📦 آپدیت محتوا برای PWA');
+          // اینجا فقط لاگ می‌کنیم، نوتیفیکیشن نشان نمی‌دهیم
+          // چون سیستم مدیریت نسخه به صورت زمان‌بندی‌شده چک می‌کند
+          break;
+      }
+    });
+  });
 }
 
-// برای تست دستی در کنسول
-window.showPWAUpdateNotification = showPWAUpdateNotification;
-window.testPWAUpdate = testPWAUpdate;
+// ==================== توابع کمکی برای تست ====================
+
+// تست دستی چک آپدیت
+function manualCheckUpdate() {
+  if (VersionManager.isPWAInstalled()) {
+    console.log('🔍 شروع چک دستی آپدیت...');
+    VersionManager.checkForUpdate();
+  } else {
+    console.log('🌐 اپ نصب‌شده نیست');
+  }
+}
+
+// ریست کردن تاریخچه چک
+function resetUpdateCheck() {
+  VersionManager.resetCheckHistory();
+  console.log('✅ تاریخچه چک ریست شد. صفحه را رفرش کنید.');
+}
+
+// نمایش نسخه فعلی
+function showCurrentVersion() {
+  console.log(`📱 نسخه فعلی: ${VersionManager.APP_VERSION}`);
+  
+  if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+    const channel = new MessageChannel();
+    
+    navigator.serviceWorker.controller.postMessage({
+      type: 'GET_CURRENT_VERSION'
+    }, [channel.port2]);
+    
+    channel.port1.onmessage = (event) => {
+      console.log(`⚙️ نسخه SW: ${event.data.version}`);
+    };
+  }
+}
+
+// اکسپوز توابع برای تست در کنسول
+window.VersionManager = VersionManager;
+window.manualCheckUpdate = manualCheckUpdate;
+window.resetUpdateCheck = resetUpdateCheck;
+window.showCurrentVersion = showCurrentVersion;
+
+// ==================== توضیحات تست ====================
+console.log('🔧 سیستم مدیریت نسخه هوشمند فعال شد');
+console.log('📱 دستورات تست در کنسول:');
+console.log('1. manualCheckUpdate() - چک دستی آپدیت');
+console.log('2. resetUpdateCheck() - ریست تاریخچه چک');
+console.log('3. showCurrentVersion() - نمایش نسخه‌ها');
+console.log('4. VersionManager.isPWAInstalled() - چک وضعیت نصب');
 </script>
     <style>
         * {
@@ -559,6 +713,7 @@ window.testPWAUpdate = testPWAUpdate;
             left: 20px;
             z-index: 1000;
             animation: fadeInUp 0.5s ease;
+            display: none !important;
         }
 
         .pwa-install-btn {
@@ -1608,7 +1763,6 @@ button, .btn {
             } else if (username === 'norozi' && password === '09138650762') {
                 await alert('ورود موفق! در حال انتقال به صفحه سرپرست...');
                 window.location.href = './pages/superviser/dashboard.html';
-            
             } else {
                 errorMessage.style.display = 'block';
                 loginForm.style.animation = 'shake 0.5s';
