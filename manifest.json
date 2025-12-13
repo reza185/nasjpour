@@ -1,3 +1,4 @@
+
 {
   "name": "TPM PRO - میهن چاپ",
   "short_name": "TPM",
@@ -19,16 +20,11 @@
   "ios": {
     "precomposed": true,
     "apple-mobile-web-app-capable": "yes",
-    "apple-mobile-web-app-status-bar-style": "black-translucent",
-    "apple-mobile-web-app-title": "TPM PRO"
-  },
-  "edge_side_panel": {
-    "preferred_width": 400
+    "apple-mobile-web-app-status-bar-style": "black-translucent"
   },
   "launch_handler": {
     "client_mode": "navigate-new"
   },
-  
   
   "icons": [
     {
