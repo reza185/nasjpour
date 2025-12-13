@@ -15,11 +15,71 @@
   "prefer_related_applications": false,
   "id": "/nasjpour/?v=1.1.1",  
   
-  "version": "1.1.1",
+  "version": "1.1.1",{
+    "name": "TPM PRO - میهن چاپ",
+    "short_name": "TPM",
+    "description": "سیستم هوشمند مدیریت تعمیرات و نگهداری",
+    "start_url": "/nasjpour/?source=pwa&utm_source=pwa&utm_medium=homescreen",
+    "scope": "/nasjpour/",
+    "theme_color": "#142d4b",
+    "background_color": "#142d4b",
+    "display": "standalone",
+    "display_override": ["standalone", "window-controls-overlay", "minimal-ui"],
+    
+    **// اضافه شده برای سامسونگ:**
+    "launch_handler": {
+      "client_mode": "navigate-existing"
+    },
+    
+    "orientation": "portrait-primary",
+    "categories": ["business", "productivity", "utilities"],
+    "lang": "fa",
+    "dir": "rtl",
+    "prefer_related_applications": false,
+    "id": "/nasjpour/",
+    "version": "1.1.1",
+    "shortcuts": [
+      {
+        "name": "داشبورد",
+        "short_name": "داشبورد",
+        "description": "مشاهده داشبورد اصلی",
+        "url": "/nasjpour/?shortcut=dashboard"
+      },
+      {
+        "name": "درخواست جدید",
+        "short_name": "جدید",
+        "description": "ثبت درخواست تعمیرات جدید",
+        "url": "/nasjpour/?shortcut=new-request"
+      }
+    ],
+    
+    "icons": [
+      {
+        "src": "/nasjpour/icons/icon-192x192.png",
+        "sizes": "192x192",
+        "type": "image/png",
+        "purpose": "any maskable"
+      },
+      {
+        "src": "/nasjpour/icons/icon-512x512.png",
+        "sizes": "512x512",
+        "type": "image/png",
+        "purpose": "any maskable"
+      },
+      {
+        "src": "/nasjpour/icons/apple-icon-180x180.png",
+        "sizes": "180x180",
+        "type": "image/png"
+      }
+    ]
+  }
   "ios": {
     "precomposed": true,
     "apple-mobile-web-app-capable": "yes",
     "apple-mobile-web-app-status-bar-style": "black-translucent"
+  },
+  "launch_handler": {
+    "client_mode": "navigate-new"
   },
   
   
