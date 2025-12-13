@@ -705,6 +705,7 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             max-height: 90vh;
             overflow-y: auto;
+            -webkit-overflow-scrolling: touch; 
         }
 
         .popup-header {
@@ -1190,22 +1191,22 @@
             <div class="card">
                 <h2 class="section-title">
                     <i class="fas fa-cogs"></i>
-                    دستگاه استنتر
+                    دستگاه استنتر آرتوس
                 </h2>
                 
                 <div class="machines-grid">
                     <!-- دستگاه استنتر -->
-                    <div class="machine-card" onclick="openReportPopup('استنتر')">
+                    <div class="machine-card" onclick="openReportPopup('استنتر آرتوس')">
                         <div class="machine-header">
                             <div>
-                                <div class="machine-name">دستگاه استنتر</div>
+                                <div class="machine-name">دستگاه استنتر آرتوس</div>
                                 <div class="machine-type">سیستم تکمیل پارچه</div>
                             </div>
                             <!-- <span class="status-badge status-operational">عملیاتی</span> -->
                         </div>
                         
                         <div class="machine-actions">
-                            <button class="action-btn report-btn" onclick="event.stopPropagation(); openReportPopup('استنتر')">
+                            <button class="action-btn report-btn" onclick="event.stopPropagation(); openReportPopup('استنتر آرتوس')">
                                 <i class="fas fa-flag"></i>
                                 گزارش مشکل
                             </button>
@@ -1371,7 +1372,7 @@
                 <div class="form-group">
                     <label class="form-label" for="problem_description">
                         <i class="fas fa-clipboard-list"></i>
-                        اقدامات انجام شده / توضیحات
+                        شرح کامل مشکل
                     </label>
                     <textarea 
                         id="problem_description" 
@@ -1699,7 +1700,7 @@
         
         // شروع عیب‌یابی
         async function startTroubleshooting() {
-            selectedMachine = { name: 'دستگاه استنتر' };
+            selectedMachine = { name: 'دستگاه استنتر آرتوس' };
             
             // بارگذاری گزارشات از سوپابیس
             await loadTroubleshootingData();
@@ -1967,6 +1968,7 @@
         // ==================== آپدیت تابع ارسال گزارش ====================
         document.getElementById('reportForm').addEventListener('submit', async function(e) {
             e.preventDefault();
+            e.stopPropagation(); 
             
             const problemDescription = document.getElementById('problem_description').value;
             const { issueType, technician } = determineIssueTypeAndTechnician(problemDescription);
@@ -2022,14 +2024,14 @@
                 <table class="reports-table">
                     <thead>
                         <tr>
-                            <th>نام گزارش‌دهنده</th>
+                            <th>نام گزارش‌ دهنده</th>
                             <th>دستگاه</th>
                             <th>وضعیت دستگاه</th>
                             <th>نوع ایراد</th>
                             <th>تکنسین</th>
                             <th>اولویت</th>
                             <th>وضعیت گزارش</th>
-                            <th>اقدامات انجام شده</th>
+                            <th>مشکل نوشته شده</th>
                             <th>تاریخ ثبت</th>
                             <th>عملیات</th>
                         </tr>
@@ -2081,7 +2083,7 @@
                         <td title="${report.manager_note}">
 
                                
-                                ${report.manager_note}
+                                ${report.problem_description}
     
                         </td>
                         <td>${date}</td>
