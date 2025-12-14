@@ -1316,11 +1316,7 @@
                     <textarea 
                         id="consumableParts" 
                         class="form-textarea" 
-                        placeholder="قطعات مصرفی مورد نیاز را اینجا بنویسید (هر مورد در یک خط جدید)
-مثال:
-- بلبرینگ 6202 - 
-- سیم برق 2.5 - 
-- لنت ترمز - " 
+                        placeholder="قطعات مصرفی مورد نیاز را اینجا بنویسید (هر مورد در یک خط جدید)"
                         rows="4"
                     ></textarea>
                     <div class="char-counter" id="partsCharCount">0/1000 کاراکتر</div>
@@ -1343,7 +1339,7 @@
 <div class="form-group">
     <label class="form-label">خلاصه قطعات:</label>
     <div id="partsSummary" style="background: #f8f9fa; padding: 10px; border-radius: 6px; border: 1px solid #ddd; font-size: 13px; color: #2e7d32;">
-        قطعات: <span id="partsList">بلبرینگ</span><br>
+        قطعات: <span id="partsList">هیچ قطعه‌ای وارد نشده</span><br>
         تعداد: <span id="partsQty">0</span> عدد
     </div>
 </div>
@@ -1755,24 +1751,24 @@ function openManagerPopup(reportId) {
     // ریست کردن فیلدها
     document.getElementById('consumableParts').value = '';
     document.getElementById('partsQuantity').value = '0';
-    updatePartsSummary();
+    updatePartsSummary(); 
 }
-        function updatePartsCharCount() {
-            const textarea = document.getElementById('consumableParts');
-            const charCount = document.getElementById('partsCharCount');
-            const count = textarea.value.length;
-            charCount.textContent = `${count}/1000 کاراکتر`;
-            
-            if (count > 900) {
-                charCount.classList.add('danger');
-                charCount.classList.remove('warning');
-            } else if (count > 800) {
-                charCount.classList.add('warning');
-                charCount.classList.remove('danger');
-            } else {
-                charCount.classList.remove('warning', 'danger');
-            }
-        }
+function updatePartsCharCount() {
+    const textarea = document.getElementById('consumableParts');
+    const charCount = document.getElementById('partsCharCount');
+    const count = textarea.value.trim().length; // تغییر: استفاده از trim()
+    charCount.textContent = `${count}/1000 کاراکتر`;
+    
+    if (count > 900) {
+        charCount.classList.add('danger');
+        charCount.classList.remove('warning');
+    } else if (count > 800) {
+        charCount.classList.add('warning');
+        charCount.classList.remove('danger');
+    } else {
+        charCount.classList.remove('warning', 'danger');
+    }
+}
         
         // ==================== مدیریت گزارشات ====================
         
@@ -1919,7 +1915,7 @@ function openManagerPopup(reportId) {
                         <div class="detail-item"><strong>کد:</strong> ${getShortId(report.id)}</div>
                     </div>
                     
-                    ${report.actions_taken ? `
+                    ${report.problem_description ? `
                         <div class="actions-section">
                             <div class="section-title-small">${isWorkorder ? 'یادداشت:' : 'یادداشت اپراتور  :'}</div>
                             <p style="white-space: pre-line; font-size: 13px;">${report.problem_description}</p>
@@ -2270,89 +2266,109 @@ ${report.consumable_quantity > 0 ? `
         }
         
         async function completeReport(reportId) {
-            const result = await confirm('آیا این گزارش تکمیل شده است؟');
-            if (!result) {
-                return;
+    const result = await confirm('آیا این گزارش تکمیل شده است؟');
+    if (!result) {
+        return;
+    }
+
+    try {
+        const report = currentReports.find(r => r.id === reportId);
+        
+        // **بررسی وجود قطعات مصرفی**
+        const hasConsumableParts = report.consumable_parts && 
+                                 report.consumable_parts.trim() !== '' && 
+                                 report.consumable_parts !== 'بلبرینگ';
+        
+        if (report.is_workorder) {
+            // اگر دستور کار است
+            const { error } = await supabase
+                .from('work_orders')
+                .update({ 
+                    status: 'completed',
+                    completed_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', reportId);
+
+            if (error) throw error;
+            
+            alert('دستور کار تکمیل شد.');
+        } else {
+            // اگر گزارش معمولی است
+            const { error: updateError } = await supabase
+                .from('operatourreports')
+                .update({ 
+                    status: 'completed',
+                    completed_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', reportId);
+
+            if (updateError) throw updateError;
+
+            // **فقط اگر قطعات مصرفی معتبر داریم، به مدیر ارسال کنیم**
+            const reportData = {
+                reporter_name: report.reporter_name,
+                machine_name: report.machine_name,
+                machine_status: report.machine_status,
+                problem_description: report.problem_description,
+                status: 'completed',
+                priority: report.priority,
+                actions_taken: report.actions_taken,
+                manager_message: report.manager_message,
+                action_type: report.action_type,
+                technician_name: report.technician_name,
+                estimated_time: report.estimated_time,
+                supervisor_note: 'تکمیل شده توسط سرپرست',
+                created_at: report.created_at,
+                completed_at: new Date().toISOString()
+            };
+
+            // **اضافه کردن قطعات مصرفی فقط اگر مقدار معتبر دارد**
+            if (hasConsumableParts) {
+                reportData.consumable_parts = report.consumable_parts;
             }
 
-            try {
-                const report = currentReports.find(r => r.id === reportId);
-                
-                if (report.is_workorder) {
-                    // اگر دستور کار است
-                    const { error } = await supabase
-                        .from('work_orders')
-                        .update({ 
-                            status: 'completed',
-                            completed_at: new Date().toISOString(),
-                            updated_at: new Date().toISOString()
-                        })
-                        .eq('id', reportId);
+            const { error: insertError } = await supabase
+                .from('managerreports')
+                .insert([reportData]);
 
-                    if (error) throw error;
-                    
-                    alert('دستور کار تکمیل شد.');
-                } else {
-                    // اگر گزارش معمولی است
-                    const { error: updateError } = await supabase
-                        .from('operatourreports')
-                        .update({ 
-                            status: 'completed',
-                            completed_at: new Date().toISOString(),
-                            updated_at: new Date().toISOString()
-                        })
-                        .eq('id', reportId);
-
-                    if (updateError) throw updateError;
-
-                    // ارسال به جدول مدیران
-                    const reportData = {
-                        reporter_name: report.reporter_name,
-                        machine_name: report.machine_name,
-                        machine_status: report.machine_status,
-                        problem_description: report.problem_description,
-                        status: 'completed',
-                        priority: report.priority,
-                        actions_taken: report.actions_taken,
-                        manager_message: report.manager_message,
-                        action_type: report.action_type,
-                        technician_name: report.technician_name,
-                        estimated_time: report.estimated_time,
-                        consumable_parts: report.actions_taken,
-                        supervisor_note: 'تکمیل شده توسط سرپرست',
-                        created_at: report.created_at,
-                        completed_at: new Date().toISOString()
-                    };
-
-                    const { error: insertError } = await supabase
-                        .from('managerreports')
-                        .insert([reportData]);
-
-                    if (insertError) throw insertError;
-                    
-                    alert('گزارش تکمیل و به مدیر ارسال شد.');
-                }
-                
-                loadReports();
-                
-            } catch (error) {
-                console.error('خطا در تکمیل گزارش:', error);
-                alert('خطا در تکمیل گزارش');
-            }
+            if (insertError) throw insertError;
+            
+            alert(hasConsumableParts ? 
+                'گزارش تکمیل و با قطعات مصرفی به مدیر ارسال شد.' : 
+                'گزارش تکمیل شد.');
         }
+        
+        loadReports();
+        
+    } catch (error) {
+        console.error('خطا در تکمیل گزارش:', error);
+        alert('خطا در تکمیل گزارش');
+    }
+}
         
         // ==================== پاپاپ‌ها ====================
         
         // مدیریت پاپاپ‌های گزارشات
         function openManagerPopup(reportId) {
-            document.getElementById('currentReportId').value = reportId;
-            document.getElementById('managerPopup').style.display = 'flex';
-            document.getElementById('managerMessage').focus();
-            
-            // ریست کردن فیلد قطعات مصرفی
-            document.getElementById('consumableParts').value = '';
-            updatePartsCharCount();
-        }
+    document.getElementById('currentReportId').value = reportId;
+    document.getElementById('managerPopup').style.display = 'flex';
+    
+    // ریست کردن کامل فیلدها
+    document.getElementById('managerMessage').value = '';
+    document.getElementById('actionType').value = '';
+    document.getElementById('consumableParts').value = '';
+    document.getElementById('partsQuantity').value = '0';
+    
+    // به‌روزرسانی خلاصه
+    updatePartsSummary();
+    
+    // به‌روزرسانی شمارنده کاراکتر
+    updatePartsCharCount();
+    
+    document.getElementById('managerMessage').focus();
+}
         
         function closeManagerPopup() {
             document.getElementById('managerPopup').style.display = 'none';
@@ -2549,38 +2565,67 @@ ${report.consumable_quantity > 0 ? `
     e.preventDefault();
     
     const reportId = document.getElementById('currentReportId').value;
-    const message = document.getElementById('managerMessage').value;
+    const message = document.getElementById('managerMessage').value.trim();
     const actionType = document.getElementById('actionType').value;
-    const partsText = document.getElementById('consumableParts').value;
+    const partsText = document.getElementById('consumableParts').value.trim();
     const partsQty = parseInt(document.getElementById('partsQuantity').value) || 0;
-
+    
+    // اعتبارسنجی پیام اصلی
+    if (!message || message.length < 5) {
+        alert('لطفاً پیام مناسبی برای مدیر بنویسید (حداقل ۵ کاراکتر)');
+        return;
+    }
+    
+    if (!actionType) {
+        alert('لطفاً نوع اقدام درخواستی را انتخاب کنید');
+        return;
+    }
+    
     try {
         const report = currentReports.find(r => r.id === reportId);
         if (report && !report.is_workorder) {
-            // 1. ایجاد متن actions_taken
+            // 1. بررسی قطعات مصرفی
             let actionsTaken = report.actions_taken || '';
+            let finalConsumableParts = '';
+            let finalConsumableQuantity = 0;
             
-            // اگر قطعات وارد شده
-            if (partsText.trim()) {
-                const partsSummary = partsText;
-                actionsTaken = partsSummary;
+            // فقط اگر قطعات معتبر باشد ذخیره کن
+            if (isValidParts(partsText)) {
+                finalConsumableParts = partsText;
+                if (partsQty > 0) {
+                    finalConsumableQuantity = partsQty;
+                }
+                
+                // اضافه کردن به actions_taken
+                actionsTaken = finalConsumableParts;
             }
             
             // 2. آپدیت گزارش اصلی
+            const updateData = {
+                status: 'ارجاع به مدیر',
+                manager_note: message,
+                action_type: actionType,
+                updated_at: new Date().toISOString()
+            };
+            
+            // فقط اگر قطعات معتبر داریم اضافه کنیم
+            if (finalConsumableParts) {
+                
+                updateData.actions_taken = actionsTaken;
+            }
+            
+            // if (finalConsumableQuantity > 0) {
+            //     // updateData.consumable_quantity = finalConsumableQuantity;
+            // }
+            
             const { error: updateError } = await supabase
                 .from('operatourreports')
-                .update({ 
-                    status: 'ارجاع به مدیر',
-                    manager_note: message,
-                    action_type: actionType,
-                    actions_taken: actionsTaken,
-                    updated_at: new Date().toISOString()
-                })
+                .update(updateData)
                 .eq('id', reportId);
 
             if (updateError) throw updateError;
 
-            // 3. ارسال به جدول مدیران با QUANTITY
+            // 3. ارسال به جدول مدیران
             const reportData = {
                 reporter_name: report.reporter_name,
                 machine_name: report.machine_name,
@@ -2588,8 +2633,6 @@ ${report.consumable_quantity > 0 ? `
                 problem_description: report.problem_description,
                 status: 'ارجاع به مدیر',
                 priority: report.priority,
-                actions_taken: actionsTaken, // شامل لیست قطعات و تعداد
-                consumable_quantity: partsQty, // تعداد جداگانه
                 manager_message: message,
                 action_type: actionType,
                 technician_name: report.technician_name,
@@ -2597,24 +2640,71 @@ ${report.consumable_quantity > 0 ? `
                 created_at: report.created_at,
                 referred_at: new Date().toISOString()
             };
+            
+            // فقط اگر قطعات معتبر داریم اضافه کنیم
+            if (finalConsumableParts) {
+                reportData.consumable_parts = finalConsumableParts;
+                reportData.actions_taken = actionsTaken;
+            }
+            
+            if (finalConsumableQuantity > 0) {
+                reportData.consumable_quantity = finalConsumableQuantity;
+            }
 
             const { error: insertError } = await supabase
                 .from('managerreports')
                 .insert([reportData]);
 
             if (insertError) throw insertError;
+            
+            // پیام موفقیت با جزئیات
+            let successMsg = 'گزارش با موفقیت به مدیر ارسال شد.';
+           
+            
+            alert(successMsg);
+        } else {
+            alert('گزارش مورد نظر یافت نشد یا از نوع دستور کار است.');
         }
         
-        alert('گزارش با  موفقیت به مدیر ارسال شد.');
         closeManagerPopup();
         loadReports();
         
     } catch (error) {
         console.error('خطا در ارسال به مدیر:', error);
-        alert('خطا در ارسال به مدیر');
+        alert('خطا در ارسال به مدیر: ' + error.message);
     }
-});
+});//بعد پاک کنی
+        // تابع جدید برای بررسی معتبر بودن قطعات مصرفی
+function isValidParts(partsText) {
+    if (!partsText || partsText.trim() === '') {
+        return false;
+    }
+    
+    const trimmed = partsText.trim();
+    
+    // اگر فقط شامل فاصله یا کاراکترهای خاص باشد
+    if (trimmed.length < 2) {
+        return false;
+    }
+    
+    // لیست کلمات پیش‌فرض یا غیرمعتبر
+    const defaultKeywords = [
         
+    ];
+    
+    // بررسی کلمات پیش‌فرض
+    for (const keyword of defaultKeywords) {
+        if (trimmed.toLowerCase() === keyword.toLowerCase()) {
+            return false;
+        }
+        // اگر دقیقاً همان کلمه باشد
+        if (trimmed === keyword) {
+            return false;
+        }
+    }
+    
+    return true;
+}
         // ثبت اقدام
         document.getElementById('actionForm').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -3019,6 +3109,31 @@ ${report.consumable_quantity > 0 ? `
                 consumablePartsTextarea.addEventListener('input', updatePartsCharCount);
             }
         });
+        // تابع برای بررسی معتبر بودن قطعات مصرفی
+function isValidPartsText(partsText) {
+    if (!partsText) return false;
+    
+    const trimmed = partsText.trim();
+    
+    // لیست کلمات غیرمعتبر یا پیش‌فرض
+    const invalidKeywords = [
+        'بلبرینگ', 'bearings', 'bearing', 
+        'قطعات مصرفی', 'مصرفی', 'بدون', 'هیچ'
+    ];
+    
+    // اگر متن خالی یا فقط شامل فاصله باشد
+    if (trimmed === '') return false;
+    
+    // اگر شامل کلمات غیرمعتبر باشد
+    for (const keyword of invalidKeywords) {
+        if (trimmed.toLowerCase().includes(keyword.toLowerCase()) && trimmed.length < 20) {
+            return false;
+        }
+    }
+    
+    // حداقل طول متن
+    return trimmed.length > 3;
+}
         
         // جلوگیری از اسکرول هنگام زوم در iOS
         // document.addEventListener('touchmove', function(e) {
