@@ -1323,59 +1323,61 @@
 
         // نمایش گزارشات
         function renderReports() {
-            const reportsList = document.getElementById('reportsList');
-            
-            if (!filteredReports || filteredReports.length === 0) {
-                reportsList.innerHTML = `
-                    <div style="text-align: center; padding: 40px; color: #666;">
-                        <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 16px; color: #ddd;"></i>
-                        <h3>گزارشی یافت نشد</h3>
-                        <p>هیچ گزارشی با فیلترهای انتخاب شده مطابقت ندارد.</p>
-                    </div>
-                `;
-                return;
-            }
+    const reportsList = document.getElementById('reportsList');
+    
+    if (!filteredReports || filteredReports.length === 0) {
+        reportsList.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: #666;">
+                <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 16px; color: #ddd;"></i>
+                <h3>گزارشی یافت نشد</h3>
+                <p>هیچ گزارشی با فیلترهای انتخاب شده مطابقت ندارد.</p>
+            </div>
+        `;
+        return;
+    }
 
-            reportsList.innerHTML = filteredReports.map(report => {
-                const status = report.status || 'pending';
-                const priority = report.priority || 'medium';
-                const priorityColor = getPriorityColor(priority);
-                
-                return `
-                <div class="report-item">
-                    <div class="report-info">
-                        <div class="report-icon" style="background: ${priorityColor}">
-                            <i class="fas fa-clipboard-check"></i>
-                        </div>
-                        <div class="report-content">
-                            <div class="report-title">${report.machine_name || 'بدون عنوان'}</div>
-                            <div class="report-desc">${report.problem_description || 'بدون توضیحات'}</div>
-                            <div style="display: flex; gap: 10px; margin-top: 6px; font-size: 11px; color: #666; flex-wrap: wrap;">
-                                <span><strong>گزارش‌دهنده:</strong> ${report.reporter_name || 'نامشخص'}</span>
-                                <span><strong>وضعیت:</strong> ${getStatusText(status)}</span>
-                                <span><strong>اولویت:</strong> ${getPriorityText(priority)}</span>
-                                <span><strong>تاریخ:</strong> ${new Date(report.created_at).toLocaleDateString('fa-IR')}</span>
-                            </div>
-                            ${report.manager_message ? `
-                                <div style="margin-top: 6px; padding: 6px; background: #fff3cd; border-radius: 4px; font-size: 11px;">
-                                    <strong>یادداشت مدیر:</strong> ${report.manager_message}
-                                </div>
-                                <div style="margin-top: 6px; padding: 6px; background: #fff3cd; border-radius: 4px; font-size: 11px;">
-                                    <strong>قطعات مصرفی:</strong> ${report.actions_taken}
-                                </div>
-                            ` : ''}
-                        </div>
-                    </div>
-                    <div style="display: flex; gap: 8px;">
-                        <button class="download-btn" onclick="downloadSingleReport('${report.id}')" title="دانلود این گزارش">
-                            <i class="fas fa-download"></i>
-                            دانلود
-                        </button>
-                    </div>
+    reportsList.innerHTML = filteredReports.map(report => {
+        const status = report.status || 'pending';
+        const priority = report.priority || 'medium';
+        const priorityColor = getPriorityColor(priority);
+        
+        return `
+        <div class="report-item">
+            <div class="report-info">
+                <div class="report-icon" style="background: ${priorityColor}">
+                    <i class="fas fa-clipboard-check"></i>
                 </div>
-                `;
-            }).join('');
-        }
+                <div class="report-content">
+                    <div class="report-title">${report.machine_name || 'بدون عنوان'}</div>
+                    <div class="report-desc">${report.problem_description || 'بدون توضیحات'}</div>
+                    <div style="display: flex; gap: 10px; margin-top: 6px; font-size: 11px; color: #666; flex-wrap: wrap;">
+                        <span><strong>گزارش‌دهنده:</strong> ${report.technician_name || 'نامشخص'}</span>
+                        <span><strong>وضعیت:</strong> ${getStatusText(status)}</span>
+                        <span><strong>اولویت:</strong> ${getPriorityText(priority)}</span>
+                        <span><strong>تاریخ:</strong> ${new Date(report.created_at).toLocaleDateString('fa-IR')}</span>
+                    </div>
+                    ${report.manager_message ? `
+                        <div style="margin-top: 6px; padding: 6px; background: #fff3cd; border-radius: 4px; font-size: 11px;">
+                            <strong>یادداشت مدیر:</strong> ${report.manager_message}
+                        </div>
+                    ` : ''}
+                    ${report.actions_taken && report.actions_taken.trim().length > 1 ? `
+                        <div style="margin-top: 6px; padding: 6px; background: #fff3cd; border-radius: 4px; font-size: 11px;">
+                            <strong>قطعات مصرفی:</strong> ${report.actions_taken} ${report.consumable_quantity} عدد
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <button class="download-btn" onclick="downloadSingleReport('${report.id}')" title="دانلود این گزارش">
+                    <i class="fas fa-download"></i>
+                    دانلود
+                </button>
+            </div>
+        </div>
+        `;
+    }).join('');
+}
 
         // فیلتر کردن گزارشات
         function filterReports() {
