@@ -65,11 +65,7 @@
             --mechanical: #e67e22;
             --pneumatic: #3498db;
         }
-        .action-btn, .btn, .category-tab, .fault-card {
-            -webkit-tap-highlight-color: rgba(0,0,0,0.1);
-            user-select: none;
-            cursor: pointer;
-                }
+
         /* نویگیشن */
         .navbar {
             background: var(--primary);
@@ -694,7 +690,7 @@
             bottom: 0;
             background: rgba(0,0,0,0.5);
             display: none;
-            justify-content: flex-end;
+            justify-content: center;
             align-items: flex-start;
             z-index: 1000;
             padding: 15px;
@@ -1413,57 +1409,6 @@
         <i class="fas fa-wifi-slash"></i> حالت آفلاین - اتصال اینترنت برقرار نیست
     </div>
     <script>
-        // اضافه کردن این تابع در ابتدای script
-function fixMobileEvents() {
-    // برای همه دکمه‌های action-btn
-    document.querySelectorAll('.action-btn').forEach(btn => {
-        btn.addEventListener('touchstart', function(e) {
-            e.preventDefault();
-            e.stopImmediatePropagation();
-            // شبیه‌سازی hover effect
-            this.style.opacity = '0.8';
-        }, { passive: false });
-        
-        btn.addEventListener('touchend', function(e) {
-            e.preventDefault();
-            e.stopImmediatePropagation();
-            this.style.opacity = '1';
-            
-            // اجرای action مربوطه
-            if (this.classList.contains('report-btn')) {
-                openReportPopup('استنتر آرتوس');
-            } else if (this.classList.contains('troubleshoot-btn')) {
-                startTroubleshooting();
-            }
-        }, { passive: false });
-    });
-    
-    // برای close button پاپ‌آپ
-    document.querySelector('.close-btn').addEventListener('touchend', function(e) {
-        e.preventDefault();
-        closeReportPopup();
-    }, { passive: false });
-    
-    // برای دکمه‌های داخل پاپ‌آپ
-    document.querySelectorAll('.cancel-btn, .submit-btn').forEach(btn => {
-        btn.addEventListener('touchend', function(e) {
-            e.preventDefault();
-            e.stopImmediatePropagation();
-        }, { passive: false });
-    });
-}
-
-// فراخوانی بعد از لود صفحه
-document.addEventListener('DOMContentLoaded', function() {
-    fixMobileEvents();
-    
-    // اضافه کردن این خط برای جلوگیری از double-tap zoom روی دکمه‌ها
-    document.addEventListener('touchstart', function(e) {
-        if (e.target.closest('.action-btn, .btn, .category-tab, .fault-card')) {
-            e.preventDefault();
-        }
-    }, { passive: false });
-});
         // ==================== CUSTOM ALERT SYSTEM ====================
         delete window.alert;
         
