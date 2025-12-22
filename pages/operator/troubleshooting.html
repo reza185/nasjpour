@@ -1409,12 +1409,14 @@
         <i class="fas fa-wifi-slash"></i> حالت آفلاین - اتصال اینترنت برقرار نیست
     </div>
     <script>
-        // ==================== CUSTOM ALERT SYSTEM ====================
+    // ==================== CUSTOM ALERT SYSTEM ====================
+document.addEventListener('DOMContentLoaded', function() {
+    // نصب alert و confirm سفارشی
+    function setupCustomDialogs() {
         delete window.alert;
         
         window.alert = function(message) {
             return new Promise((resolve) => {
-                // ساخت overlay
                 const overlay = document.createElement('div');
                 overlay.style.cssText = `
                     position: fixed;
@@ -1429,7 +1431,6 @@
                     justify-content: center;
                 `;
                 
-                // ساخت dialog
                 const dialog = document.createElement('div');
                 dialog.style.cssText = `
                     background: white;
@@ -1454,7 +1455,6 @@
                 overlay.appendChild(dialog);
                 document.body.appendChild(overlay);
                 
-                // تابع بستن
                 const closeAlert = function() {
                     if (document.body.contains(overlay)) {
                         document.body.removeChild(overlay);
@@ -1462,14 +1462,12 @@
                     resolve();
                 };
                 
-                // اضافه کردن event listener برای دکمه
                 const confirmBtn = document.getElementById('customAlertConfirm');
                 confirmBtn.addEventListener('click', closeAlert);
                 
-                // با کلیک روی overlay هم بسته نشه (مثل alert اصلی)
                 overlay.onclick = function(e) {
                     if (e.target === overlay) {
-                        // کاری نکن - مثل alert اصلی که با کلیک خارج بسته نمیشه
+                        // کاری نکن
                     }
                 };
             });
@@ -1480,7 +1478,6 @@
         
         window.confirm = function(message) {
             return new Promise((resolve) => {
-                // ساخت overlay
                 const overlay = document.createElement('div');
                 overlay.style.cssText = `
                     position: fixed;
@@ -1495,7 +1492,6 @@
                     justify-content: center;
                 `;
                 
-                // ساخت dialog
                 const dialog = document.createElement('div');
                 dialog.style.cssText = `
                     background: white;
@@ -1526,7 +1522,6 @@
                 overlay.appendChild(dialog);
                 document.body.appendChild(overlay);
                 
-                // تابع بستن
                 const closeConfirm = function(result) {
                     if (document.body.contains(overlay)) {
                         document.body.removeChild(overlay);
@@ -1534,799 +1529,802 @@
                     resolve(result);
                 };
                 
-                // اضافه کردن event listener برای دکمه‌ها
                 document.getElementById('customConfirmYes').addEventListener('click', () => closeConfirm(true));
                 document.getElementById('customConfirmNo').addEventListener('click', () => closeConfirm(false));
                 
-                // با کلیک روی overlay هم بسته نشه (مثل confirm اصلی)
                 overlay.onclick = function(e) {
                     if (e.target === overlay) {
-                        // کاری نکن - مثل confirm اصلی که با کلیک خارج بسته نمیشه
+                        // کاری نکن
                     }
                 };
             });
         };
+    }
+    
+    // اجرای نصب دیالوگ‌های سفارشی
+    setupCustomDialogs();
+    
+    // ==================== تابع تشخیص نوع ایراد و تعیین تکنسین ====================
+    function determineIssueTypeAndTechnician(problemDescription) {
+        if (!problemDescription) return { issueType: 'فنی', technician: 'نوروزی' };
         
-        // ==================== تابع تشخیص نوع ایراد و تعیین تکنسین ====================
-        function determineIssueTypeAndTechnician(problemDescription) {
-            if (!problemDescription) return { issueType: 'فنی', technician: 'نوروزی' };
-            
-            const problem = problemDescription.toLowerCase();
-            
-            // کلمات کلیدی مربوط به ایرادات برقی
-            const electricalKeywords = [
-                'برق', 'الکتریک', 'سیم', 'کابل', 'فیوز', 'کلید', 'مدار', 
-                'ولتاژ', 'جریان', 'موتور', 'کنترل', 'تابلو', 'دستگاه اندازه گیری',
-                'اینورتر', 'میکروسوییچ', 'کنتاکتور', 'شاسی', 'چشم الکترونیکی',
-                'سنسور', 'پی‌ال‌سی', 'ال‌سی‌دی', 'کنترل پنل', 'رله', 'ترانس',
-                'الکترونیک', 'برقی', 'ولت', 'آمپر', 'وات', 'برق رسانی'
-            ];
-            
-            // کلمات کلیدی مربوط به ایرادات فنی/مکانیکی
-            const technicalKeywords = [
-                'روغن', 'گیربکس', 'بلبرینگ', 'یاتاقان', 'شفت', 'گشتاور',
-                'مکانیک', 'سرویس', 'تعویض', 'بازبینی', 'قطعه', 'جوش',
-                'لاستیک', 'غلطک', 'زنجیر', 'چرخ دنده', 'تسمه', 'کوپلینگ',
-                'فن', 'رادیاتور', 'دمای روغن', 'بالانس', 'گیرکردن',
-                'اسپیندل', 'ریل', 'جک', 'پنوماتیک', 'باد', 'فشار',
-                'مکانیکی', 'فنی', 'تعمیر', 'نصب', 'سرویس', 'نگهداری',
-                'صدا', 'لرزش', 'نشت', 'فرسودگی', 'خرابی مکانیکی'
-            ];
-            
-            // شمارش کلمات کلیدی
-            let electricalCount = 0;
-            let technicalCount = 0;
-            
-            electricalKeywords.forEach(keyword => {
-                if (problem.includes(keyword)) electricalCount++;
-            });
-            
-            technicalKeywords.forEach(keyword => {
-                if (problem.includes(keyword)) technicalCount++;
-            });
-            
-            // تصمیم‌گیری بر اساس تعداد کلمات کلیدی
-            if (electricalCount > 0 && technicalCount === 0) {
-                return { issueType: 'برق', technician: 'ابراهیمی' };
-            } else if (technicalCount > 0 && electricalCount === 0) {
-                return { issueType: 'فنی', technician: 'نوروزی' };
-            } else if (electricalCount > 0 && technicalCount > 0) {
-                return { issueType: 'ترکیبی', technician: 'ابراهیمی و نوروزی' };
-            }
-            
+        const problem = problemDescription.toLowerCase();
+        
+        const electricalKeywords = [
+            'برق', 'الکتریک', 'سیم', 'کابل', 'فیوز', 'کلید', 'مدار', 
+            'ولتاژ', 'جریان', 'موتور', 'کنترل', 'تابلو', 'دستگاه اندازه گیری',
+            'اینورتر', 'میکروسوییچ', 'کنتاکتور', 'شاسی', 'چشم الکترونیکی',
+            'سنسور', 'پی‌ال‌سی', 'ال‌سی‌دی', 'کنترل پنل', 'رله', 'ترانس',
+            'الکترونیک', 'برقی', 'ولت', 'آمپر', 'وات', 'برق رسانی'
+        ];
+        
+        const technicalKeywords = [
+            'روغن', 'گیربکس', 'بلبرینگ', 'یاتاقان', 'شفت', 'گشتاور',
+            'مکانیک', 'سرویس', 'تعویض', 'بازبینی', 'قطعه', 'جوش',
+            'لاستیک', 'غلطک', 'زنجیر', 'چرخ دنده', 'تسمه', 'کوپلینگ',
+            'فن', 'رادیاتور', 'دمای روغن', 'بالانس', 'گیرکردن',
+            'اسپیندل', 'ریل', 'جک', 'پنوماتیک', 'باد', 'فشار',
+            'مکانیکی', 'فنی', 'تعمیر', 'نصب', 'سرویس', 'نگهداری',
+            'صدا', 'لرزش', 'نشت', 'فرسودگی', 'خرابی مکانیکی'
+        ];
+        
+        let electricalCount = 0;
+        let technicalCount = 0;
+        
+        electricalKeywords.forEach(keyword => {
+            if (problem.includes(keyword)) electricalCount++;
+        });
+        
+        technicalKeywords.forEach(keyword => {
+            if (problem.includes(keyword)) technicalCount++;
+        });
+        
+        if (electricalCount > 0 && technicalCount === 0) {
+            return { issueType: 'برق', technician: 'ابراهیمی' };
+        } else if (technicalCount > 0 && electricalCount === 0) {
             return { issueType: 'فنی', technician: 'نوروزی' };
+        } else if (electricalCount > 0 && technicalCount > 0) {
+            return { issueType: 'ترکیبی', technician: 'ابراهیمی و نوروزی' };
         }
         
-        // اتصال به Supabase
-        const SUPABASE_URL = 'https://kalykylvjqigqlaprlca.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImthbHlreWx2anFpZ3FsYXBybGNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM1NjI1OTcsImV4cCI6MjA3OTEzODU5N30.S8YtogVrxkqYjkgfkGpy4_mS6mqaNxmsHjxnhyBPwEY';
+        return { issueType: 'فنی', technician: 'نوروزی' };
+    }
+    
+    // اتصال به Supabase
+    const SUPABASE_URL = 'https://kalykylvjqigqlaprlca.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImthbHlreWx2anFpZ3FsYXBybGNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM1NjI1OTcsImV4cCI6MjA3OTEzODU5N30.S8YtogVrxkqYjkgfkGpy4_mS6mqaNxmsHjxnhyBPwEY';
+    
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    let stenterFaultsFromDB = {};
+    let selectedMachine = null;
+    let selectedSection = null;
+    let selectedCategory = null;
+    let selectedFault = null;
+    
+    // تابع برای فرمت کردن تاریخ و زمان به فارسی
+    function formatPersianDateTime(date) {
+        const options = {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        };
+        return new Intl.DateTimeFormat('fa-IR', options).format(date);
+    }
+    
+    // تابع برای محاسبه زمان گذشته از ورود
+    function getTimeSinceLogin(loginTime) {
+        const now = new Date();
+        const diff = now - loginTime;
+        const minutes = Math.floor(diff / 60000);
+        const hours = Math.floor(minutes / 60);
         
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        
-        // داده‌های عیب‌های استنتر (از جدول defect_reports سرپرستان خوانده می‌شود)
-        let stenterFaultsFromDB = {};
-        
-        let selectedMachine = null;
-        let selectedSection = null;
-        let selectedCategory = null;
-        let selectedFault = null;
-        
-        // تابع برای فرمت کردن تاریخ و زمان به فارسی
-        function formatPersianDateTime(date) {
-            const options = {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            };
-            return new Intl.DateTimeFormat('fa-IR', options).format(date);
+        if (hours > 0) {
+            return `${hours} ساعت و ${minutes % 60} دقیقه قبل`;
+        } else {
+            return `${minutes} دقیقه قبل`;
         }
-        
-        // تابع برای محاسبه زمان گذشته از ورود
-        function getTimeSinceLogin(loginTime) {
-            const now = new Date();
-            const diff = now - loginTime;
-            const minutes = Math.floor(diff / 60000);
-            const hours = Math.floor(minutes / 60);
+    }
+    
+    // تابع برای به روز رسانی زمان آنلاین
+    function updateOnlineTime() {
+        const loginTimeElement = document.getElementById('loginTime');
+        if (loginTimeElement && window.loginTime) {
+            loginTimeElement.textContent = getTimeSinceLogin(window.loginTime);
+        }
+    }
+    
+    // بارگذاری داده‌های عیب‌یابی از سوپابیس
+    async function loadTroubleshootingData() {
+        try {
+            const { data, error } = await supabase
+                .from('defect_reports')
+                .select('*')
+                .order('created_at', { ascending: false });
             
-            if (hours > 0) {
-                return `${hours} ساعت و ${minutes % 60} دقیقه قبل`;
-            } else {
-                return `${minutes} دقیقه قبل`;
-            }
+            if (error) throw error;
+            
+            stenterFaultsFromDB = transformReportsToFaults(data || []);
+            console.log('داده‌های عیب‌یابی بارگذاری شد:', stenterFaultsFromDB);
+            
+        } catch (error) {
+            console.error('خطا در بارگذاری داده‌های عیب‌یابی:', error);
+            stenterFaultsFromDB = {};
         }
+    }
+    
+    // تبدیل گزارشات به ساختار عیب‌ها
+    function transformReportsToFaults(reports) {
+        const faults = {
+            "ورودی": { "برقی": [], "مکانیکی": [], "پنوماتیک": [] },
+            "خشک کن": { "برقی": [], "مکانیکی": [], "پنوماتیک": [] },
+            "انتهایی": { "برقی": [], "مکانیکی": [], "پنوماتیک": [] }
+        };
         
-        // تابع برای به روز رسانی زمان آنلاین
-        function updateOnlineTime() {
-            const loginTimeElement = document.getElementById('loginTime');
-            if (loginTimeElement && window.loginTime) {
-                loginTimeElement.textContent = getTimeSinceLogin(window.loginTime);
-            }
-        }
-        
-        // بارگذاری داده‌های عیب‌یابی از سوپابیس (از گزارشات سرپرستان)
-        async function loadTroubleshootingData() {
-            try {
-                const { data, error } = await supabase
-                    .from('defect_reports')
-                    .select('*')
-                    .order('created_at', { ascending: false });
+        reports.forEach(report => {
+            const section = report.machine_section;
+            const type = report.defect_type;
+            
+            if (section && type && faults[section] && faults[section][type]) {
+                const fault = {
+                    id: report.id,
+                    title: report.defect_title,
+                    code: report.defect_code || 'بدون کد',
+                    description: report.defect_description || 'بدون شرح',
+                    solutions: Array.isArray(report.solutions) ? report.solutions : 
+                              (typeof report.solutions === 'string' ? [report.solutions] : ['بدون راه‌حل ثبت شده']),
+                    category: type === 'برقی' ? 'electrical' : 
+                             type === 'مکانیکی' ? 'mechanical' : 'pneumatic',
+                    reported_by: report.reported_by,
+                    report_date: new Date(report.created_at).toLocaleDateString('fa-IR'),
+                    actions_taken: report.actions_taken || ''
+                };
                 
-                if (error) throw error;
-                
-                // تبدیل گزارشات به ساختار مورد نیاز برای عیب‌یابی
-                stenterFaultsFromDB = transformReportsToFaults(data || []);
-                console.log('داده‌های عیب‌یابی بارگذاری شد:', stenterFaultsFromDB);
-                
-            } catch (error) {
-                console.error('خطا در بارگذاری داده‌های عیب‌یابی:', error);
-                // در صورت خطا، از داده‌های پیش‌فرض استفاده می‌کنیم
-                stenterFaultsFromDB = {};
+                faults[section][type].push(fault);
             }
+        });
+        
+        return faults;
+    }
+    
+    // شروع عیب‌یابی
+    async function startTroubleshooting() {
+        // جلوگیری از event bubbling
+        event?.stopPropagation();
+        
+        selectedMachine = { name: 'دستگاه استنتر آرتوس' };
+        
+        // بارگذاری گزارشات از سوپابیس
+        await loadTroubleshootingData();
+        
+        // نمایش بخش عیب‌یابی
+        document.getElementById('troubleshootingSection').style.display = 'block';
+        
+        // آپدیت مرحله ۱
+        document.getElementById('selectedMachineInfo').textContent = `دستگاه انتخاب شده: ${selectedMachine.name}`;
+        
+        // اسکرول به بخش عیب‌یابی
+        document.getElementById('troubleshootingSection').scrollIntoView({ behavior: 'smooth' });
+    }
+    
+    // انتخاب بخش دستگاه
+    function selectSection(section) {
+        selectedSection = section;
+        
+        // بررسی آیا بخش انتخاب شده داده دارد
+        const sectionHasData = stenterFaultsFromDB[section] && 
+            Object.values(stenterFaultsFromDB[section]).some(arr => arr.length > 0);
+        
+        if (!sectionHasData) {
+            alert(`❌ هیچ گزارشی برای بخش "${section}" ثبت نشده است.\nلطفاً صبر کنید تا سرپرستان گزارش‌های مربوطه را ثبت کنند.`);
+            return;
         }
         
-        // تبدیل گزارشات به ساختار عیب‌ها
-        function transformReportsToFaults(reports) {
-            const faults = {
-                "ورودی": { "برقی": [], "مکانیکی": [], "پنوماتیک": [] },
-                "خشک کن": { "برقی": [], "مکانیکی": [], "پنوماتیک": [] },
-                "انتهایی": { "برقی": [], "مکانیکی": [], "پنوماتیک": [] }
-            };
-            
-            reports.forEach(report => {
-                const section = report.machine_section;
-                const type = report.defect_type;
-                
-                if (section && type && faults[section] && faults[section][type]) {
-                    const fault = {
-                        id: report.id,
-                        title: report.defect_title,
-                        code: report.defect_code || 'بدون کد',
-                        description: report.defect_description || 'بدون شرح',
-                        solutions: Array.isArray(report.solutions) ? report.solutions : 
-                                  (typeof report.solutions === 'string' ? [report.solutions] : ['بدون راه‌حل ثبت شده']),
-                        category: type === 'برقی' ? 'electrical' : 
-                                 type === 'مکانیکی' ? 'mechanical' : 'pneumatic',
-                        reported_by: report.reported_by,
-                        report_date: new Date(report.created_at).toLocaleDateString('fa-IR'),
-                        actions_taken: report.actions_taken || ''
-                    };
-                    
-                    faults[section][type].push(fault);
-                }
-            });
-            
-            return faults;
-        }
+        // آپدیت مرحله
+        document.getElementById('step1').classList.remove('active');
+        document.getElementById('step2').classList.add('active');
+        document.getElementById('step1Content').classList.remove('active');
+        document.getElementById('step2Content').classList.add('active');
         
-        // شروع عیب‌یابی
-        async function startTroubleshooting() {
-            selectedMachine = { name: 'دستگاه استنتر آرتوس' };
-            
-            // بارگذاری گزارشات از سوپابیس
-            await loadTroubleshootingData();
-            
-            // نمایش بخش عیب‌یابی
-            document.getElementById('troubleshootingSection').style.display = 'block';
-            
-            // آپدیت مرحله ۱
-            document.getElementById('selectedMachineInfo').textContent = `دستگاه انتخاب شده: ${selectedMachine.name}`;
-            
-            // اسکرول به بخش عیب‌یابی
-            document.getElementById('troubleshootingSection').scrollIntoView({ behavior: 'smooth' });
-        }
-        
-        // انتخاب بخش دستگاه
-        function selectSection(section) {
-            selectedSection = section;
-            
-            // بررسی آیا بخش انتخاب شده داده دارد
-            const sectionHasData = stenterFaultsFromDB[section] && 
-                Object.values(stenterFaultsFromDB[section]).some(arr => arr.length > 0);
-            
-            if (!sectionHasData) {
-                alert(`❌ هیچ گزارشی برای بخش "${section}" ثبت نشده است.\nلطفاً صبر کنید تا سرپرستان گزارش‌های مربوطه را ثبت کنند.`);
-                return;
-            }
-            
-            // آپدیت مرحله
-            document.getElementById('step1').classList.remove('active');
-            document.getElementById('step2').classList.add('active');
-            document.getElementById('step1Content').classList.remove('active');
-            document.getElementById('step2Content').classList.add('active');
-            
-            document.getElementById('selectedSectionInfo').textContent = `بخش: ${section} | دستگاه: ${selectedMachine.name}`;
-            
-            // لود دسته‌بندی‌ها
-            loadCategories(section);
-            
-            // نمایش دکمه‌ها
-            document.getElementById('backToStep1Btn').style.display = 'flex';
-        }
+        document.getElementById('selectedSectionInfo').textContent = `بخش: ${section} | دستگاه: ${selectedMachine.name}`;
         
         // لود دسته‌بندی‌ها
-        function loadCategories(section) {
-            const categoryTabs = document.getElementById('categoryTabs');
-            categoryTabs.innerHTML = '';
-            
-            const categories = Object.keys(stenterFaultsFromDB[section] || {});
-            
-            // فقط دسته‌بندی‌هایی که داده دارند را نمایش می‌دهیم
-            const availableCategories = categories.filter(category => 
-                stenterFaultsFromDB[section][category] && 
-                stenterFaultsFromDB[section][category].length > 0
-            );
-            
-            if (availableCategories.length === 0) {
-                categoryTabs.innerHTML = `
-                    <div class="alert alert-warning" style="width: 100%;">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        هیچ گزارشی برای این بخش ثبت نشده است.
-                    </div>
-                `;
-                return;
-            }
-            
-            let firstCategory = null;
-            
-            availableCategories.forEach(category => {
-                if (!firstCategory) firstCategory = category;
-                
-                const tab = document.createElement('div');
-                tab.className = `category-tab ${category === 'برقی' ? 'electrical' : category === 'مکانیکی' ? 'mechanical' : 'pneumatic'}`;
-                tab.onclick = () => selectCategory(category);
-                
-                let icon = 'fas fa-bolt';
-                if (category === 'مکانیکی') icon = 'fas fa-cog';
-                if (category === 'پنوماتیک') icon = 'fas fa-wind';
-                
-                // شمارش تعداد مشکلات در این دسته
-                const count = stenterFaultsFromDB[section][category].length;
-                
-                tab.innerHTML = `
-                    <i class="${icon}"></i>
-                    ${category}
-                    <span style="font-size: 11px; background: rgba(0,0,0,0.1); padding: 2px 6px; border-radius: 10px;">${count}</span>
-                `;
-                
-                categoryTabs.appendChild(tab);
-            });
-            
-            // لود اولین دسته‌بندی به صورت پیش‌فرض
-            if (firstCategory) {
-                selectCategory(firstCategory);
-            }
-        }
+        loadCategories(section);
         
-        // انتخاب دسته‌بندی
-        function selectCategory(category) {
-            selectedCategory = category;
-            
-            // آپدیت تب‌های فعال
-            document.querySelectorAll('#categoryTabs .category-tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            event.currentTarget.classList.add('active');
-            
-            // لود مشکلات
-            loadFaults(selectedSection, category);
-        }
+        // نمایش دکمه‌ها
+        document.getElementById('backToStep1Btn').style.display = 'flex';
+    }
+    
+    // لود دسته‌بندی‌ها
+    function loadCategories(section) {
+        const categoryTabs = document.getElementById('categoryTabs');
+        categoryTabs.innerHTML = '';
         
-        // لود مشکلات
-        function loadFaults(section, category) {
-            const faultsList = document.getElementById('faultsList');
-            faultsList.innerHTML = '';
-            
-            const faults = stenterFaultsFromDB[section]?.[category] || [];
-            
-            if (faults.length === 0) {
-                faultsList.innerHTML = `
-                    <div class="empty-state" style="padding: 20px;">
-                        <i class="fas fa-search"></i>
-                        <p>مشکلی برای این دسته‌بندی ثبت نشده است</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            faults.forEach(fault => {
-                const faultCard = document.createElement('div');
-                faultCard.className = 'fault-card';
-                faultCard.onclick = () => selectFault(fault);
-                
-                const categoryClass = `category-${fault.category}`;
-                const categoryText = fault.category === 'electrical' ? 'برقی' : 
-                                   fault.category === 'mechanical' ? 'مکانیکی' : 'پنوماتیک';
-                
-                faultCard.innerHTML = `
-                    <div class="fault-header">
-                        <div class="fault-title">${fault.title}</div>
-                        <div class="fault-category ${categoryClass}">
-                            ${categoryText}
-                        </div>
-                    </div>
-                    <div class="fault-code">${fault.code} | گزارش‌دهنده: ${fault.reported_by}</div>
-                    <div class="fault-description">${fault.description}</div>
-                    <div style="margin-top: 8px; font-size: 11px; color: var(--gray);">
-                        <i class="fas fa-calendar"></i> تاریخ گزارش: ${fault.report_date}
-                    </div>
-                `;
-                
-                faultsList.appendChild(faultCard);
-            });
-        }
+        const categories = Object.keys(stenterFaultsFromDB[section] || {});
         
-        // انتخاب مشکل
-        function selectFault(fault) {
-            selectedFault = fault;
-            
-            // آپدیت مرحله
-            document.getElementById('step2').classList.remove('active');
-            document.getElementById('step3').classList.add('active');
-            document.getElementById('step2Content').classList.remove('active');
-            document.getElementById('step3Content').classList.add('active');
-            
-            // نمایش اطلاعات مشکل انتخاب شده
-            document.getElementById('selectedFaultInfo').textContent = 
-                `مشکل: ${fault.title} | بخش: ${selectedSection} | دسته: ${selectedCategory}`;
-            
-            // لود راه حل‌ها
-            loadSolutions(fault);
-            
-            // نمایش دکمه‌ها
-            document.getElementById('backToStep1Btn').style.display = 'none';
-            document.getElementById('backToStep2Btn').style.display = 'flex';
-            document.getElementById('resetBtn').style.display = 'flex';
-        }
+        // فقط دسته‌بندی‌هایی که داده دارند را نمایش می‌دهیم
+        const availableCategories = categories.filter(category => 
+            stenterFaultsFromDB[section][category] && 
+            stenterFaultsFromDB[section][category].length > 0
+        );
         
-        // لود راه حل‌ها
-        function loadSolutions(fault) {
-            const solutionsContainer = document.getElementById('solutionsContainer');
-            solutionsContainer.innerHTML = '';
-            
-            // نمایش راه حل‌ها
-            if (fault.solutions && fault.solutions.length > 0) {
-                fault.solutions.forEach((solution, index) => {
-                    if (solution && solution.trim() !== '') {
-                        const solutionItem = document.createElement('div');
-                        solutionItem.className = 'solution-item';
-                        
-                        solutionItem.innerHTML = `
-                            <div class="solution-number">${index + 1}</div>
-                            <div class="solution-text">${solution}</div>
-                        `;
-                        
-                        solutionsContainer.appendChild(solutionItem);
-                    }
-                });
-            } else {
-                solutionsContainer.innerHTML = `
-                    <div class="alert alert-warning">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        هیچ راه‌حلی برای این مشکل ثبت نشده است.
-                    </div>
-                `;
-            }
-            
-            // نمایش اطلاعات گزارش‌دهنده
-            const infoDiv = document.createElement('div');
-            infoDiv.className = 'alert alert-success';
-            infoDiv.style.marginTop = '15px';
-            infoDiv.innerHTML = `
-                <i class="fas fa-user"></i>
-                <div>
-                    <strong>اطلاعات گزارش:</strong><br>
-                    گزارش‌دهنده: ${fault.reported_by} (سرپرست)<br>
-                    تاریخ گزارش: ${fault.report_date}
+        if (availableCategories.length === 0) {
+            categoryTabs.innerHTML = `
+                <div class="alert alert-warning" style="width: 100%;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    هیچ گزارشی برای این بخش ثبت نشده است.
                 </div>
             `;
-            solutionsContainer.appendChild(infoDiv);
+            return;
         }
         
-        // بازگشت به مرحله ۱
-        function backToStep1() {
-            document.getElementById('step2').classList.remove('active');
-            document.getElementById('step1').classList.add('active');
-            document.getElementById('step2Content').classList.remove('active');
-            document.getElementById('step1Content').classList.add('active');
-            
-            document.getElementById('backToStep1Btn').style.display = 'none';
-        }
+        let firstCategory = null;
         
-        // بازگشت به مرحله ۲
-        function backToStep2() {
-            document.getElementById('step3').classList.remove('active');
-            document.getElementById('step2').classList.add('active');
-            document.getElementById('step3Content').classList.remove('active');
-            document.getElementById('step2Content').classList.add('active');
+        availableCategories.forEach(category => {
+            if (!firstCategory) firstCategory = category;
             
-            document.getElementById('backToStep2Btn').style.display = 'none';
-            document.getElementById('resetBtn').style.display = 'none';
-            document.getElementById('backToStep1Btn').style.display = 'flex';
-        }
+            const tab = document.createElement('div');
+            tab.className = `category-tab ${category === 'برقی' ? 'electrical' : category === 'مکانیکی' ? 'mechanical' : 'pneumatic'}`;
+            tab.onclick = () => selectCategory(category);
+            
+            let icon = 'fas fa-bolt';
+            if (category === 'مکانیکی') icon = 'fas fa-cog';
+            if (category === 'پنوماتیک') icon = 'fas fa-wind';
+            
+            // شمارش تعداد مشکلات در این دسته
+            const count = stenterFaultsFromDB[section][category].length;
+            
+            tab.innerHTML = `
+                <i class="${icon}"></i>
+                ${category}
+                <span style="font-size: 11px; background: rgba(0,0,0,0.1); padding: 2px 6px; border-radius: 10px;">${count}</span>
+            `;
+            
+            categoryTabs.appendChild(tab);
+        });
         
-        // شروع مجدد
-        function resetTroubleshooting() {
-            selectedMachine = null;
-            selectedSection = null;
-            selectedCategory = null;
-            selectedFault = null;
-            
-            document.getElementById('step3').classList.remove('active');
-            document.getElementById('step2').classList.remove('active');
-            document.getElementById('step1').classList.add('active');
-            
-            document.getElementById('step3Content').classList.remove('active');
-            document.getElementById('step2Content').classList.remove('active');
-            document.getElementById('step1Content').classList.add('active');
-            
-            document.getElementById('troubleshootingSection').style.display = 'none';
-            document.getElementById('backToStep1Btn').style.display = 'none';
-            document.getElementById('backToStep2Btn').style.display = 'none';
-            document.getElementById('resetBtn').style.display = 'none';
+        // لود اولین دسته‌بندی به صورت پیش‌فرض
+        if (firstCategory) {
+            selectCategory(firstCategory);
         }
+    }
+    
+    // انتخاب دسته‌بندی
+    function selectCategory(category) {
+        selectedCategory = category;
         
-        // ==================== آپدیت تابع ارسال گزارش ====================
-        document.getElementById('reportForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            e.stopPropagation(); 
-            
-            const problemDescription = document.getElementById('problem_description').value;
-            const { issueType, technician } = determineIssueTypeAndTechnician(problemDescription);
-            
-            const formData = {
-                reporter_name: document.getElementById('reporter_name').value,
-                machine_name: document.getElementById('machine_name').value,
-                machine_status: document.getElementById('machine_status').value,
-                problem_description: problemDescription,
-                priority: document.getElementById('priority').value,
-                action_type: issueType,
-                technician_name: technician,
-                status: 'جدید',
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString(),
-                actions_taken: problemDescription // ذخیره توضیحات در ستون actions_taken
-            };
-            
-            try {
-                const { data, error } = await supabase
-                    .from('operatourreports')
-                    .insert([formData]);
-                
-                if (error) {
-                    throw error;
-                }
-                
-                alert(`✅ گزارش با موفقیت ارسال شد!\n\n📋 دستگاه: ${formData.machine_name}\n⚡ نوع ایراد: ${issueType}\n👤 تکنسین: ${technician}\n📊 وضعیت: ${formData.machine_status}\n📝 اقدامات: ثبت شد`);
-                closeReportPopup();
-                loadReports();
-                
-            } catch (error) {
-                console.error('خطا در ارسال گزارش:', error);
-                alert('❌ خطا در ارسال گزارش. لطفاً دوباره تلاش کنید.');
+        // آپدیت تب‌های فعال
+        document.querySelectorAll('#categoryTabs .category-tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        
+        // فعال کردن تب انتخاب شده
+        const tabs = document.querySelectorAll('#categoryTabs .category-tab');
+        tabs.forEach(tab => {
+            if (tab.textContent.includes(category)) {
+                tab.classList.add('active');
             }
         });
         
-        // ==================== آپدیت تابع نمایش گزارش‌ها ====================
-        function displayReports(reports) {
-            const container = document.getElementById('reportsTableContainer');
-            
-            if (!reports || reports.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-inbox"></i>
-                        <p>هنوز گزارشی ثبت نشده است</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            let tableHTML = `
-                <table class="reports-table">
-                    <thead>
-                        <tr>
-                            <th>نام گزارش‌ دهنده</th>
-                            <th>دستگاه</th>
-                            <th>وضعیت دستگاه</th>
-                            <th>نوع ایراد</th>
-                            <th>تکنسین</th>
-                            <th>اولویت</th>
-                            <th>وضعیت گزارش</th>
-                            <th>مشکل نوشته شده</th>
-                            <th>تاریخ ثبت</th>
-                            <th>عملیات</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
-            
-            reports.forEach(report => {
-                const date = new Date(report.created_at).toLocaleDateString('fa-IR');
-                const issueType = report.action_type || 'فنی';
-                const technician = report.technician_name || 'نوروزی';
-                const actionsTaken = report.actions_taken || report.problem_description || '-';
-                
-                // ایجاد بج برای نوع ایراد
-                let issueTypeBadge;
-                if (issueType === 'برق') {
-                    issueTypeBadge = '<span class="issue-type-badge electrical-badge">⚡ برق</span>';
-                } else if (issueType === 'فنی') {
-                    issueTypeBadge = '<span class="issue-type-badge technical-badge">🔧 فنی</span>';
-                } else {
-                    issueTypeBadge = '<span class="issue-type-badge combined-badge">🔰 ترکیبی</span>';
-                }
-                
-                // ایجاد بج برای تکنسین
-                let technicianBadge;
-                if (technician === 'ابراهیمی') {
-                    technicianBadge = '<span class="technician-name electrical-technician">ابراهیمی</span>';
-                } else if (technician === 'نوروزی') {
-                    technicianBadge = '<span class="technician-name technical-technician">نوروزی</span>';
-                } else {
-                    technicianBadge = '<span class="technician-name combined-technician">هر دو</span>';
-                }
-                
-                // نمایش اقدامات انجام شده
-                let actionsDisplay = actionsTaken;
-                if (actionsTaken.length > 70) {
-                    actionsDisplay = actionsTaken.substring(0, 70) + '...';
-                }
-                
-                tableHTML += `
-                    <tr>
-                        <td>${report.reporter_name}</td>
-                        <td>${report.machine_name}</td>
-                        <td>${report.machine_status}</td>
-                        <td>${issueTypeBadge}</td>
-                        <td>${technicianBadge}</td>
-                        <td>${report.priority || '-'}</td>
-                        <td>${report.status || 'جدید'}</td>
-                        <td title="${report.manager_note}">
-
-                               
-                                ${report.problem_description}
+        // لود مشکلات
+        loadFaults(selectedSection, category);
+    }
     
-                        </td>
-                        <td>${date}</td>
-                        <td>
-                            <button class="delete-btn" onclick="deleteReport('${report.id}')">
-                                <i class="fas fa-trash"></i>
-                                حذف
-                            </button>
-                        </td>
-                    </tr>
-                `;
-            });
+    // لود مشکلات
+    function loadFaults(section, category) {
+        const faultsList = document.getElementById('faultsList');
+        faultsList.innerHTML = '';
+        
+        const faults = stenterFaultsFromDB[section]?.[category] || [];
+        
+        if (faults.length === 0) {
+            faultsList.innerHTML = `
+                <div class="empty-state" style="padding: 20px;">
+                    <i class="fas fa-search"></i>
+                    <p>مشکلی برای این دسته‌بندی ثبت نشده است</p>
+                </div>
+            `;
+            return;
+        }
+        
+        faults.forEach(fault => {
+            const faultCard = document.createElement('div');
+            faultCard.className = 'fault-card';
+            faultCard.onclick = () => selectFault(fault);
             
-            tableHTML += `
-                    </tbody>
-                </table>
+            const categoryClass = `category-${fault.category}`;
+            const categoryText = fault.category === 'electrical' ? 'برقی' : 
+                               fault.category === 'mechanical' ? 'مکانیکی' : 'پنوماتیک';
+            
+            faultCard.innerHTML = `
+                <div class="fault-header">
+                    <div class="fault-title">${fault.title}</div>
+                    <div class="fault-category ${categoryClass}">
+                        ${categoryText}
+                    </div>
+                </div>
+                <div class="fault-code">${fault.code} | گزارش‌دهنده: ${fault.reported_by}</div>
+                <div class="fault-description">${fault.description}</div>
+                <div style="margin-top: 8px; font-size: 11px; color: var(--gray);">
+                    <i class="fas fa-calendar"></i> تاریخ گزارش: ${fault.report_date}
+                </div>
             `;
             
-            container.innerHTML = tableHTML;
+            faultsList.appendChild(faultCard);
+        });
+    }
+    
+    // انتخاب مشکل
+    function selectFault(fault) {
+        selectedFault = fault;
+        
+        // آپدیت مرحله
+        document.getElementById('step2').classList.remove('active');
+        document.getElementById('step3').classList.add('active');
+        document.getElementById('step2Content').classList.remove('active');
+        document.getElementById('step3Content').classList.add('active');
+        
+        // نمایش اطلاعات مشکل انتخاب شده
+        document.getElementById('selectedFaultInfo').textContent = 
+            `مشکل: ${fault.title} | بخش: ${selectedSection} | دسته: ${selectedCategory}`;
+        
+        // لود راه حل‌ها
+        loadSolutions(fault);
+        
+        // نمایش دکمه‌ها
+        document.getElementById('backToStep1Btn').style.display = 'none';
+        document.getElementById('backToStep2Btn').style.display = 'flex';
+        document.getElementById('resetBtn').style.display = 'flex';
+    }
+    
+    // لود راه حل‌ها
+    function loadSolutions(fault) {
+        const solutionsContainer = document.getElementById('solutionsContainer');
+        solutionsContainer.innerHTML = '';
+        
+        // نمایش راه حل‌ها
+        if (fault.solutions && fault.solutions.length > 0) {
+            fault.solutions.forEach((solution, index) => {
+                if (solution && solution.trim() !== '') {
+                    const solutionItem = document.createElement('div');
+                    solutionItem.className = 'solution-item';
+                    
+                    solutionItem.innerHTML = `
+                        <div class="solution-number">${index + 1}</div>
+                        <div class="solution-text">${solution}</div>
+                    `;
+                    
+                    solutionsContainer.appendChild(solutionItem);
+                }
+            });
+        } else {
+            solutionsContainer.innerHTML = `
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    هیچ راه‌حلی برای این مشکل ثبت نشده است.
+                </div>
+            `;
         }
         
-        // لود گزارش‌ها از Supabase
-        async function loadReports() {
-            try {
-                const { data: reports, error } = await supabase
-                    .from('operatourreports')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-                
-                if (error) {
-                    throw error;
-                }
-                
-                displayReports(reports);
-                
-            } catch (error) {
-                console.error('خطا در دریافت گزارش‌ها:', error);
-                alert('خطا در دریافت گزارش‌ها');
-            }
-        }
+        // نمایش اطلاعات گزارش‌دهنده
+        const infoDiv = document.createElement('div');
+        infoDiv.className = 'alert alert-success';
+        infoDiv.style.marginTop = '15px';
+        infoDiv.innerHTML = `
+            <i class="fas fa-user"></i>
+            <div>
+                <strong>اطلاعات گزارش:</strong><br>
+                گزارش‌دهنده: ${fault.reported_by} (سرپرست)<br>
+                تاریخ گزارش: ${fault.report_date}
+            </div>
+        `;
+        solutionsContainer.appendChild(infoDiv);
+    }
+    
+    // بازگشت به مرحله ۱
+    function backToStep1() {
+        document.getElementById('step2').classList.remove('active');
+        document.getElementById('step1').classList.add('active');
+        document.getElementById('step2Content').classList.remove('active');
+        document.getElementById('step1Content').classList.add('active');
         
-        // حذف گزارش
-        async function deleteReport(reportId) {
-            const result = await confirm('آیا از حذف این گزارش اطمینان دارید؟');
-            if (!result) {
-                return;
+        document.getElementById('backToStep1Btn').style.display = 'none';
+    }
+    
+    // بازگشت به مرحله ۲
+    function backToStep2() {
+        document.getElementById('step3').classList.remove('active');
+        document.getElementById('step2').classList.add('active');
+        document.getElementById('step3Content').classList.remove('active');
+        document.getElementById('step2Content').classList.add('active');
+        
+        document.getElementById('backToStep2Btn').style.display = 'none';
+        document.getElementById('resetBtn').style.display = 'none';
+        document.getElementById('backToStep1Btn').style.display = 'flex';
+    }
+    
+    // شروع مجدد
+    function resetTroubleshooting() {
+        selectedMachine = null;
+        selectedSection = null;
+        selectedCategory = null;
+        selectedFault = null;
+        
+        document.getElementById('step3').classList.remove('active');
+        document.getElementById('step2').classList.remove('active');
+        document.getElementById('step1').classList.add('active');
+        
+        document.getElementById('step3Content').classList.remove('active');
+        document.getElementById('step2Content').classList.remove('active');
+        document.getElementById('step1Content').classList.add('active');
+        
+        document.getElementById('troubleshootingSection').style.display = 'none';
+        document.getElementById('backToStep1Btn').style.display = 'none';
+        document.getElementById('backToStep2Btn').style.display = 'none';
+        document.getElementById('resetBtn').style.display = 'none';
+    }
+    
+    // ==================== آپدیت تابع ارسال گزارش ====================
+    document.getElementById('reportForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        e.stopPropagation(); 
+        
+        const problemDescription = document.getElementById('problem_description').value;
+        const { issueType, technician } = determineIssueTypeAndTechnician(problemDescription);
+        
+        const formData = {
+            reporter_name: document.getElementById('reporter_name').value,
+            machine_name: document.getElementById('machine_name').value,
+            machine_status: document.getElementById('machine_status').value,
+            problem_description: problemDescription,
+            priority: document.getElementById('priority').value,
+            action_type: issueType,
+            technician_name: technician,
+            status: 'جدید',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            actions_taken: problemDescription
+        };
+        
+        try {
+            const { data, error } = await supabase
+                .from('operatourreports')
+                .insert([formData]);
+            
+            if (error) {
+                throw error;
             }
             
-            try {
-                const { error } = await supabase
-                    .from('operatourreports')
-                    .delete()
-                    .eq('id', reportId);
-                
-                if (error) {
-                    throw error;
-                }
-                
-                alert('گزارش با موفقیت حذف شد');
-                loadReports();
-                
-            } catch (error) {
-                console.error('خطا در حذف گزارش:', error);
-                alert('خطا در حذف گزارش');
-            }
-        }
-        
-        // تابع برای پاک کردن خودکار گزارش‌های قدیمی (هر ماه)
-        async function autoDeleteOldReports() {
-            try {
-                // تاریخ یک ماه پیش
-                const oneMonthAgo = new Date();
-                oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-                
-                const { error } = await supabase
-                    .from('operatourreports')
-                    .delete()
-                    .lt('created_at', oneMonthAgo.toISOString());
-                
-                if (error) {
-                    throw error;
-                }
-                
-                console.log('گزارش‌های قدیمی با موفقیت پاک شدند');
-                
-            } catch (error) {
-                console.error('خطا در پاک کردن گزارش‌های قدیمی:', error);
-            }
-        }
-        
-        // جلوگیری از زوم در دستگاه‌های موبایل و مدیریت زمان ورود
-        document.addEventListener('DOMContentLoaded', function() {
-            // جلوگیری از زوم با حرکات چندلمسی
-            document.addEventListener('touchstart', function(e) {
-                if (e.touches.length > 1) {
-                    e.preventDefault();
-                }
-            }, { passive: false });
-        
-            let lastTouchEnd = 0;
-            document.addEventListener('touchend', function(e) {
-                const now = (new Date()).getTime();
-                if (now - lastTouchEnd <= 300) {
-                    e.preventDefault();
-                }
-                lastTouchEnd = now;
-            }, false);
-        
-            document.addEventListener('gesturestart', function(e) {
-                e.preventDefault();
-            });
-        
-            document.addEventListener('gesturechange', function(e) {
-                e.preventDefault();
-            });
-        
-            document.addEventListener('gestureend', function(e) {
-                e.preventDefault();
-            });
-        
-            // مدیریت زمان ورود کاربر
-            const now = new Date();
-            window.loginTime = now;
-            
-            // نمایش زمان ورود
-            const loginTimeElement = document.getElementById('loginTime');
-            const lastLoginTimeElement = document.getElementById('lastLoginTime');
-            const userNameElement = document.getElementById('userName');
-            const userAvatarElement = document.getElementById('userAvatar');
-            
-            if (loginTimeElement) {
-                loginTimeElement.textContent = formatPersianDateTime(now);
-            }
-            
-            if (lastLoginTimeElement) {
-                lastLoginTimeElement.textContent = formatPersianDateTime(now);
-            }
-        
-            // به روز رسانی زمان آنلاین هر دقیقه
-            setInterval(updateOnlineTime, 60000);
-        
-            // تغییر وضعیت فعال در نویگیشن
-            const navLinks = document.querySelectorAll('.nav-link');
-            navLinks.forEach(link => {
-                link.addEventListener('click', function(e) {
-                    navLinks.forEach(l => l.classList.remove('active'));
-                    this.classList.add('active');
-                });
-            });
-        
-            // لود گزارش‌ها هنگام بارگذاری صفحه
+            alert(`✅ گزارش با موفقیت ارسال شد!\n\n📋 دستگاه: ${formData.machine_name}\n⚡ نوع ایراد: ${issueType}\n👤 تکنسین: ${technician}\n📊 وضعیت: ${formData.machine_status}\n📝 اقدامات: ثبت شد`);
+            closeReportPopup();
             loadReports();
             
-            // اجرای پاک‌سازی خودکار هر بار که صفحه لود می‌شود
-            autoDeleteOldReports();
-        
-            // محافظت از صفحه و نمایش اطلاعات کاربر
-            if (typeof auth !== 'undefined') {
-                if (auth.protectPageByRole('operator')) {
-                    // نمایش اطلاعات کاربر
-                    if (userNameElement) {
-                        userNameElement.textContent = auth.getUsername() || 'اپراتور';
-                    }
-                    if (userAvatarElement) {
-                        userAvatarElement.textContent = auth.getUsername() ? auth.getUsername().charAt(0) : 'O';
-                    }
-                }
-            } else {
-                // حالت توسعه - وقتی auth.js وجود ندارد
-                console.log('حالت توسعه: فایل auth.js یافت نشد');
-                if (userNameElement) {
-                    userNameElement.textContent = 'اپراتور';
-                }
-                if (userAvatarElement) {
-                    userAvatarElement.textContent = 'O';
-                }
-            }
-        });
-        
-        // جلوگیری از اسکرول هنگام زوم در iOS
-        // document.addEventListener('touchmove', function(e) {
-        //     if(e.scale !== 1) {
-        //         e.preventDefault();
-        //     }
-        // }, { passive: false });
-        
-        // مدیریت پاپاپ گزارش
-        function openReportPopup(machine_name) {
-            document.getElementById('machine_name').value = machine_name;
-            document.getElementById('reportPopup').style.display = 'flex';
-            document.getElementById('reporter_name').focus();
-            document.getElementById('problem_description').value = '';
+        } catch (error) {
+            console.error('خطا در ارسال گزارش:', error);
+            alert('❌ خطا در ارسال گزارش. لطفاً دوباره تلاش کنید.');
         }
-        
-        function closeReportPopup() {
-            document.getElementById('reportPopup').style.display = 'none';
-            document.getElementById('reportForm').reset();
-        }
-        
-        // بستن پاپاپ با کلیک خارج از آن
-        document.getElementById('reportPopup').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeReportPopup();
-            }
-        });
-        
-        // فعال کردن اسکرول فقط در container اصلی
-        // const container = document.getElementById('mainContainer');
-        // container.addEventListener('touchmove', function(e) {
-        //     e.stopPropagation();
-        // }, { passive: true });
-        
-        // جلوگیری از اسکرول در body
-        // document.body.addEventListener('touchmove', function(e) {
-        //     if (e.target === document.body) {
-        //         e.preventDefault();
-        //     }
-        // }, { passive: false });
-        
-        if (window.matchMedia('(display-mode: standalone)').matches) {
-            document.body.style.overscrollBehavior = 'none';
-        }
-
-        if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function() {
-        navigator.serviceWorker.register('../sw.js');
     });
-}
+    
+    // ==================== آپدیت تابع نمایش گزارش‌ها ====================
+    function displayReports(reports) {
+        const container = document.getElementById('reportsTableContainer');
+        
+        if (!reports || reports.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <p>هنوز گزارشی ثبت نشده است</p>
+                </div>
+            `;
+            return;
+        }
+        
+        let tableHTML = `
+            <table class="reports-table">
+                <thead>
+                    <tr>
+                        <th>نام گزارش‌ دهنده</th>
+                        <th>دستگاه</th>
+                        <th>وضعیت دستگاه</th>
+                        <th>نوع ایراد</th>
+                        <th>تکنسین</th>
+                        <th>اولویت</th>
+                        <th>وضعیت گزارش</th>
+                        <th>مشکل نوشته شده</th>
+                        <th>تاریخ ثبت</th>
+                        <th>عملیات</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+        
+        reports.forEach(report => {
+            const date = new Date(report.created_at).toLocaleDateString('fa-IR');
+            const issueType = report.action_type || 'فنی';
+            const technician = report.technician_name || 'نوروزی';
+            
+            let issueTypeBadge;
+            if (issueType === 'برق') {
+                issueTypeBadge = '<span class="issue-type-badge electrical-badge">⚡ برق</span>';
+            } else if (issueType === 'فنی') {
+                issueTypeBadge = '<span class="issue-type-badge technical-badge">🔧 فنی</span>';
+            } else {
+                issueTypeBadge = '<span class="issue-type-badge combined-badge">🔰 ترکیبی</span>';
+            }
+            
+            let technicianBadge;
+            if (technician === 'ابراهیمی') {
+                technicianBadge = '<span class="technician-name electrical-technician">ابراهیمی</span>';
+            } else if (technician === 'نوروزی') {
+                technicianBadge = '<span class="technician-name technical-technician">نوروزی</span>';
+            } else {
+                technicianBadge = '<span class="technician-name combined-technician">هر دو</span>';
+            }
+            
+            tableHTML += `
+                <tr>
+                    <td>${report.reporter_name}</td>
+                    <td>${report.machine_name}</td>
+                    <td>${report.machine_status}</td>
+                    <td>${issueTypeBadge}</td>
+                    <td>${technicianBadge}</td>
+                    <td>${report.priority || '-'}</td>
+                    <td>${report.status || 'جدید'}</td>
+                    <td title="${report.problem_description}">
+                        ${report.problem_description}
+                    </td>
+                    <td>${date}</td>
+                    <td>
+                        <button class="delete-btn" onclick="deleteReport('${report.id}')">
+                            <i class="fas fa-trash"></i>
+                            حذف
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+        
+        tableHTML += `
+                </tbody>
+            </table>
+        `;
+        
+        container.innerHTML = tableHTML;
+    }
+    
+    // لود گزارش‌ها از Supabase
+    async function loadReports() {
+        try {
+            const { data: reports, error } = await supabase
+                .from('operatourreports')
+                .select('*')
+                .order('created_at', { ascending: false });
+            
+            if (error) {
+                throw error;
+            }
+            
+            displayReports(reports);
+            
+        } catch (error) {
+            console.error('خطا در دریافت گزارش‌ها:', error);
+            alert('خطا در دریافت گزارش‌ها');
+        }
+    }
+    
+    // حذف گزارش
+    async function deleteReport(reportId) {
+        const result = await confirm('آیا از حذف این گزارش اطمینان دارید؟');
+        if (!result) {
+            return;
+        }
+        
+        try {
+            const { error } = await supabase
+                .from('operatourreports')
+                .delete()
+                .eq('id', reportId);
+            
+            if (error) {
+                throw error;
+            }
+            
+            alert('گزارش با موفقیت حذف شد');
+            loadReports();
+            
+        } catch (error) {
+            console.error('خطا در حذف گزارش:', error);
+            alert('خطا در حذف گزارش');
+        }
+    }
+    
+    // تابع برای پاک کردن خودکار گزارش‌های قدیمی
+    async function autoDeleteOldReports() {
+        try {
+            const oneMonthAgo = new Date();
+            oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+            
+            const { error } = await supabase
+                .from('operatourreports')
+                .delete()
+                .lt('created_at', oneMonthAgo.toISOString());
+            
+            if (error) {
+                throw error;
+            }
+            
+            console.log('گزارش‌های قدیمی با موفقیت پاک شدند');
+            
+        } catch (error) {
+            console.error('خطا در پاک کردن گزارش‌های قدیمی:', error);
+        }
+    }
+    
+    // تابع بروزرسانی گزارش‌ها
+    async function refreshReports() {
+        await loadReports();
+        alert('گزارش‌ها با موفقیت بروزرسانی شدند');
+    }
+    
+    // تابع بروزرسانی عیب‌یابی
+    async function refreshTroubleshooting() {
+        await loadTroubleshootingData();
+        alert('داده‌های عیب‌یابی با موفقیت بروزرسانی شدند');
+        
+        // اگر در حال عیب‌یابی هستیم، داده‌ها را رفرش کنیم
+        if (selectedSection && selectedCategory) {
+            loadFaults(selectedSection, selectedCategory);
+        }
+    }
+    
+    // جلوگیری از زوم در دستگاه‌های موبایل
+    document.addEventListener('touchstart', function(e) {
+        if (e.touches.length > 1) {
+            e.preventDefault();
+        }
+    }, { passive: false });
 
-// مدیریت آفلاین
-window.addEventListener('online', function() {
-    document.getElementById('offlineAlert').style.display = 'none';
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', function(e) {
+        const now = (new Date()).getTime();
+        if (now - lastTouchEnd <= 300) {
+            e.preventDefault();
+        }
+        lastTouchEnd = now;
+    }, false);
+
+    document.addEventListener('gesturestart', function(e) {
+        e.preventDefault();
+    });
+
+    document.addEventListener('gesturechange', function(e) {
+        e.preventDefault();
+    });
+
+    document.addEventListener('gestureend', function(e) {
+        e.preventDefault();
+    });
+
+    // مدیریت زمان ورود کاربر
+    const now = new Date();
+    window.loginTime = now;
+    
+    // نمایش زمان ورود
+    const loginTimeElement = document.getElementById('loginTime');
+    const lastLoginTimeElement = document.getElementById('lastLoginTime');
+    const userNameElement = document.getElementById('userName');
+    const userAvatarElement = document.getElementById('userAvatar');
+    
+    if (loginTimeElement) {
+        loginTimeElement.textContent = formatPersianDateTime(now);
+    }
+    
+    if (lastLoginTimeElement) {
+        lastLoginTimeElement.textContent = formatPersianDateTime(now);
+    }
+
+    // به روز رسانی زمان آنلاین هر دقیقه
+    setInterval(updateOnlineTime, 60000);
+
+    // تغییر وضعیت فعال در نویگیشن
+    const navLinks = document.querySelectorAll('.nav-link');
+    navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            navLinks.forEach(l => l.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+
+    // لود گزارش‌ها هنگام بارگذاری صفحه
+    loadReports();
+    
+    // اجرای پاک‌سازی خودکار
+    autoDeleteOldReports();
+
+    // محافظت از صفحه و نمایش اطلاعات کاربر
+    if (typeof auth !== 'undefined') {
+        if (auth.protectPageByRole('operator')) {
+            if (userNameElement) {
+                userNameElement.textContent = auth.getUsername() || 'اپراتور';
+            }
+            if (userAvatarElement) {
+                userAvatarElement.textContent = auth.getUsername() ? auth.getUsername().charAt(0) : 'O';
+            }
+        }
+    } else {
+        console.log('حالت توسعه: فایل auth.js یافت نشد');
+        if (userNameElement) {
+            userNameElement.textContent = 'اپراتور';
+        }
+        if (userAvatarElement) {
+            userAvatarElement.textContent = 'O';
+        }
+    }
+    
+    // مدیریت پاپاپ گزارش
+    function openReportPopup(machine_name) {
+        document.getElementById('machine_name').value = machine_name;
+        document.getElementById('reportPopup').style.display = 'flex';
+        document.getElementById('reporter_name').focus();
+        document.getElementById('problem_description').value = '';
+    }
+    
+    function closeReportPopup() {
+        document.getElementById('reportPopup').style.display = 'none';
+        document.getElementById('reportForm').reset();
+    }
+    
+    // بستن پاپاپ با کلیک خارج از آن
+    document.getElementById('reportPopup').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeReportPopup();
+        }
+    });
+    
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+        document.body.style.overscrollBehavior = 'none';
+    }
+
+    // Service Worker
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+            navigator.serviceWorker.register('../sw.js');
+        });
+    }
+
+    // مدیریت آفلاین
+    window.addEventListener('online', function() {
+        const offlineAlert = document.getElementById('offlineAlert');
+        if (offlineAlert) offlineAlert.style.display = 'none';
+    });
+
+    window.addEventListener('offline', function() {
+        const offlineAlert = document.getElementById('offlineAlert');
+        if (offlineAlert) offlineAlert.style.display = 'block';
+    });
+
+    if (!navigator.onLine) {
+        const offlineAlert = document.getElementById('offlineAlert');
+        if (offlineAlert) offlineAlert.style.display = 'block';
+    }
+    
+    // ==================== قرار دادن توابع در scope سراسری ====================
+    window.startTroubleshooting = startTroubleshooting;
+    window.selectSection = selectSection;
+    window.backToStep1 = backToStep1;
+    window.backToStep2 = backToStep2;
+    window.resetTroubleshooting = resetTroubleshooting;
+    window.openReportPopup = openReportPopup;
+    window.closeReportPopup = closeReportPopup;
+    window.deleteReport = deleteReport;
+    window.refreshReports = refreshReports;
+    window.refreshTroubleshooting = refreshTroubleshooting;
+    window.loadReports = loadReports;
+    
+    console.log('تمامی توابع در scope سراسری قرار گرفتند');
 });
-
-window.addEventListener('offline', function() {
-    document.getElementById('offlineAlert').style.display = 'block';
-});
-
-if (!navigator.onLine) {
-    document.getElementById('offlineAlert').style.display = 'block';
-}
         </script>
 </body>
 </html>
