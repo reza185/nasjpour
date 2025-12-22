@@ -844,7 +844,960 @@
                     <div class="user-name" id="userName">مدیر سیستم</div>
                     <div class="login-time" id="loginTime">در حال بارگذاری...</div>
                 </div>
-                <div class="user-avatar" id="userAvatar">مد</div>
+                <div class="user-avatar" id="userAvatar">M</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- محتوای اصلی -->
+    <div class="container">
+        <!-- هشدار پاک‌سازی -->
+        <div class="cleanup-alert" id="cleanupAlert">
+            <div class="cleanup-alert-content">
+                <div class="cleanup-alert-text">
+                    <div class="cleanup-alert-title">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        هشدار پاک‌سازی داده‌ها
+                    </div>
+                    <div class="cleanup-alert-desc" id="cleanupMessage">
+                        داده‌های جدول مدیریت تا 1 روز دیگر پاک خواهند شد. لطفاً از اطلاعات بکاپ بگیرید.
+                    </div>
+                </div>
+                <div class="cleanup-alert-actions">
+                    <button class="alert-btn alert-btn-secondary" onclick="dismissAlert()">
+                        بعداً یادآوری کن
+                    </button>
+                    <button class="alert-btn alert-btn-primary" onclick="downloadAllData()">
+                        <i class="fas fa-download"></i>
+                        دانلود همه داده‌ها
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- هدر صفحه -->
+        <div class="header-card">
+            <h1 class="page-title">گزارشات مدیریتی</h1>
+            <p class="page-subtitle">گزارشات استراتژیک برای تصمیم‌گیری مدیریت</p>
+            <div class="login-info">
+                <i class="fas fa-clock"></i>
+                آخرین ورود: <span id="lastLoginTime">در حال بارگذاری...</span>
+            </div>
+        </div>
+
+        <!-- خلاصه اجرایی -->
+        <div class="card">
+            <h2 class="section-title">
+                <i class="fas fa-chart-pie"></i>
+                خلاصه اجرایی
+            </h2>
+            
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <div class="summary-number" id="totalReports">0</div>
+                    <div class="summary-label">کل گزارشات</div>
+                </div>
+                
+                <div class="summary-item">
+                    <div class="summary-number" id="pendingReports">0</div>
+                    <div class="summary-label">در انتظار بررسی</div>
+                </div>
+                
+                <div class="summary-item">
+                    <div class="summary-number" id="completedReports">0</div>
+                    <div class="summary-label">تکمیل شده</div>
+                </div>
+                
+                <div class="summary-item">
+                    <div class="summary-number" id="referredReports">0</div>
+                    <div class="summary-label">ارجاع به مدیر</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- فیلتر و جستجو -->
+        <div class="card">
+            <h2 class="section-title">
+                <i class="fas fa-filter"></i>
+                فیلتر و جستجو
+            </h2>
+            
+            <div class="filter-row">
+                <input type="text" class="search-bar" placeholder="جستجو در گزارشات..." id="searchInput">
+                
+                <select class="filter-select" id="statusFilter">
+                    <option value="all">همه وضعیت‌ها</option>
+                    <option value="pending">در انتظار بررسی</option>
+                    <option value="approved">تأیید شده</option>
+                    <option value="rejected">رد شده</option>
+                    <option value="in-progress">در دست اقدام</option>
+                    <option value="completed">تکمیل شده</option>
+                    <option value="referred_to_manager">ارجاع به مدیر</option>
+                </select>
+                
+                <select class="filter-select" id="priorityFilter">
+                    <option value="all">همه اولویت‌ها</option>
+                    <option value="low">کم</option>
+                    <option value="medium">متوسط</option>
+                    <option value="high">بالا</option>
+                    <option value="critical">بحرانی</option>
+                </select>
+
+                <button class="download-btn" onclick="downloadFilteredData()">
+                    <i class="fas fa-download"></i>
+                    دانلود داده‌های فیلتر شده
+                </button>
+            </div>
+        </div>
+
+        <!-- گزارشات مدیریتی -->
+        <!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="TPM">
+    <title>TMP</title>
+    <link rel="icon" href="icons/icon-192x192.png">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="manifest" href="../../manifest.json">
+    <link rel="apple-touch-icon" href="../../icons/icon-192x192.png">
+    <link rel="apple-touch-startup-image" href="../../icons/icon-512x512.png">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- <script src="../../auth.js"></script> -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Vazirmatn', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-text-size-adjust: 100%;
+            touch-action: manipulation;
+            * {
+    -webkit-tap-highlight-color: transparent;  /* داشت */
+    -webkit-text-size-adjust: 100%;           /* داشت */  
+    touch-action: manipulation;               /* داشت */
+}
+        }
+
+        :root {
+            --primary: #2c3e50;
+            --primary-light: #34495e;
+            --accent: #e74c3c;
+            --accent-light: #ff6b6b;
+            --secondary: #3498db;
+            --dark: #1a252f;
+            --light: #ecf0f1;
+            --gray: #95a5a6;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+        }
+
+        body {
+            background: #f8f9fa;
+            color: var(--dark);
+            min-height: 100vh;
+            overflow-x: hidden;
+            width: 100%;
+            -webkit-overflow-scrolling: touch;
+            padding-top: env(safe-area-inset-top, 0px);
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+        }
+
+        /* نویگیشن */
+        .navbar {
+            background: var(--primary);
+            color: white;
+            padding: 0 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            width: 100%;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 60px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            background: transparent;
+            width: 35px;
+            height: 35px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .logo-text {
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .nav-link.active {
+            background: rgba(255,255,255,0.15);
+        }
+
+        .nav-link:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-details {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 2px;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .login-time {
+            font-size: 11px;
+            opacity: 0.8;
+            color: #ecf0f1;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px 15px;
+            width: 100%;
+        }
+
+        .header-card {
+            background: var(--secondary);
+            color: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: 100%;
+        }
+
+        .page-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .page-subtitle {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .login-info {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .login-info i {
+            font-size: 11px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border: 1px solid #eaeaea;
+            width: 100%;
+            margin-bottom: 50px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title i {
+            color: var(--accent);
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .summary-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            border: 1px solid #eaeaea;
+            transition: transform 0.3s ease;
+        }
+
+        .summary-item:hover {
+            transform: translateY(-2px);
+        }
+
+        .summary-number {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: var(--secondary);
+        }
+
+        .summary-label {
+            color: var(--gray);
+            font-size: 12px;
+        }
+
+        .report-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .report-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 1px solid #eaeaea;
+            transition: transform 0.2s;
+        }
+
+        .report-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .report-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .report-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: white;
+            background: var(--secondary);
+            flex-shrink: 0;
+        }
+
+        .report-content {
+            flex: 1;
+        }
+
+        .report-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+
+        .report-desc {
+            color: var(--gray);
+            font-size: 12px;
+        }
+
+        .download-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            touch-action: manipulation;
+            flex-shrink: 0;
+        }
+
+        .download-btn:hover {
+            background: var(--accent-light);
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 10px;
+            border: 1px solid #eaeaea;
+            width: 100%;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            min-width: 500px;
+        }
+
+        .data-table th {
+            background: #f8f9fa;
+            padding: 12px 10px;
+            text-align: right;
+            font-weight: 600;
+            color: var(--primary);
+            border-bottom: 1px solid #eaeaea;
+            font-size: 14px;
+        }
+
+        .data-table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #eaeaea;
+            font-size: 14px;
+        }
+
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .negative {
+            color: var(--danger);
+            font-weight: 600;
+        }
+
+        .cleanup-alert {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+            animation: pulse 2s infinite;
+        }
+
+        .cleanup-alert-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .cleanup-alert-text {
+            flex: 1;
+        }
+
+        .cleanup-alert-title {
+            font-weight: 700;
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+
+        .cleanup-alert-desc {
+            opacity: 0.9;
+            font-size: 12px;
+        }
+
+        .cleanup-alert-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .alert-btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 12px;
+            touch-action: manipulation;
+        }
+
+        .alert-btn-primary {
+            background: white;
+            color: #e74c3c;
+        }
+
+        .alert-btn-secondary {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-select {
+            padding: 8px 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: white;
+            font-size: 13px;
+            cursor: pointer;
+            min-width: 120px;
+            touch-action: manipulation;
+        }
+
+        .search-bar {
+            flex: 1;
+            padding: 8px 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 13px;
+            background: white;
+            min-width: 150px;
+            touch-action: manipulation;
+        }
+
+        .bg-success { background: var(--success); }
+        .bg-warning { background: var(--warning); }
+        .bg-danger { background: var(--danger); }
+        .bg-info { background: var(--secondary); }
+        .bg-primary { background: var(--primary); }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        /* رسپانسیو */
+        @media (max-width: 1024px) {
+            .summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .report-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+            
+            .nav-links {
+                gap: 8px;
+            }
+            
+            .nav-link span {
+                display: none;
+            }
+            
+            .user-details {
+                display: none;
+            }
+
+            .cleanup-alert-content {
+                flex-direction: column;
+                gap: 12px;
+                text-align: center;
+            }
+
+            .filter-row {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .navbar {
+                padding: 0 10px;
+            }
+            
+            .nav-container {
+                height: 50px;
+            }
+            
+            .logo-icon {
+                width: 30px;
+                height: 30px;
+                font-size: 14px;
+            }
+            
+            .user-avatar {
+                width: 35px;
+                height: 35px;
+                font-size: 12px;
+            }
+            
+            .container {
+                padding: 15px 10px;
+            }
+            
+            .header-card {
+                padding: 15px;
+            }
+            
+            .page-title {
+                font-size: 18px;
+            }
+            
+            .card {
+                padding: 15px;
+            }
+            
+            .section-title {
+                font-size: 16px;
+            }
+            
+            .summary-number {
+                font-size: 18px;
+            }
+            
+            .report-icon {
+                width: 35px;
+                height: 35px;
+                font-size: 14px;
+            }
+        }
+
+        /* جلوگیری از زوم */
+        @media (hover: none) and (pointer: coarse) {
+            * {
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+            }
+            
+            input, textarea, select {
+                -webkit-user-select: text;
+                -moz-user-select: text;
+                -ms-user-select: text;
+                user-select: text;
+            }
+        }
+
+        button, .btn {
+            -webkit-tap-highlight-color: rgba(0,0,0,0.1);
+            transition: all 0.2s ease;
+        }
+
+        @media (max-width: 768px) {
+            button:active, .btn:active {
+                transform: scale(0.98);
+                opacity: 0.9;
+            }
+        }
+
+        /* بهبود نمایش در iOS */
+        input, select, textarea {
+            font-size: 16px !important;
+            transform: translateZ(0);
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+            user-select: text;
+        }
+
+        /* بهبود نمایش select در iOS */
+        select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: left 12px center;
+            background-size: 16px;
+            padding-left: 40px;
+        }
+
+        /* حداقل سایز لمسی برای تمام دکمه‌ها در iOS */
+        button, .btn, .nav-link, .alert-btn, .download-btn {
+            min-height: 44px !important;
+            min-width: 44px !important;
+            cursor: pointer;
+        }
+
+        /* بهبود اسکرول در iOS */
+        .table-container, .container {
+            -webkit-overflow-scrolling: touch !important;
+            overflow-x: auto;
+        }
+
+        /* جلوگیری از highlight آبی در iOS */
+        * {
+            -webkit-tap-highlight-color: transparent !important;
+        }
+
+        /* بهبود نمایش tables در iOS */
+        .data-table {
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* جلوگیری از bounce بیش از حد در iOS */
+        body {
+            overscroll-behavior-y: none;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* بهبود نمایش inputهای عددی در iOS */
+        input[type="number"] {
+            -webkit-appearance: none;
+            -moz-appearance: textfield;
+        }
+
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* بهبود نمایش فرم‌ها در iOS */
+        .search-bar, .filter-select {
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+            user-select: text;
+            touch-action: manipulation;
+        }
+
+        /* بهبود نمایش navigation در iOS */
+        .navbar {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        /* بهبود نمایش لیست‌ها در iOS */
+        .report-list, .summary-grid {
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* بهبود نمایش کارت‌ها در iOS */
+        .card, .summary-item {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* بهبود نمایش آیکون‌ها در iOS */
+        i, .fas, .far, .fab {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* بهبود نمایش لینک‌ها در iOS */
+        a {
+            -webkit-tap-highlight-color: rgba(0,0,0,0.1);
+        }
+
+        /* بهبود نمایش وضعیت‌ها در iOS */
+        .negative {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* بهبود نمایش دکمه‌های گزارش در iOS */
+        .download-btn:active {
+            transform: scale(0.98);
+            opacity: 0.9;
+        }
+
+        /* بهبود نمایش navigation links در iOS */
+        .nav-link:active {
+            background: rgba(255,255,255,0.2) !important;
+        }
+
+        /* بهبود نمایش action items در iOS */
+        .report-item:active {
+            transform: translateY(-2px) scale(0.98);
+        }
+
+        /* بهبود نمایش metric cards در iOS */
+        .summary-item:active {
+            transform: translateY(-2px) scale(0.98);
+        }
+
+        /* بهبود نمایش در دستگاه‌های بسیار کوچک */
+        @media (max-width: 360px) {
+            .navbar {
+                padding: 0 8px;
+            }
+            
+            .nav-container {
+                height: 48px;
+            }
+            
+            .logo-icon {
+                width: 28px;
+                height: 28px;
+                font-size: 12px;
+            }
+            
+            .logo-text {
+                font-size: 12px;
+            }
+            
+            .user-avatar {
+                width: 32px;
+                height: 32px;
+                font-size: 11px;
+            }
+            
+            .container {
+                padding: 10px 8px;
+            }
+            
+            .header-card {
+                padding: 12px;
+            }
+            
+            .page-title {
+                font-size: 16px;
+            }
+            
+            .page-subtitle {
+                font-size: 12px;
+            }
+        }
+
+        /* بهبود نمایش در حالت landscape */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .navbar {
+                height: 48px;
+            }
+            
+            .nav-container {
+                height: 48px;
+            }
+            
+            .container {
+                padding: 10px 15px;
+            }
+            
+            .header-card {
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+            
+            .card {
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+        }
+
+        /* بهبود نمایش در حالت PWA (نصب شده) */
+        @media all and (display-mode: standalone) {
+            body {
+                height: 100vh;
+                height: -webkit-fill-available;
+                height: fill-available;
+            }
+            
+            .navbar {
+                padding-top: env(safe-area-inset-top);
+            }
+            
+            .container {
+                padding-bottom: env(safe-area-inset-bottom);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- نویگیشن -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <div class="logo-icon">
+                    <img src="../../Logo.png" style="max-block-size:100% ;" >
+                </div>
+                <div class="logo-text">TPM PRO</div>
+            </div>
+            
+            <div class="nav-links">
+                <a href="dashboard.html" class="nav-link">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>داشبورد</span>
+                </a>
+                <a href="reports.html" class="nav-link active">
+                    <i class="fas fa-clipboard-list"></i>
+                    <span>گزارشات</span>
+                </a>
+                <a href="work-order.html" class="nav-link">
+                    <i class="fas fa-tools"></i>
+                    <span>دستورکار</span>
+                </a>
+            </div>
+            
+            <div class="user-info">
+                <div class="user-details">
+                    <div class="user-name" id="userName">مدیر سیستم</div>
+                    <div class="login-time" id="loginTime">در حال بارگذاری...</div>
+                </div>
+                <div class="user-avatar" id="userAvatar">M</div>
             </div>
         </div>
     </nav>
@@ -952,6 +1905,839 @@
 
         <!-- گزارشات مدیریتی -->
         <div class="card">
+            <h2 class="section-title">
+                <i class="fas fa-file-alt"></i>
+                گزارشات مدیریتی
+                <span style="font-size: 12px; color: var(--gray); margin-right: auto;" id="reportsCount">
+                    (0 گزارش)
+                </span>
+            </h2>
+            
+            <div class="report-list" id="reportsList">
+                  <!-- معیارهای کلیدی عملکرد -->
+        <div class="card">
+            <h2 class="section-title">
+                <i class="fas fa-chart-bar"></i>
+                
+            </h2>
+            
+            <div class="table-container">
+                <table class="data-table">
+                   <thead>
+                        <tr>
+                            <th>معیار</th>
+                            <th>مقدار فعلی</th>
+                            <th>هدف</th>
+                            <th>انحراف</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>میانگین زمان پاسخگویی (ساعت)</td>
+                            <td id="avgResponseTime">-</td>
+                            <td>4</td>
+                            <td class="negative" id="responseDeviation">-</td>
+                        </tr>
+                        <tr>
+                            <td>نرخ تکمیل موفق</td>
+                            <td id="completionRate">-</td>
+                            <td>95%</td>
+                            <td class="negative" id="completionDeviation">-</td>
+                        </tr>
+                        <tr>
+                            <td>هزینه متوسط تعمیرات</td>
+                            <td id="avgRepairCost">-</td>
+                            <td>$1,100</td>
+                            <td class="negative" id="costDeviation">-</td>
+                        </tr>
+                    </tbody> 
+                </table>
+            </div>
+        </div>
+    </div>
+            </div>
+        </div>
+
+      
+        <div id="offlineAlert" style="display: none; position: fixed; top: 0; left: 0; right: 0; background: #e74c3c; color: white; text-align: center; padding: 10px; z-index: 10003; font-family: Vazirmatn;">
+            <i class="fas fa-wifi-slash"></i> حالت آفلاین - اتصال اینترنت برقرار نیست
+        </div>
+    <script>
+       delete window.alert;
+
+window.alert = function(message) {
+    return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        `;
+        
+        const dialog = document.createElement('div');
+        dialog.style.cssText = `
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            text-align: center;
+            min-width: 300px;
+            max-width: 90%;
+            font-family: Vazirmatn, sans-serif;
+            border: 2px solid #2c3e50;
+        `;
+        
+        dialog.innerHTML = `
+            <div style="margin-bottom: 20px; font-size: 16px; color: #2c3e50; line-height: 1.5;">${message}</div>
+            <button onclick="closeCustomAlert()" 
+                    style="padding: 10px 25px; background: #2c3e50; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                تأیید
+            </button>
+        `;
+        
+        overlay.appendChild(dialog);
+        document.body.appendChild(overlay);
+        
+        window.closeCustomAlert = function() {
+            if (document.body.contains(overlay)) {
+                document.body.removeChild(overlay);
+            }
+            resolve();
+        };
+    });
+};
+
+// ==================== ORIGINAL CODE ====================
+document.addEventListener('DOMContentLoaded', function() {
+    
+    // ==================== توابع کمکی ====================
+    function formatPersianDateTime(date) {
+        const options = {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        };
+        return new Intl.DateTimeFormat('fa-IR', options).format(date);
+    }
+
+    function getTimeSinceLogin(loginTime) {
+        const now = new Date();
+        const diff = now - loginTime;
+        const minutes = Math.floor(diff / 60000);
+        const hours = Math.floor(minutes / 60);
+        
+        if (hours > 0) {
+            return `${hours} ساعت و ${minutes % 60} دقیقه قبل`;
+        } else {
+            return `${minutes} دقیقه قبل`;
+        }
+    }
+
+    function updateOnlineTime() {
+        const loginTimeElement = document.getElementById('loginTime');
+        if (loginTimeElement && window.loginTime) {
+            loginTimeElement.textContent = getTimeSinceLogin(window.loginTime);
+        }
+    }
+
+    // ==================== جلوگیری از زوم در موبایل ====================
+    document.addEventListener('touchstart', function(e) {
+        if (e.touches.length > 1) {
+            e.preventDefault();
+        }
+    }, { passive: false });
+
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', function(e) {
+        const now = (new Date()).getTime();
+        if (now - lastTouchEnd <= 300) {
+            e.preventDefault();
+        }
+        lastTouchEnd = now;
+    }, false);
+
+    document.addEventListener('gesturestart', function(e) {
+        e.preventDefault();
+    });
+
+    document.addEventListener('gesturechange', function(e) {
+        e.preventDefault();
+    });
+
+    document.addEventListener('gestureend', function(e) {
+        e.preventDefault();
+    });
+
+    // ==================== مدیریت زمان ورود ====================
+    const now = new Date();
+    window.loginTime = now;
+    
+    const loginTimeElement = document.getElementById('loginTime');
+    const lastLoginTimeElement = document.getElementById('lastLoginTime');
+    const userNameElement = document.getElementById('userName');
+    const userAvatarElement = document.getElementById('userAvatar');
+    
+    if (loginTimeElement) {
+        loginTimeElement.textContent = formatPersianDateTime(now);
+    }
+    
+    if (lastLoginTimeElement) {
+        lastLoginTimeElement.textContent = formatPersianDateTime(now);
+    }
+
+    setInterval(updateOnlineTime, 60000);
+
+    // ==================== اتصال به Supabase ====================
+    const SUPABASE_URL = 'https://kalykylvjqigqlaprlca.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImthbHlreWx2anFpZ3FsYXBybGNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM1NjI1OTcsImV4cCI6MjA3OTEzODU5N30.S8YtogVrxkqYjkgfkGpy4_mS6mqaNxmsHjxnhyBPwEY';
+    
+    console.log('🔗 در حال اتصال به Supabase...');
+    
+    // بررسی وجود supabase
+    if (typeof window.supabase === 'undefined') {
+        console.error('❌ کتابخانه Supabase یافت نشد!');
+        alert('خطا: کتابخانه Supabase بارگذاری نشده است');
+        return;
+    }
+    
+    try {
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        console.log('✅ Supabase متصل شد');
+        
+        // ذخیره در window برای دسترسی جهانی
+        window.supabaseClient = supabase;
+        
+    } catch (error) {
+        console.error('❌ خطا در اتصال به Supabase:', error);
+        alert('خطا در اتصال به پایگاه داده');
+        return;
+    }
+
+    let allReports = [];
+    let filteredReports = [];
+
+    // ==================== توابع کمکی ====================
+    function getStatusText(status) {
+        const statusMap = {
+            'pending': 'در انتظار بررسی',
+            'approved': 'تأیید شده',
+            'rejected': 'رد شده',
+            'in-progress': 'در دست اقدام',
+            'completed': 'تکمیل شده',
+            'referred_to_manager': 'ارجاع به مدیر'
+        };
+        return statusMap[status] || status;
+    }
+
+    function getPriorityText(priority) {
+        const priorityMap = {
+            'low': 'کم',
+            'medium': 'متوسط',
+            'high': 'بالا',
+            'critical': 'بحرانی'
+        };
+        return priorityMap[priority] || priority;
+    }
+
+    function getPriorityColor(priority) {
+        const colorMap = {
+            'low': '#2ecc71',
+            'medium': '#f39c12', 
+            'high': '#e74c3c',
+            'critical': '#c0392b'
+        };
+        return colorMap[priority] || '#3498db';
+    }
+
+    // ==================== لود گزارشات ====================
+    async function loadManagerReports() {
+        console.log('📥 در حال دریافت گزارشات از Supabase...');
+        
+        try {
+            // بررسی اتصال
+            if (!window.supabaseClient) {
+                console.error('❌ Supabase متصل نیست');
+                await alert('خطا: اتصال به پایگاه داده برقرار نیست');
+                return;
+            }
+            
+            // نمایش loader
+            const loader = document.getElementById('loader');
+            if (loader) loader.style.display = 'block';
+            
+            // درخواست به Supabase
+            const { data: reports, error } = await window.supabaseClient
+                .from('managerreports')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            console.log('📊 پاسخ Supabase:', { reports, error });
+
+            if (error) {
+                console.error('❌ خطا در دریافت داده‌ها:', error);
+                
+                // بررسی نوع خطا
+                if (error.code === 'PGRST204') {
+                    console.log('⚠️ جدول خالی است');
+                    allReports = [];
+                } else if (error.message.includes('JWT')) {
+                    await alert('خطا در احراز هویت. لطفاً مجدداً وارد شوید.');
+                } else {
+                    await alert(`خطا در دریافت گزارشات: ${error.message}`);
+                }
+                
+            } else {
+                console.log(`✅ ${reports ? reports.length : 0} گزارش دریافت شد`);
+                allReports = reports || [];
+            }
+
+            filteredReports = [...allReports];
+            
+            // مخفی کردن loader
+            if (loader) loader.style.display = 'none';
+            
+            // آپدیت UI
+            updateStats();
+            renderReports();
+            checkCleanupAlert();
+            
+        } catch (error) {
+            console.error('❌ خطا در دریافت گزارشات مدیریتی:', error);
+            
+            const loader = document.getElementById('loader');
+            if (loader) loader.style.display = 'none';
+            
+            await alert('خطا در دریافت گزارشات از سرور');
+            
+            // نمایش حالت بدون داده
+            allReports = [];
+            filteredReports = [];
+            updateStats();
+            renderReports();
+        }
+    }
+
+    // ==================== آپدیت آمار ====================
+    function updateStats() {
+        console.log('📊 آپدیت آمار...');
+        
+        const totalReports = allReports.length;
+        const pendingReports = allReports.filter(r => 
+            !r.status || r.status === 'pending' || r.status === 'in-progress'
+        ).length;
+        const completedReports = allReports.filter(r => r.status === 'completed').length;
+        const referredReports = allReports.filter(r => r.status === 'referred_to_manager').length;
+
+        const totalReportsEl = document.getElementById('totalReports');
+        const pendingReportsEl = document.getElementById('pendingReports');
+        const completedReportsEl = document.getElementById('completedReports');
+        const referredReportsEl = document.getElementById('referredReports');
+        const reportsCountEl = document.getElementById('reportsCount');
+
+        if (totalReportsEl) totalReportsEl.textContent = totalReports;
+        if (pendingReportsEl) pendingReportsEl.textContent = pendingReports;
+        if (completedReportsEl) completedReportsEl.textContent = completedReports;
+        if (referredReportsEl) referredReportsEl.textContent = referredReports;
+        if (reportsCountEl) reportsCountEl.textContent = `(${filteredReports.length} گزارش)`;
+
+        updatePerformanceMetrics();
+    }
+
+    function updatePerformanceMetrics() {
+        const completedReports = allReports.filter(r => r.status === 'completed');
+        
+        if (completedReports.length > 0) {
+            const totalResponseTime = completedReports.reduce((sum, report) => {
+                const createdAt = new Date(report.created_at);
+                const completedAt = new Date(report.completed_at || report.updated_at || report.created_at);
+                const diffHours = (completedAt - createdAt) / (1000 * 60 * 60);
+                return sum + (isNaN(diffHours) ? 0 : diffHours);
+            }, 0);
+            
+            const avgResponseTime = (totalResponseTime / completedReports.length).toFixed(1);
+            const avgResponseTimeEl = document.getElementById('avgResponseTime');
+            const responseDeviationEl = document.getElementById('responseDeviation');
+            
+            if (avgResponseTimeEl) avgResponseTimeEl.textContent = `${avgResponseTime} ساعت`;
+            if (responseDeviationEl) responseDeviationEl.textContent = `${(avgResponseTime - 4).toFixed(1)} ساعت`;
+
+            const successfulCompletions = completedReports.filter(r => 
+                !r.decision_status || r.decision_status === 'approved'
+            ).length;
+            const completionRate = ((successfulCompletions / completedReports.length) * 100).toFixed(1);
+            const completionRateEl = document.getElementById('completionRate');
+            const completionDeviationEl = document.getElementById('completionDeviation');
+            
+            if (completionRateEl) completionRateEl.textContent = `${completionRate}%`;
+            if (completionDeviationEl) completionDeviationEl.textContent = `${(completionRate - 95).toFixed(1)}%`;
+        }
+    }
+
+    // ==================== نمایش گزارشات ====================
+    function renderReports() {
+        console.log('🖥️ نمایش گزارشات...');
+        
+        const reportsList = document.getElementById('reportsList');
+        if (!reportsList) {
+            console.error('❌ المنت reportsList یافت نشد');
+            return;
+        }
+        
+        if (!filteredReports || filteredReports.length === 0) {
+            console.log('ℹ️ هیچ گزارشی برای نمایش وجود ندارد');
+            reportsList.innerHTML = `
+                <div style="text-align: center; padding: 40px; color: #666;">
+                    <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 16px; color: #ddd;"></i>
+                    <h3>گزارشی یافت نشد</h3>
+                    <p>هیچ گزارشی با فیلترهای انتخاب شده مطابقت ندارد.</p>
+                    <button onclick="loadManagerReports()" 
+                            style="margin-top: 20px; padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                        <i class="fas fa-sync-alt"></i> بارگذاری مجدد
+                    </button>
+                </div>
+            `;
+            return;
+        }
+
+        console.log(`📋 نمایش ${filteredReports.length} گزارش`);
+
+        reportsList.innerHTML = filteredReports.map(report => {
+            const status = report.status || 'pending';
+            const priority = report.priority || 'medium';
+            const priorityColor = getPriorityColor(priority);
+            
+            // بررسی وجود فیلدهای ضروری
+            const machineName = report.machine_name || 'بدون عنوان';
+            const problemDesc = report.problem_description || 'بدون توضیحات';
+            const reporterName = report.reporter_name || report.technician_name || 'نامشخص';
+            const createdDate = report.created_at ? new Date(report.created_at).toLocaleDateString('fa-IR') : 'نامشخص';
+            
+            return `
+            <div class="report-item">
+                <div class="report-info">
+                    <div class="report-icon" style="background: ${priorityColor}">
+                        <i class="fas fa-clipboard-check"></i>
+                    </div>
+                    <div class="report-content">
+                        <div class="report-title">${machineName}</div>
+                        <div class="report-desc">${problemDesc}</div>
+                        <div style="display: flex; gap: 10px; margin-top: 6px; font-size: 11px; color: #666; flex-wrap: wrap;">
+                            <span><strong>گزارش‌دهنده:</strong> ${reporterName}</span>
+                            <span><strong>وضعیت:</strong> ${getStatusText(status)}</span>
+                            <span><strong>اولویت:</strong> ${getPriorityText(priority)}</span>
+                            <span><strong>تاریخ:</strong> ${createdDate}</span>
+                        </div>
+                        ${report.manager_message ? `
+                            <div style="margin-top: 6px; padding: 6px; background: #fff3cd; border-radius: 4px; font-size: 11px;">
+                                <strong>یادداشت مدیر:</strong> ${report.manager_message}
+                            </div>
+                        ` : ''}
+                        ${report.actions_taken && report.actions_taken.trim().length > 1 ? `
+                            <div style="margin-top: 6px; padding: 6px; background: #fff3cd; border-radius: 4px; font-size: 11px;">
+                                <strong>قطعات مصرفی:</strong> ${report.actions_taken} ${report.consumable_quantity || 0} عدد
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="download-btn" onclick="downloadSingleReport('${report.id}')" title="دانلود این گزارش">
+                        <i class="fas fa-download"></i>
+                        دانلود
+                    </button>
+                </div>
+            </div>
+            `;
+        }).join('');
+    }
+
+    // ==================== فیلتر گزارشات ====================
+    function filterReports() {
+        const searchInput = document.getElementById('searchInput');
+        const statusFilter = document.getElementById('statusFilter');
+        const priorityFilter = document.getElementById('priorityFilter');
+        
+        if (!searchInput || !statusFilter || !priorityFilter) {
+            console.error('❌ المنت‌های فیلتر یافت نشدند');
+            return;
+        }
+        
+        const searchTerm = searchInput.value.toLowerCase();
+        const statusValue = statusFilter.value;
+        const priorityValue = priorityFilter.value;
+
+        console.log(`🔍 فیلتر کردن: جستجو="${searchTerm}", وضعیت="${statusValue}", اولویت="${priorityValue}"`);
+
+        filteredReports = allReports.filter(report => {
+            // جستجو
+            const matchesSearch = 
+                (report.machine_name && report.machine_name.toLowerCase().includes(searchTerm)) || 
+                (report.problem_description && report.problem_description.toLowerCase().includes(searchTerm)) ||
+                (report.reporter_name && report.reporter_name.toLowerCase().includes(searchTerm)) ||
+                (report.technician_name && report.technician_name.toLowerCase().includes(searchTerm));
+            
+            // وضعیت
+            const reportStatus = report.status || 'pending';
+            const matchesStatus = statusValue === 'all' || reportStatus === statusValue;
+            
+            // اولویت
+            const reportPriority = report.priority || 'medium';
+            const matchesPriority = priorityValue === 'all' || reportPriority === priorityValue;
+            
+            return matchesSearch && matchesStatus && matchesPriority;
+        });
+
+        console.log(`✅ ${filteredReports.length} گزارش پس از فیلتر شدن`);
+        renderReports();
+        updateStats();
+    }
+
+    // ==================== هشدار پاک‌سازی ====================
+    function checkCleanupAlert() {
+        const now = new Date();
+        const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+        const daysUntilCleanup = Math.ceil((nextMonth - now) / (1000 * 60 * 60 * 24));
+        
+        if (daysUntilCleanup <= 3) {
+            const alertElement = document.getElementById('cleanupAlert');
+            const messageElement = document.getElementById('cleanupMessage');
+            
+            if (alertElement && messageElement) {
+                messageElement.textContent = 
+                    `داده‌های جدول مدیریت تا ${daysUntilCleanup} روز دیگر پاک خواهند شد. لطفاً از اطلاعات بکاپ بگیرید.`;
+                
+                alertElement.style.display = 'block';
+            }
+        }
+    }
+
+    function dismissAlert() {
+        const alertElement = document.getElementById('cleanupAlert');
+        if (alertElement) {
+            alertElement.style.display = 'none';
+        }
+    }
+
+    // ==================== سیستم دانلود ====================
+    function showDownloadOptions(type, reportId = null) {
+        console.log(`📥 نمایش گزینه‌های دانلود: نوع=${type}, گزارش=${reportId}`);
+        
+        const modal = document.createElement('div');
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        `;
+        
+        modal.innerHTML = `
+            <div style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.3); text-align: center; min-width: 320px; max-width: 90%; font-family: Vazirmatn, sans-serif;">
+                <h3 style="margin-bottom: 20px; color: #2c3e50;">انتخاب فرمت دانلود</h3>
+                <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap;">
+                    <button onclick="downloadSelectedFormat('${type}', '${reportId}', 'csv')" 
+                            style="padding: 12px 20px; background: #27ae60; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; min-width: 100px;">
+                        <i class="fas fa-file-csv"></i> CSV
+                    </button>
+                    <button onclick="downloadSelectedFormat('${type}', '${reportId}', 'json')" 
+                            style="padding: 12px 20px; background: #3498db; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; min-width: 100px;">
+                        <i class="fas fa-file-code"></i> JSON
+                    </button>
+                </div>
+                <button onclick="closeDownloadModal()" 
+                        style="padding: 10px 20px; background: #95a5a6; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                    انصراف
+                </button>
+            </div>
+        `;
+        
+        modal.id = 'downloadModal';
+        document.body.appendChild(modal);
+        
+        window.closeDownloadModal = function() {
+            const modal = document.getElementById('downloadModal');
+            if (modal && document.body.contains(modal)) {
+                document.body.removeChild(modal);
+            }
+        };
+    }
+
+    async function downloadSelectedFormat(type, reportId, format) {
+        try {
+            console.log(`⬇️ دانلود ${type} در فرمت ${format}`);
+            
+            let data, filename;
+            
+            if (type === 'all') {
+                data = allReports.map(report => convertToPersianFormat(report));
+                filename = 'همه_گزارشات_مدیریتی';
+            } else if (type === 'filtered') {
+                data = filteredReports.map(report => convertToPersianFormat(report));
+                filename = 'گزارشات_فیلتر_شده';
+            } else if (type === 'single') {
+                const report = allReports.find(r => r.id === reportId);
+                if (!report) {
+                    throw new Error('گزارش یافت نشد');
+                }
+                data = [convertToPersianFormat(report)];
+                filename = `گزارش_${report.machine_name || report.id}`;
+            } else {
+                throw new Error('نوع دانلود نامعتبر');
+            }
+            
+            await downloadData(data, filename, format);
+            closeDownloadModal();
+            
+        } catch (error) {
+            console.error('❌ خطا در دانلود:', error);
+            await alert('خطا در دانلود فایل');
+        }
+    }
+
+    function convertToPersianFormat(report) {
+        return {
+            'نام دستگاه': report.machine_name || 'بدون عنوان',
+            'توضیح مشکل': report.problem_description || 'بدون توضیحات',
+            'گزارش‌دهنده': report.reporter_name || report.technician_name || 'نامشخص',
+            'وضعیت': getStatusText(report.status),
+            'اولویت': getPriorityText(report.priority),
+            'تاریخ ایجاد': report.created_at ? new Date(report.created_at).toLocaleDateString('fa-IR') : 'نامشخص',
+            'یادداشت مدیر': report.manager_message || '',
+            'شناسه': report.id || '',
+            'تاریخ بروزرسانی': report.updated_at ? new Date(report.updated_at).toLocaleDateString('fa-IR') : '',
+            'تاریخ تکمیل': report.completed_at ? new Date(report.completed_at).toLocaleDateString('fa-IR') : '',
+            'تصمیم مدیر': getDecisionText(report.decision_status),
+            'قطعات مصرفی': report.actions_taken || '',
+            'تعداد قطعات': report.consumable_quantity || 0
+        };
+    }
+
+    function getDecisionText(decision) {
+        const decisionMap = {
+            'approved': 'تأیید شده',
+            'rejected': 'رد شده',
+            'pending': 'در انتظار'
+        };
+        return decisionMap[decision] || decision || '';
+    }
+
+    async function downloadData(data, filename, format) {
+        try {
+            if (!data || data.length === 0) {
+                await alert('داده‌ای برای دانلود وجود ندارد');
+                return;
+            }
+
+            let fileContent, fileExtension, mimeType;
+
+            if (format === 'csv') {
+                fileContent = convertToCSV(data);
+                fileExtension = 'csv';
+                mimeType = 'text/csv;charset=utf-8;';
+            } else if (format === 'json') {
+                fileContent = JSON.stringify(data, null, 2);
+                fileExtension = 'json';
+                mimeType = 'application/json';
+            } else {
+                throw new Error('فرمت نامعتبر');
+            }
+
+            // BOM برای نمایش صحیح فارسی در Excel
+            if (format === 'csv') {
+                const BOM = '\uFEFF';
+                fileContent = BOM + fileContent;
+            }
+
+            createDownloadLink(fileContent, `${filename}.${fileExtension}`, mimeType);
+            
+            await alert(`فایل ${filename}.${fileExtension} با موفقیت دانلود شد`);
+            
+        } catch (error) {
+            console.error('❌ خطا در تولید فایل:', error);
+            await alert('خطا در تولید فایل دانلودی');
+        }
+    }
+
+    function convertToCSV(data) {
+        if (!data.length) return '';
+        
+        const headers = Object.keys(data[0]);
+        const csvRows = [headers.join(',')];
+        
+        for (const row of data) {
+            const values = headers.map(header => {
+                let value = row[header];
+                
+                if (value === null || value === undefined) return '';
+                
+                if (typeof value === 'string') {
+                    value = value.replace(/\n/g, ' ').replace(/\r/g, ' ');
+                    value = `"${value.replace(/"/g, '""')}"`;
+                }
+                
+                return value;
+            });
+            csvRows.push(values.join(','));
+        }
+        
+        return csvRows.join('\n');
+    }
+
+    function createDownloadLink(data, filename, mimeType) {
+        const blob = new Blob([data], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        
+        setTimeout(() => {
+            if (link.parentElement) {
+                document.body.removeChild(link);
+            }
+            URL.revokeObjectURL(url);
+        }, 100);
+    }
+
+    async function downloadAllData() {
+        showDownloadOptions('all');
+    }
+
+    async function downloadFilteredData() {
+        showDownloadOptions('filtered');
+    }
+
+    async function downloadSingleReport(reportId) {
+        showDownloadOptions('single', reportId);
+    }
+
+    // ==================== مدیریت آفلاین ====================
+    window.addEventListener('online', function() {
+        const offlineAlert = document.getElementById('offlineAlert');
+        if (offlineAlert) offlineAlert.style.display = 'none';
+        console.log('🌐 اتصال اینترنت برقرار شد');
+        loadManagerReports();
+    });
+
+    window.addEventListener('offline', function() {
+        const offlineAlert = document.getElementById('offlineAlert');
+        if (offlineAlert) offlineAlert.style.display = 'block';
+        console.log('📴 اتصال اینترنت قطع شد');
+    });
+
+    if (!navigator.onLine) {
+        const offlineAlert = document.getElementById('offlineAlert');
+        if (offlineAlert) offlineAlert.style.display = 'block';
+    }
+
+    // ==================== مقداردهی اولیه ====================
+    console.log('🚀 شروع مقداردهی اولیه...');
+    
+    // اتصال به Supabase و لود داده‌ها
+    loadManagerReports();
+    
+    // رویدادهای فیلتر
+    const searchInput = document.getElementById('searchInput');
+    const statusFilter = document.getElementById('statusFilter');
+    const priorityFilter = document.getElementById('priorityFilter');
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', filterReports);
+    }
+    if (statusFilter) {
+        statusFilter.addEventListener('change', filterReports);
+    }
+    if (priorityFilter) {
+        priorityFilter.addEventListener('change', filterReports);
+    }
+    
+    // نویگیشن
+    const navLinks = document.querySelectorAll('.nav-link');
+    navLinks.forEach(link => {
+        link.addEventListener('click', function() {
+            navLinks.forEach(l => l.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+
+    // محافظت از صفحه
+    if (typeof auth !== 'undefined') {
+        if (auth.protectPageByRole('manager')) {
+            if (userNameElement) {
+                userNameElement.textContent = auth.getUsername() || 'مدیر سیستم';
+            }
+            if (userAvatarElement) {
+                userAvatarElement.textContent = auth.getUsername() ? auth.getUsername().charAt(0) : 'M';
+            }
+        }
+    } else {
+        console.log('👨‍💻 حالت توسعه فعال');
+        if (userNameElement) {
+            userNameElement.textContent = 'مدیر سیستم ';
+        }
+        if (userAvatarElement) {
+            userAvatarElement.textContent = 'M';
+        }
+    }
+
+    // ==================== اتصال توابع به window ====================
+    console.log('🔗 اتصال توابع به window...');
+    
+    window.closeCustomAlert = window.closeCustomAlert;
+    window.formatPersianDateTime = formatPersianDateTime;
+    window.getTimeSinceLogin = getTimeSinceLogin;
+    window.updateOnlineTime = updateOnlineTime;
+    window.loadManagerReports = loadManagerReports;
+    window.updateStats = updateStats;
+    window.updatePerformanceMetrics = updatePerformanceMetrics;
+    window.renderReports = renderReports;
+    window.filterReports = filterReports;
+    window.checkCleanupAlert = checkCleanupAlert;
+    window.dismissAlert = dismissAlert;
+    window.showDownloadOptions = showDownloadOptions;
+    window.downloadSelectedFormat = downloadSelectedFormat;
+    window.convertToPersianFormat = convertToPersianFormat;
+    window.getDecisionText = getDecisionText;
+    window.downloadData = downloadData;
+    window.convertToCSV = convertToCSV;
+    window.createDownloadLink = createDownloadLink;
+    window.downloadAllData = downloadAllData;
+    window.downloadFilteredData = downloadFilteredData;
+    window.downloadSingleReport = downloadSingleReport;
+    window.closeDownloadModal = closeDownloadModal;
+    window.getStatusText = getStatusText;
+    window.getPriorityText = getPriorityText;
+    window.getPriorityColor = getPriorityColor;
+    
+    console.log('✅ مقداردهی اولیه کامل شد');
+});
+
+// Service Worker
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+        navigator.serviceWorker.register('../sw.js');
+    });
+}
+    </script>
+</body>
+</html><div class="card">
             <h2 class="section-title">
                 <i class="fas fa-file-alt"></i>
                 گزارشات مدیریتی
