@@ -12,12 +12,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="manifest" href="../../manifest.json">
-    <link rel="icon" href="../../icons/icon-192x192.png">
-    
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="../../manifest.json">
+<link rel="icon" href="../../icons/icon-192x192.png">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- <script src="../../auth.js"></script> -->
     <style>
-        /* استایل‌های قبلی شما (همانطور که بود) */
+        /* استایل‌های اصلی با قابلیت‌های جدید */
         * {
             margin: 0;
             padding: 0;
@@ -60,6 +61,9 @@
             --success: #27ae60;
             --warning: #f39c12;
             --danger: #e74c3c;
+            --electrical: #9b59b6;
+            --mechanical: #e67e22;
+            --pneumatic: #3498db;
         }
 
         /* نویگیشن */
@@ -134,15 +138,6 @@
             background: rgba(255,255,255,0.1);
         }
 
-        .nav-link.disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .nav-link.disabled:hover {
-            background: transparent;
-        }
-
         .user-info {
             display: flex;
             align-items: center;
@@ -197,7 +192,7 @@
         }
 
         .header-card {
-            background: var(--primary);
+            background: var(--warning);
             color: white;
             border-radius: 12px;
             padding: 20px;
@@ -252,365 +247,6 @@
 
         .section-title i {
             color: var(--accent);
-        }
-
-        /* آمار سریع */
-        .stats-container {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            margin-bottom: 20px;
-            width: 100%;
-        }
-
-        .stat-card {
-            background: white;
-            border-radius: 10px;
-            padding: 15px;
-            text-align: center;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-            border: 1px solid #eaeaea;
-            transition: transform 0.3s ease;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-2px);
-        }
-
-        .stat-number {
-            font-size: 22px;
-            font-weight: 700;
-            margin-bottom: 6px;
-        }
-
-        .stat-label {
-            color: var(--gray);
-            font-size: 12px;
-        }
-
-        /* ========== تب‌ها ========== */
-        .tabs-container {
-            background: white;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            border: 1px solid #eaeaea;
-            overflow: hidden;
-            width: 100%;
-        }
-
-        .tabs-header {
-            display: flex;
-            background: #f8f9fa;
-            border-bottom: 2px solid #eaeaea;
-            width: 100%;
-        }
-
-        .tab-btn {
-            flex: 1;
-            padding: 15px;
-            background: none;
-            border: none;
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--gray);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-            text-align: center;
-            touch-action: manipulation;
-        }
-
-        .tab-btn i {
-            margin-left: 8px;
-            font-size: 16px;
-        }
-
-        .tab-btn.active {
-            color: var(--primary);
-            background: white;
-        }
-
-        .tab-btn.active::after {
-            content: '';
-            position: absolute;
-            bottom: -2px;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background: var(--secondary);
-        }
-
-        .tab-content {
-            display: none;
-            padding: 20px;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* ========== شمارشگرهای دایره‌ای ========== */
-        .countdown-container {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-            border: 1px solid #e9ecef;
-            text-align: center;
-        }
-
-        .countdown-header {
-            margin-bottom: 15px;
-        }
-
-        .countdown-title {
-            font-size: 16px;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 5px;
-        }
-
-        .countdown-subtitle {
-            font-size: 13px;
-            color: var(--gray);
-        }
-
-        .countdown-circles {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-
-        .countdown-circle {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .circle-container {
-            position: relative;
-            width: 80px;
-            height: 80px;
-        }
-
-        .circle-bg {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            background: #f0f0f0;
-            position: absolute;
-            top: 0;
-            left: 0;
-        }
-
-        .circle-progress {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            position: absolute;
-            top: 0;
-            left: 0;
-            clip-path: inset(0 0 0 50%);
-            transform: rotate(0deg);
-            transition: transform 0.5s ease;
-        }
-
-        .circle-progress.weekly {
-            background: conic-gradient(var(--secondary) 0%, var(--secondary-light) 100%);
-        }
-
-        .circle-progress.monthly {
-            background: conic-gradient(var(--warning) 0%, var(--warning-light) 100%);
-        }
-
-        .circle-content {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-        }
-
-        .circle-number {
-            font-size: 24px;
-            font-weight: 700;
-            line-height: 1;
-        }
-
-        .circle-label {
-            font-size: 11px;
-            color: var(--gray);
-            margin-top: 2px;
-        }
-
-        .countdown-status {
-            margin-top: 15px;
-            padding: 10px;
-            border-radius: 8px;
-            background: white;
-            font-size: 13px;
-        }
-
-        .status-upcoming {
-            color: var(--success);
-            background: #e8f5e9;
-        }
-
-        .status-today {
-            color: var(--warning);
-            background: #fff8e1;
-        }
-
-        .status-overdue {
-            color: var(--danger);
-            background: #ffebee;
-        }
-
-        /* چک لیست اقدامات اولیه */
-        .checklist-container {
-            background: #f8f9fa;
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 20px;
-            border: 2px solid #e9ecef;
-            width: 100%;
-        }
-
-        .checklist-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 12px;
-            border-bottom: 2px solid #e9ecef;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .checklist-title {
-            font-size: 16px;
-            font-weight: 700;
-            color: var(--primary);
-        }
-
-        .checklist-progress {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .progress-text {
-            font-size: 12px;
-            color: var(--gray);
-            white-space: nowrap;
-        }
-
-        .progress-bar {
-            width: 120px;
-            height: 6px;
-            background: #e0e0e0;
-            border-radius: 4px;
-            overflow: hidden;
-            flex-shrink: 0;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: var(--success);
-            border-radius: 4px;
-            transition: width 0.3s ease;
-        }
-
-        .checklist-items {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .checklist-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px;
-            background: white;
-            border-radius: 8px;
-            border: 1px solid #eaeaea;
-            transition: all 0.3s ease;
-            width: 100%;
-        }
-
-        .checklist-item.completed {
-            background: #f0f9ff;
-            border-color: var(--secondary);
-        }
-
-        .checklist-item.critical {
-            border-right: 4px solid var(--danger);
-        }
-
-        .checklist-checkbox {
-            width: 22px;
-            height: 22px;
-            border: 2px solid #ddd;
-            border-radius: 4px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            flex-shrink: 0;
-            font-size: 12px;
-            touch-action: manipulation;
-        }
-
-        .checklist-item.completed .checklist-checkbox {
-            background: var(--success);
-            border-color: var(--success);
-            color: white;
-        }
-
-        .checklist-content {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .checklist-item-title {
-            font-weight: 600;
-            margin-bottom: 4px;
-            font-size: 14px;
-        }
-
-        .checklist-item-desc {
-            font-size: 12px;
-            color: var(--gray);
-            line-height: 1.4;
-        }
-
-        .checklist-badge {
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 10px;
-            font-weight: 600;
-            flex-shrink: 0;
-        }
-
-        .badge-critical {
-            background: #ffebee;
-            color: var(--danger);
-        }
-
-        .badge-normal {
-            background: #f0f9ff;
-            color: var(--secondary);
         }
 
         /* دستگاه‌ها */
@@ -738,19 +374,311 @@
             background: var(--accent-light);
         }
 
-        .report-btn:disabled {
-            background: #bdc3c7;
-            cursor: not-allowed;
-            opacity: 0.6;
-        }
-
-        .checklist-btn {
+        .troubleshoot-btn {
             background: var(--secondary);
             color: white;
         }
 
-        .checklist-btn:hover {
+        .troubleshoot-btn:hover {
             background: #2980b9;
+        }
+
+        /* سیستم عیب‌یابی هوشمند */
+        .troubleshooting-container {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 2px solid #e9ecef;
+            width: 100%;
+        }
+
+        .troubleshooting-steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            position: relative;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .troubleshooting-steps::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            right: 0;
+            left: 0;
+            height: 3px;
+            background: #e0e0e0;
+            z-index: 1;
+        }
+
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+            flex: 1;
+            min-width: 80px;
+        }
+
+        .step-number {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-bottom: 8px;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .step.active .step-number {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .step.completed .step-number {
+            background: var(--success);
+            color: white;
+        }
+
+        .step-label {
+            font-size: 12px;
+            color: var(--gray);
+            text-align: center;
+            line-height: 1.3;
+        }
+
+        .step.active .step-label {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .step-content {
+            display: none;
+        }
+
+        .step-content.active {
+            display: block;
+        }
+
+        /* دسته‌بندی عیب‌ها */
+        .category-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .category-tab {
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            flex: 1;
+            min-width: 120px;
+            justify-content: center;
+            text-align: center;
+            touch-action: manipulation;
+        }
+
+        .category-tab.active {
+            border-color: var(--secondary);
+            background: var(--secondary);
+            color: white;
+        }
+
+        .category-tab.electrical {
+            border-color: var(--electrical);
+        }
+
+        .category-tab.mechanical {
+            border-color: var(--mechanical);
+        }
+
+        .category-tab.pneumatic {
+            border-color: var(--pneumatic);
+        }
+
+        .category-tab.electrical.active {
+            background: var(--electrical);
+        }
+
+        .category-tab.mechanical.active {
+            background: var(--mechanical);
+        }
+
+        .category-tab.pneumatic.active {
+            background: var(--pneumatic);
+        }
+
+        /* مشکلات */
+        .faults-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .fault-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px solid #eaeaea;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .fault-card:hover {
+            transform: translateX(-3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .fault-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+            gap: 10px;
+        }
+
+        .fault-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--primary);
+            flex: 1;
+        }
+
+        .fault-category {
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .category-electrical {
+            background: #f3e8fd;
+            color: var(--electrical);
+        }
+
+        .category-mechanical {
+            background: #fef5e7;
+            color: var(--mechanical);
+        }
+
+        .category-pneumatic {
+            background: #e8f4fd;
+            color: var(--pneumatic);
+        }
+
+        .fault-code {
+            font-size: 11px;
+            color: var(--gray);
+            margin-bottom: 6px;
+        }
+
+        .fault-description {
+            font-size: 12px;
+            color: var(--dark);
+            line-height: 1.5;
+        }
+
+        /* راه حل‌ها */
+        .solutions-container {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px solid #eaeaea;
+            width: 100%;
+        }
+
+        .solution-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-right: 4px solid var(--secondary);
+            width: 100%;
+        }
+
+        .solution-number {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: var(--secondary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-left: 12px;
+            flex-shrink: 0;
+            font-size: 12px;
+        }
+
+        .solution-text {
+            flex: 1;
+            font-size: 13px;
+            line-height: 1.5;
+            color: var(--dark);
+        }
+
+        /* دکمه‌های اقدام */
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 20px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            min-height: 40px;
+            touch-action: manipulation;
+        }
+
+        .btn-primary {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: var(--dark);
+            border: 2px solid #e0e0e0;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
         }
 
         /* پاپاپ گزارش */
@@ -763,9 +691,10 @@
             background: rgba(0,0,0,0.5);
             display: none;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
             z-index: 1000;
             padding: 15px;
+            overflow-y: auto;
         }
 
         .popup-content {
@@ -777,6 +706,8 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             max-height: 90vh;
             overflow-y: auto;
+            -webkit-overflow-scrolling: touch; 
+            margin: 20px auto;
         }
 
         .popup-header {
@@ -883,6 +814,159 @@
             background: #e9ecef;
         }
 
+        /* استایل‌های جدید برای مدیریت گزارش‌ها */
+        .reports-section {
+            margin-top: 25px;
+        }
+
+        .reports-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .reports-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            font-size: 12px;
+        }
+
+        .reports-table th,
+        .reports-table td {
+            padding: 10px 12px;
+            text-align: right;
+            border-bottom: 1px solid #eaeaea;
+        }
+
+        .reports-table th {
+            background: var(--primary-light);
+            color: white;
+            font-weight: 600;
+            font-size: 11px;
+        }
+
+        .reports-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .delete-btn {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            touch-action: manipulation;
+        }
+
+        .delete-btn:hover {
+            background: #c0392b;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: var(--gray);
+        }
+
+        .empty-state i {
+            font-size: 36px;
+            margin-bottom: 10px;
+            color: #e0e0e0;
+        }
+
+        /* استایل‌های جدید برای نمایش نوع ایراد */
+        .issue-type-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-block;
+            text-align: center;
+            min-width: 60px;
+        }
+
+        .electrical-badge {
+            background: #f3e8fd;
+            color: #9b59b6;
+            border: 1px solid #9b59b6;
+        }
+
+        .technical-badge {
+            background: #fef5e7;
+            color: #e67e22;
+            border: 1px solid #e67e22;
+        }
+
+        .combined-badge {
+            background: #e8f4fd;
+            color: #3498db;
+            border: 1px solid #3498db;
+        }
+
+        /* استایل‌های جدید برای نمایش نام تکنسین */
+        .technician-name {
+            font-weight: 600;
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .electrical-technician {
+            background: #e8f4fd;
+            color: #3498db;
+            border-color: #3498db;
+        }
+
+        .technical-technician {
+            background: #fef5e7;
+            color: #e67e22;
+            border-color: #e67e22;
+        }
+
+        .combined-technician {
+            background: #e8f5e8;
+            color: #27ae60;
+            border-color: #27ae60;
+        }
+
+        /* استایل برای نمایش اقدامات انجام شده */
+        .actions-taken {
+            background: #f8f9fa;
+            border: 1px solid #eaeaea;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 12px;
+            white-space: pre-line;
+            line-height: 1.5;
+        }
+
+        .actions-taken-title {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
         /* هشدار */
         .alert {
             padding: 12px;
@@ -891,7 +975,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            font-size: 14px;
+            font-size: 13px;
         }
 
         .alert-warning {
@@ -908,10 +992,6 @@
 
         /* رسپانسیو */
         @media (max-width: 768px) {
-            .stats-container {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            
             .nav-links {
                 gap: 8px;
             }
@@ -923,18 +1003,49 @@
             .user-details {
                 display: none;
             }
-            
-            .countdown-circles {
+
+            .troubleshooting-steps::before {
+                display: none;
+            }
+
+            .troubleshooting-steps {
+                flex-direction: column;
                 gap: 15px;
             }
-            
-            .circle-container {
-                width: 70px;
-                height: 70px;
+
+            .step {
+                flex-direction: row;
+                gap: 12px;
+                align-items: center;
+                width: 100%;
             }
-            
-            .circle-number {
-                font-size: 20px;
+
+            .step-label {
+                text-align: right;
+                flex: 1;
+            }
+
+            .category-tabs {
+                flex-direction: column;
+            }
+
+            .category-tab {
+                min-width: auto;
+            }
+
+            .reports-table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+
+            .action-buttons {
+                justify-content: stretch;
+            }
+
+            .btn {
+                flex: 1;
+                min-width: 120px;
             }
         }
 
@@ -978,24 +1089,22 @@
             .section-title {
                 font-size: 16px;
             }
-            
-            .stat-number {
-                font-size: 18px;
+
+            .troubleshooting-container {
+                padding: 15px;
             }
-            
-            .stats-container {
-                grid-template-columns: 1fr;
+
+            .popup-content {
+                padding: 15px;
+                margin: 10px;
             }
-            
-            .countdown-circles {
+
+            .form-actions {
                 flex-direction: column;
-                align-items: center;
-                gap: 10px;
             }
-            
-            .circle-container {
-                width: 80px;
-                height: 80px;
+
+            .machine-actions {
+                flex-direction: column;
             }
         }
 
@@ -1047,11 +1156,11 @@
             </div>
             
             <div class="nav-links">
-                <a href="dashboard.html" class="nav-link active">
+                <a href="dashboard.html" class="nav-link">
                     <i class="fas fa-tachometer-alt"></i>
                     <span>داشبورد</span>
                 </a>
-                <a href="troubleshooting.html" class="nav-link " id="troubleshootingLink">
+                <a href="troubleshooting.html" class="nav-link active">
                     <i class="fas fa-tools"></i>
                     <span>عیب‌یابی</span>
                 </a>
@@ -1062,7 +1171,7 @@
                     <div class="user-name" id="userName">اپراتور</div>
                     <div class="login-time" id="loginTime">در حال بارگذاری...</div>
                 </div>
-                <div class="user-avatar" id="userAvatar">O</div>
+                <div class="user-avatar" id="userAvatar">اپ</div>
             </div>
         </div>
     </nav>
@@ -1072,185 +1181,164 @@
         <div class="container" id="mainContainer">
             <!-- هدر صفحه -->
             <div class="header-card">
-                <h1 class="page-title">سیستم نگهداری و تعمیرات</h1>
-                <p class="page-subtitle">برنامه نگهداری روزانه، هفتگی و ماهانه</p>
+                <h1 class="page-title">سیستم عیب‌یابی هوشمند استنتر</h1>
+                <p class="page-subtitle">عیب‌یابی تخصصی دستگاه استنتر بر اساس بخش‌های مختلف</p>
                 <div class="login-info">
-                    <i class="fas fa-calendar-alt"></i>
-                    تاریخ امروز: <span id="todayDate">در حال بارگذاری...</span>
+                    <i class="fas fa-clock"></i>
+                    آخرین ورود: <span id="lastLoginTime">در حال بارگذاری...</span>
                 </div>
             </div>
 
-            <!-- آمار سریع -->
-            <div class="stats-container">
-                <div class="stat-card">
-                    <div class="stat-number" id="dailyCount">۰</div>
-                    <div class="stat-label">اقدامات روزانه</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="weeklyCount">۰</div>
-                    <div class="stat-label">اقدامات هفتگی</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="monthlyCount">۰</div>
-                    <div class="stat-label">اقدامات ماهانه</div>
-                </div>
-            </div>
-
-            <!-- سیستم تب‌بندی -->
-            <div class="tabs-container">
-                <div class="tabs-header">
-                    <button class="tab-btn active" onclick="switchTab('daily')">
-                        <i class="fas fa-calendar-day"></i>
-                        روزانه
-                    </button>
-                    <button class="tab-btn" onclick="switchTab('weekly')">
-                        <i class="fas fa-calendar-week"></i>
-                        هفتگی
-                    </button>
-                    <button class="tab-btn" onclick="switchTab('monthly')">
-                        <i class="fas fa-calendar-alt"></i>
-                        ماهانه
-                    </button>
-                </div>
-
-                <!-- تب روزانه -->
-                <div class="tab-content active" id="daily-tab">
-                    <h2 class="section-title">
-                        <i class="fas fa-tasks"></i>
-                        چک‌لیست روزانه
-                    </h2>
-                    
-                    <div class="checklist-container">
-                        <div class="checklist-header">
-                            <h3 class="checklist-title">📋 اقدامات تعمیراتی روزانه</h3>
-                            <div class="checklist-progress">
-                                <span class="progress-text" id="dailyProgressText">۰ از ۰ تکمیل شده</span>
-                                <div class="progress-bar">
-                                    <div class="progress-fill" id="dailyProgressFill" style="width: 0%"></div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="checklist-items" id="dailyChecklistItems">
-                            <!-- آیتم‌های چک لیست روزانه -->
-                        </div>
-                    </div>
-                </div>
-
-                <!-- تب هفتگی -->
-                <div class="tab-content" id="weekly-tab">
-                    <!-- شمارشگر هفتگی -->
-                    <div class="countdown-container">
-                        <div class="countdown-header">
-                            <div class="countdown-title">زمان باقی‌مانده تا انجام کارهای هفتگی</div>
-                            <div class="countdown-subtitle">هر هفته شنبه انجام می‌شود</div>
-                        </div>
-                        
-                        <div class="countdown-circles">
-                            <div class="countdown-circle">
-                                <div class="circle-container">
-                                    <div class="circle-bg"></div>
-                                    <div class="circle-progress weekly" id="weeklyCircleProgress"></div>
-                                    <div class="circle-content">
-                                        <div class="circle-number" id="weeklyDays">۰</div>
-                                        <div class="circle-label">روز</div>
-                                    </div>
-                                </div>
-                                <div class="countdown-status" id="weeklyStatus">در حال محاسبه...</div>
-                            </div>
-                        </div>
-                        
-                        <div class="countdown-info" style="margin-top: 15px; font-size: 13px; color: var(--gray);">
-                            <i class="fas fa-info-circle"></i>
-                            <span id="weeklyNextDate">تاریخ بعدی: در حال محاسبه...</span>
-                        </div>
-                    </div>
-
-                    <h2 class="section-title">
-                        <i class="fas fa-tools"></i>
-                        چک‌لیست هفتگی
-                    </h2>
-                    
-                    <div class="checklist-container">
-                        <div class="checklist-header">
-                            <h3 class="checklist-title">📋 اقدامات تعمیراتی هفتگی</h3>
-                            <div class="checklist-progress">
-                                <span class="progress-text" id="weeklyProgressText">۰ از ۰ تکمیل شده</span>
-                                <div class="progress-bar">
-                                    <div class="progress-fill" id="weeklyProgressFill" style="width: 0%"></div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="checklist-items" id="weeklyChecklistItems">
-                            <!-- آیتم‌های چک لیست هفتگی -->
-                        </div>
-                    </div>
-                </div>
-
-                <!-- تب ماهانه -->
-                <div class="tab-content" id="monthly-tab">
-                    <!-- شمارشگر ماهانه -->
-                    <div class="countdown-container">
-                        <div class="countdown-header">
-                            <div class="countdown-title">زمان باقی‌مانده تا انجام کارهای ماهانه</div>
-                            <div class="countdown-subtitle">اول هر ماه انجام می‌شود</div>
-                        </div>
-                        
-                        <div class="countdown-circles">
-                            <div class="countdown-circle">
-                                <div class="circle-container">
-                                    <div class="circle-bg"></div>
-                                    <div class="circle-progress monthly" id="monthlyCircleProgress"></div>
-                                    <div class="circle-content">
-                                        <div class="circle-number" id="monthlyDays">۰</div>
-                                        <div class="circle-label">روز</div>
-                                    </div>
-                                </div>
-                                <div class="countdown-status" id="monthlyStatus">در حال محاسبه...</div>
-                            </div>
-                        </div>
-                        
-                        <div class="countdown-info" style="margin-top: 15px; font-size: 13px; color: var(--gray);">
-                            <i class="fas fa-info-circle"></i>
-                            <span id="monthlyNextDate">تاریخ بعدی: در حال محاسبه...</span>
-                        </div>
-                    </div>
-
-                    <h2 class="section-title">
-                        <i class="fas fa-cogs"></i>
-                        چک‌لیست ماهانه
-                    </h2>
-                    
-                    <div class="checklist-container">
-                        <div class="checklist-header">
-                            <h3 class="checklist-title">📋 اقدامات تعمیراتی ماهانه</h3>
-                            <div class="checklist-progress">
-                                <span class="progress-text" id="monthlyProgressText">۰ از ۰ تکمیل شده</span>
-                                <div class="progress-bar">
-                                    <div class="progress-fill" id="monthlyProgressFill" style="width: 0%"></div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="checklist-items" id="monthlyChecklistItems">
-                            <!-- آیتم‌های چک لیست ماهانه -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- دستگاه‌ها -->
-            <!-- <div class="card">
+            <!-- دستگاه‌های تحت مسئولیت -->
+            <div class="card">
                 <h2 class="section-title">
-                    <i class="fas fa-industry"></i>
-                    دستگاه‌ها
+                    <i class="fas fa-cogs"></i>
+                    دستگاه استنتر آرتوس
                 </h2>
                 
-                <div class="machines-grid" id="machinesGrid">
-                   دستگاه‌ها به صورت داینامیک -->
-                <!-- </div> -->
-            <!-- </div> --> 
+                <div class="machines-grid">
+                    <!-- دستگاه استنتر -->
+                    <div class="machine-card" onclick="openReportPopup('استنتر آرتوس')">
+                        <div class="machine-header">
+                            <div>
+                                <div class="machine-name">دستگاه استنتر آرتوس</div>
+                                <div class="machine-type">سیستم تکمیل پارچه</div>
+                            </div>
+                            <!-- <span class="status-badge status-operational">عملیاتی</span> -->
+                        </div>
+                        
+                        <div class="machine-actions">
+                            <button class="action-btn report-btn" onclick="event.stopPropagation(); openReportPopup('استنتر آرتوس')">
+                                <i class="fas fa-flag"></i>
+                                گزارش مشکل
+                            </button>
+                            <button class="action-btn troubleshoot-btn" onclick="event.stopPropagation(); startTroubleshooting()">
+                                <i class="fas fa-search"></i>
+                                عیب‌یابی
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- سیستم عیب‌یابی هوشمند -->
+            <div class="troubleshooting-container" id="troubleshootingSection" style="display: none;">
+                <h2 class="section-title">
+                    <i class="fas fa-wrench"></i>
+                    سیستم عیب‌یابی استنتر
+                </h2>
+                
+                <div class="troubleshooting-steps">
+                    <div class="step active" id="step1">
+                        <div class="step-number">۱</div>
+                        <div class="step-label">انتخاب بخش</div>
+                    </div>
+                    <div class="step" id="step2">
+                        <div class="step-number">۲</div>
+                        <div class="step-label">تشخیص مشکل</div>
+                    </div>
+                    <div class="step" id="step3">
+                        <div class="step-number">۳</div>
+                        <div class="step-label">راه حل‌ها</div>
+                    </div>
+                </div>
+
+                <!-- مرحله ۱: انتخاب بخش -->
+                <div class="step-content active" id="step1Content">
+                    <h3 class="section-title">
+                        <i class="fas fa-cogs"></i>
+                        بخش مورد نظر را انتخاب کنید
+                    </h3>
+                    <p id="selectedMachineInfo" class="machine-type" style="margin-bottom: 15px;">دستگاه انتخاب شده: دستگاه استنتر</p>
+                    
+                    <div class="category-tabs">
+                        <div class="category-tab active" onclick="selectSection('ورودی')">
+                            <i class="fas fa-sign-in-alt"></i>
+                            قسمت ورودی (فولارد)
+                        </div>
+                        <div class="category-tab" onclick="selectSection('خشک کن')">
+                            <i class="fas fa-fire"></i>
+                            قسمت خشک کن (اتاقک‌ها)
+                        </div>
+                        <div class="category-tab" onclick="selectSection('انتهایی')">
+                            <i class="fas fa-sign-out-alt"></i>
+                            قسمت انتهایی (بچ)
+                        </div>
+                    </div>
+                </div>
+
+                <!-- مرحله ۲: تشخیص مشکل -->
+                <div class="step-content" id="step2Content">
+                    <h3 class="section-title">
+                        <i class="fas fa-search"></i>
+                        مشکل مشاهده شده را انتخاب کنید
+                    </h3>
+                    <p id="selectedSectionInfo" class="machine-type" style="margin-bottom: 15px;"></p>
+                    
+                    <div class="category-tabs" id="categoryTabs">
+                        <!-- دسته‌بندی‌ها به صورت داینامیک لود می‌شوند -->
+                    </div>
+                    
+                    <div class="faults-list" id="faultsList">
+                        <!-- مشکلات به صورت داینامیک لود می‌شوند -->
+                    </div>
+                </div>
+
+                <!-- مرحله ۳: راه حل‌ها -->
+                <div class="step-content" id="step3Content">
+                    <h3 class="section-title">
+                        <i class="fas fa-lightbulb"></i>
+                        راه حل‌های پیشنهادی
+                    </h3>
+                    <p id="selectedFaultInfo" class="machine-type" style="margin-bottom: 15px;"></p>
+                    
+                    <div class="solutions-container" id="solutionsContainer">
+                        <!-- راه حل‌ها به صورت داینامیک لود می‌شوند -->
+                    </div>
+                    
+                    <div class="alert alert-success">
+                        <i class="fas fa-info-circle"></i>
+                        این راه حل‌ها بر اساس گزارشات قبلی سرپرستان ثبت شده در سیستم پیشنهاد شده‌اند.
+                    </div>
+                </div>
+
+                <div class="action-buttons" id="troubleshootingActions">
+                    <button class="btn btn-secondary" onclick="backToStep1()" id="backToStep1Btn" style="display: none;">
+                        <i class="fas fa-arrow-right"></i>
+                        بازگشت
+                    </button>
+                    <button class="btn btn-secondary" onclick="backToStep2()" id="backToStep2Btn" style="display: none;">
+                        <i class="fas fa-arrow-right"></i>
+                        بازگشت
+                    </button>
+                    <button class="btn btn-primary" onclick="resetTroubleshooting()" id="resetBtn" style="display: none;">
+                        <i class="fas fa-redo"></i>
+                        شروع مجدد
+                    </button>
+                </div>
+            </div>
+
+            <!-- بخش مدیریت گزارش‌ها -->
+            <div class="card reports-section">
+                <div class="reports-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-list"></i>
+                        گزارش‌های ثبت شده
+                    </h2>
+                    <button class="btn btn-secondary" onclick="loadReports()">
+                        <i class="fas fa-sync-alt"></i>
+                        بروزرسانی
+                    </button>
+                </div>
+                
+                <div id="reportsTableContainer">
+                    <!-- جدول گزارش‌ها به صورت داینامیک لود می‌شود -->
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <p>هنوز گزارشی ثبت نشده است</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1264,18 +1352,18 @@
             
             <form id="reportForm">
                 <div class="form-group">
-                    <label class="form-label" for="reporterName">نام گزارش‌دهنده</label>
-                    <input type="text" id="reporterName" class="form-input" placeholder="نام خود را وارد کنید" required>
+                    <label class="form-label" for="reporter_name">نام گزارش‌دهنده</label>
+                    <input type="text" id="reporter_name" class="form-input" placeholder="نام خود را وارد کنید" required>
                 </div>
                 
                 <div class="form-group">
-                    <label class="form-label" for="machineName">نام دستگاه</label>
-                    <input type="text" id="machineName" class="form-input" readonly>
+                    <label class="form-label" for="machine_name">نام دستگاه</label>
+                    <input type="text" id="machine_name" class="form-input" readonly>
                 </div>
                 
                 <div class="form-group">
-                    <label class="form-label" for="machineStatus">وضعیت دستگاه</label>
-                    <select id="machineStatus" class="form-select" required>
+                    <label class="form-label" for="machine_status">وضعیت دستگاه</label>
+                    <select id="machine_status" class="form-select" required>
                         <option value="">انتخاب وضعیت</option>
                         <option value="سالم">سالم</option>
                         <option value="در دست تعمیر">در دست تعمیر</option>
@@ -1284,8 +1372,30 @@
                 </div>
                 
                 <div class="form-group">
-                    <label class="form-label" for="problemDescription">شرح مشکل / توضیحات</label>
-                    <textarea id="problemDescription" class="form-textarea" placeholder="شرح کامل مشکل را بنویسید..."></textarea>
+                    <label class="form-label" for="problem_description">
+                        <i class="fas fa-clipboard-list"></i>
+                        شرح کامل مشکل
+                    </label>
+                    <textarea 
+                        id="problem_description" 
+                        class="form-textarea" 
+                        placeholder="اقدامات انجام شده و شرح کامل مشکل را بنویسید..."
+                        rows="6"
+                        required
+                    ></textarea>
+                    <small style="font-size: 11px; color: #666; display: block; margin-top: 5px;">
+                        تمام اقدامات انجام شده، مشاهدات و توضیحات کامل مشکل را در اینجا وارد کنید.
+                    </small>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="priority">اولویت</label>
+                    <select id="priority" class="form-select">
+                        <option value="کم">کم</option>
+                        <option value="متوسط" selected>متوسط</option>
+                        <option value="بالا">بالا</option>
+                        <option value="فوری">فوری</option>
+                    </select>
                 </div>
                 
                 <div class="form-actions">
@@ -1295,17 +1405,16 @@
             </form>
         </div>
     </div>
-
     <div id="offlineAlert" style="display: none; position: fixed; top: 0; left: 0; right: 0; background: #e74c3c; color: white; text-align: center; padding: 10px; z-index: 10003; font-family: Vazirmatn;">
         <i class="fas fa-wifi-slash"></i> حالت آفلاین - اتصال اینترنت برقرار نیست
     </div>
-
     <script>
         // ==================== CUSTOM ALERT SYSTEM ====================
         delete window.alert;
         
         window.alert = function(message) {
             return new Promise((resolve) => {
+                // ساخت overlay
                 const overlay = document.createElement('div');
                 overlay.style.cssText = `
                     position: fixed;
@@ -1320,6 +1429,7 @@
                     justify-content: center;
                 `;
                 
+                // ساخت dialog
                 const dialog = document.createElement('div');
                 dialog.style.cssText = `
                     background: white;
@@ -1344,6 +1454,7 @@
                 overlay.appendChild(dialog);
                 document.body.appendChild(overlay);
                 
+                // تابع بستن
                 const closeAlert = function() {
                     if (document.body.contains(overlay)) {
                         document.body.removeChild(overlay);
@@ -1351,669 +1462,729 @@
                     resolve();
                 };
                 
+                // اضافه کردن event listener برای دکمه
                 const confirmBtn = document.getElementById('customAlertConfirm');
                 confirmBtn.addEventListener('click', closeAlert);
                 
+                // با کلیک روی overlay هم بسته نشه (مثل alert اصلی)
                 overlay.onclick = function(e) {
                     if (e.target === overlay) {
-                        // کاری نکن
+                        // کاری نکن - مثل alert اصلی که با کلیک خارج بسته نمیشه
                     }
                 };
             });
         };
-
-        // ==================== تبدیل تاریخ شمسی ====================
-        class PersianDate {
-            constructor(date = new Date()) {
-                this.gregorianDate = new Date(date);
-                this.calculatePersianDate();
-            }
-
-            calculatePersianDate() {
-                const gYear = this.gregorianDate.getFullYear();
-                const gMonth = this.gregorianDate.getMonth();
-                const gDay = this.gregorianDate.getDate();
-
-                const persianDate = this.gregorianToPersian(gYear, gMonth + 1, gDay);
-                this.year = persianDate[0];
-                this.month = persianDate[1];
-                this.day = persianDate[2];
-            }
-
-            gregorianToPersian(gy, gm, gd) {
-                let g_days_in_month = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-                let j_days_in_month = [31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29];
-
-                gy = gy - 1600;
-                gm = gm - 1;
-                gd = gd - 1;
-
-                let g_day_no = 365 * gy + Math.floor((gy + 3) / 4) - Math.floor((gy + 99) / 100) + Math.floor((gy + 399) / 400);
-                for (let i = 0; i < gm; ++i)
-                    g_day_no += g_days_in_month[i];
-                if (gm > 1 && ((gy % 4 == 0 && gy % 100 != 0) || (gy % 400 == 0)))
-                    ++g_day_no;
-                g_day_no += gd;
-
-                let j_day_no = g_day_no - 79;
-
-                let j_np = Math.floor(j_day_no / 12053);
-                j_day_no = j_day_no % 12053;
-
-                let jy = 979 + 33 * j_np + 4 * Math.floor(j_day_no / 1461);
-
-                j_day_no %= 1461;
-
-                if (j_day_no >= 366) {
-                    jy += Math.floor((j_day_no - 1) / 365);
-                    j_day_no = (j_day_no - 1) % 365;
-                }
-
-                let i;
-                for (i = 0; i < 11 && j_day_no >= j_days_in_month[i]; ++i) {
-                    j_day_no -= j_days_in_month[i];
-                }
-                let jm = i + 1;
-                let jd = j_day_no + 1;
-
-                return [jy, jm, jd];
-            }
-
-            getPersianYear() { return this.year; }
-            getPersianMonth() { return this.month; }
-            getPersianDay() { return this.day; }
-
-            getPersianMonthName() {
-                const monthNames = [
-                    'فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور',
-                    'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'
-                ];
-                return monthNames[this.month - 1];
-            }
-
-            getPersianWeekday() {
-                const weekday = this.gregorianDate.getDay();
-                const persianWeekdays = ['یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنجشنبه', 'جمعه', 'شنبه'];
-                return persianWeekdays[weekday];
-            }
-
-            getFormattedDate() {
-                return `${this.year}/${this.month < 10 ? '0' : ''}${this.month}/${this.day < 10 ? '0' : ''}${this.day}`;
-            }
-
-            getFullDate() {
-                return `${this.getPersianWeekday()} ${this.day} ${this.getPersianMonthName()} ${this.year}`;
-            }
-
-            addDays(days) {
-                const newDate = new Date(this.gregorianDate);
-                newDate.setDate(newDate.getDate() + days);
-                return new PersianDate(newDate);
-            }
-
-            addMonths(months) {
-                const newDate = new Date(this.gregorianDate);
-                newDate.setMonth(newDate.getMonth() + months);
-                return new PersianDate(newDate);
-            }
-
-            isWeekStart() {
-                return this.gregorianDate.getDay() === 6; // شنبه = ابتدای هفته
-            }
-
-            isMonthStart() {
-                return this.day === 1;
-            }
-
-            getDaysInMonth() {
-                const monthLengths = [31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29];
-                return this.year % 4 === 3 ? 30 : monthLengths[this.month - 1];
-            }
-
-            // محاسبه تعداد روزهای باقی‌مانده تا شنبه بعدی
-            getDaysUntilNextSaturday() {
-                const today = this.gregorianDate.getDay(); // 0=یکشنبه, 6=شنبه
-                if (today === 6) return 0; // امروز شنبه است
-                return (6 - today + 7) % 7;
-            }
-
-            // محاسبه تعداد روزهای باقی‌مانده تا اول ماه بعد
-            getDaysUntilNextMonth() {
-                const daysInMonth = this.getDaysInMonth();
-                return daysInMonth - this.day;
-            }
-
-            // تاریخ شنبه بعدی
-            getNextSaturday() {
-                const daysUntilSaturday = this.getDaysUntilNextSaturday();
-                return this.addDays(daysUntilSaturday);
-            }
-
-            // تاریخ اول ماه بعد
-            getNextMonthStart() {
-                const daysInMonth = this.getDaysInMonth();
-                const daysUntilNextMonth = daysInMonth - this.day;
-                return this.addDays(daysUntilNextMonth + 1);
-            }
-        }
-
-        // ==================== مدیریت تب‌ها ====================
-        function switchTab(tabName) {
-            // غیرفعال کردن همه تب‌ها
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('active');
+        
+        // ==================== CUSTOM CONFIRM SYSTEM ====================
+        delete window.confirm;
+        
+        window.confirm = function(message) {
+            return new Promise((resolve) => {
+                // ساخت overlay
+                const overlay = document.createElement('div');
+                overlay.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0,0,0,0.5);
+                    z-index: 10000;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                `;
+                
+                // ساخت dialog
+                const dialog = document.createElement('div');
+                dialog.style.cssText = `
+                    background: white;
+                    padding: 25px;
+                    border-radius: 12px;
+                    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+                    text-align: center;
+                    min-width: 300px;
+                    max-width: 90%;
+                    font-family: Vazirmatn, sans-serif;
+                    border: 2px solid #2c3e50;
+                `;
+                
+                dialog.innerHTML = `
+                    <div style="margin-bottom: 20px; font-size: 16px; color: #2c3e50; line-height: 1.5;">${message}</div>
+                    <div style="display: flex; gap: 10px; justify-content: center;">
+                        <button id="customConfirmYes" 
+                                style="padding: 10px 25px; background: #27ae60; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                            بله
+                        </button>
+                        <button id="customConfirmNo" 
+                                style="padding: 10px 25px; background: #e74c3c; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                            خیر
+                        </button>
+                    </div>
+                `;
+                
+                overlay.appendChild(dialog);
+                document.body.appendChild(overlay);
+                
+                // تابع بستن
+                const closeConfirm = function(result) {
+                    if (document.body.contains(overlay)) {
+                        document.body.removeChild(overlay);
+                    }
+                    resolve(result);
+                };
+                
+                // اضافه کردن event listener برای دکمه‌ها
+                document.getElementById('customConfirmYes').addEventListener('click', () => closeConfirm(true));
+                document.getElementById('customConfirmNo').addEventListener('click', () => closeConfirm(false));
+                
+                // با کلیک روی overlay هم بسته نشه (مثل confirm اصلی)
+                overlay.onclick = function(e) {
+                    if (e.target === overlay) {
+                        // کاری نکن - مثل confirm اصلی که با کلیک خارج بسته نمیشه
+                    }
+                };
             });
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.remove('active');
+        };
+        
+        // ==================== تابع تشخیص نوع ایراد و تعیین تکنسین ====================
+        function determineIssueTypeAndTechnician(problemDescription) {
+            if (!problemDescription) return { issueType: 'فنی', technician: 'نوروزی' };
+            
+            const problem = problemDescription.toLowerCase();
+            
+            // کلمات کلیدی مربوط به ایرادات برقی
+            const electricalKeywords = [
+                'برق', 'الکتریک', 'سیم', 'کابل', 'فیوز', 'کلید', 'مدار', 
+                'ولتاژ', 'جریان', 'موتور', 'کنترل', 'تابلو', 'دستگاه اندازه گیری',
+                'اینورتر', 'میکروسوییچ', 'کنتاکتور', 'شاسی', 'چشم الکترونیکی',
+                'سنسور', 'پی‌ال‌سی', 'ال‌سی‌دی', 'کنترل پنل', 'رله', 'ترانس',
+                'الکترونیک', 'برقی', 'ولت', 'آمپر', 'وات', 'برق رسانی'
+            ];
+            
+            // کلمات کلیدی مربوط به ایرادات فنی/مکانیکی
+            const technicalKeywords = [
+                'روغن', 'گیربکس', 'بلبرینگ', 'یاتاقان', 'شفت', 'گشتاور',
+                'مکانیک', 'سرویس', 'تعویض', 'بازبینی', 'قطعه', 'جوش',
+                'لاستیک', 'غلطک', 'زنجیر', 'چرخ دنده', 'تسمه', 'کوپلینگ',
+                'فن', 'رادیاتور', 'دمای روغن', 'بالانس', 'گیرکردن',
+                'اسپیندل', 'ریل', 'جک', 'پنوماتیک', 'باد', 'فشار',
+                'مکانیکی', 'فنی', 'تعمیر', 'نصب', 'سرویس', 'نگهداری',
+                'صدا', 'لرزش', 'نشت', 'فرسودگی', 'خرابی مکانیکی'
+            ];
+            
+            // شمارش کلمات کلیدی
+            let electricalCount = 0;
+            let technicalCount = 0;
+            
+            electricalKeywords.forEach(keyword => {
+                if (problem.includes(keyword)) electricalCount++;
             });
-
-            // فعال کردن تب انتخاب شده
-            document.querySelector(`.tab-btn[onclick="switchTab('${tabName}')"]`).classList.add('active');
-            document.getElementById(`${tabName}-tab`).classList.add('active');
-
-            // بارگذاری محتوای تب
-            if (tabName === 'daily') {
-                loadDailyChecklist();
-            } else if (tabName === 'weekly') {
-                updateWeeklyCountdown();
-                loadWeeklyChecklist();
-            } else if (tabName === 'monthly') {
-                updateMonthlyCountdown();
-                loadMonthlyChecklist();
-            }
-
-            updateStats();
-        }
-
-        // ==================== شمارشگرهای دایره‌ای ====================
-        function updateWeeklyCountdown() {
-            const today = new PersianDate();
-            const nextSaturday = today.getNextSaturday();
-            const daysUntilSaturday = today.getDaysUntilNextSaturday();
             
-            // اگر امروز شنبه است و چک‌لیست انجام نشده
-            const weeklyCompleted = weeklyChecklistData.filter(item => item.completed).length;
-            const isTodaySaturday = today.isWeekStart();
+            technicalKeywords.forEach(keyword => {
+                if (problem.includes(keyword)) technicalCount++;
+            });
             
-            let daysToShow = daysUntilSaturday;
-            let statusText = '';
-            let statusClass = '';
-            
-            if (isTodaySaturday && weeklyCompleted < weeklyChecklistData.length) {
-                // امروز شنبه است و کارها کامل نشده
-                daysToShow = 0;
-                statusText = 'امروز وقت انجام کارهای هفتگی است!';
-                statusClass = 'status-today';
-            } else if (daysUntilSaturday === 0 && weeklyCompleted === weeklyChecklistData.length) {
-                // امروز شنبه است و کارها کامل شده
-                daysToShow = 7; // شنبه بعدی
-                statusText = 'کارهای هفتگی تکمیل شده. تا شنبه بعدی:';
-                statusClass = 'status-upcoming';
-            } else if (daysUntilSaturday > 0) {
-                // هنوز تا شنبه زمان داریم
-                statusText = `تا انجام کارهای هفتگی: ${daysUntilSaturday} روز`;
-                statusClass = 'status-upcoming';
+            // تصمیم‌گیری بر اساس تعداد کلمات کلیدی
+            if (electricalCount > 0 && technicalCount === 0) {
+                return { issueType: 'برق', technician: 'ابراهیمی' };
+            } else if (technicalCount > 0 && electricalCount === 0) {
+                return { issueType: 'فنی', technician: 'نوروزی' };
+            } else if (electricalCount > 0 && technicalCount > 0) {
+                return { issueType: 'ترکیبی', technician: 'ابراهیمی و نوروزی' };
             }
             
-            // آپدیت UI
-            document.getElementById('weeklyDays').textContent = daysToShow;
-            document.getElementById('weeklyStatus').textContent = statusText;
-            document.getElementById('weeklyStatus').className = `countdown-status ${statusClass}`;
-            
-            // آپدیت تاریخ بعدی
-            const nextDate = nextSaturday.getFullDate();
-            document.getElementById('weeklyNextDate').textContent = `تاریخ بعدی: ${nextDate}`;
-            
-            // آپدیت دایره پیشرفت
-            const progressPercentage = ((7 - daysUntilSaturday) / 7) * 100;
-            const rotation = (progressPercentage / 100) * 360;
-            document.getElementById('weeklyCircleProgress').style.transform = `rotate(${rotation}deg)`;
+            return { issueType: 'فنی', technician: 'نوروزی' };
         }
-
-        function updateMonthlyCountdown() {
-            const today = new PersianDate();
-            const nextMonthStart = today.getNextMonthStart();
-            const daysUntilNextMonth = today.getDaysUntilNextMonth();
+        
+        // اتصال به Supabase
+        const SUPABASE_URL = 'https://kalykylvjqigqlaprlca.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImthbHlreWx2anFpZ3FsYXBybGNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM1NjI1OTcsImV4cCI6MjA3OTEzODU5N30.S8YtogVrxkqYjkgfkGpy4_mS6mqaNxmsHjxnhyBPwEY';
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // داده‌های عیب‌های استنتر (از جدول defect_reports سرپرستان خوانده می‌شود)
+        let stenterFaultsFromDB = {};
+        
+        let selectedMachine = null;
+        let selectedSection = null;
+        let selectedCategory = null;
+        let selectedFault = null;
+        
+        // تابع برای فرمت کردن تاریخ و زمان به فارسی
+        function formatPersianDateTime(date) {
+            const options = {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            };
+            return new Intl.DateTimeFormat('fa-IR', options).format(date);
+        }
+        
+        // تابع برای محاسبه زمان گذشته از ورود
+        function getTimeSinceLogin(loginTime) {
+            const now = new Date();
+            const diff = now - loginTime;
+            const minutes = Math.floor(diff / 60000);
+            const hours = Math.floor(minutes / 60);
             
-            // اگر امروز اول ماه است و چک‌لیست انجام نشده
-            const monthlyCompleted = monthlyChecklistData.filter(item => item.completed).length;
-            const isTodayMonthStart = today.isMonthStart();
-            
-            let daysToShow = daysUntilNextMonth;
-            let statusText = '';
-            let statusClass = '';
-            
-            if (isTodayMonthStart && monthlyCompleted < monthlyChecklistData.length) {
-                // امروز اول ماه است و کارها کامل نشده
-                daysToShow = 0;
-                statusText = 'امروز وقت انجام کارهای ماهانه است!';
-                statusClass = 'status-today';
-            } else if (daysUntilNextMonth === 0 && monthlyCompleted === monthlyChecklistData.length) {
-                // امروز آخر ماه است و کارها کامل شده
-                daysToShow = 1; // فردا اول ماه جدید است
-                statusText = 'کارهای ماهانه تکمیل شده. تا ماه بعدی:';
-                statusClass = 'status-upcoming';
-            } else if (daysUntilNextMonth > 0) {
-                // هنوز تا اول ماه بعد زمان داریم
-                statusText = `تا انجام کارهای ماهانه: ${daysUntilNextMonth} روز`;
-                statusClass = 'status-upcoming';
+            if (hours > 0) {
+                return `${hours} ساعت و ${minutes % 60} دقیقه قبل`;
             } else {
-                // معیارهای قبلی برقرار نیست
-                statusText = `تا انجام کارهای ماهانه: ${daysUntilNextMonth} روز`;
-                statusClass = 'status-upcoming';
-            }
-            
-            // آپدیت UI
-            document.getElementById('monthlyDays').textContent = daysToShow;
-            document.getElementById('monthlyStatus').textContent = statusText;
-            document.getElementById('monthlyStatus').className = `countdown-status ${statusClass}`;
-            
-            // آپدیت تاریخ بعدی
-            const nextDate = nextMonthStart.getFullDate();
-            document.getElementById('monthlyNextDate').textContent = `تاریخ بعدی: ${nextDate}`;
-            
-            // آپدیت دایره پیشرفت
-            const daysInMonth = today.getDaysInMonth();
-            const progressPercentage = ((daysInMonth - daysUntilNextMonth) / daysInMonth) * 100;
-            const rotation = (progressPercentage / 100) * 360;
-            document.getElementById('monthlyCircleProgress').style.transform = `rotate(${rotation}deg)`;
-        }
-
-        // ==================== چک‌لیست روزانه ====================
-        const dailyChecklistData = [
-            {
-                id: 2,
-                title: "چک کردن محلول",
-                description: "چک کردن محلول و تنظیم میزان رطوبت آن",
-                critical: true,
-                completed: false
-            },
-            {
-                id: 3,
-                title: "بررسی سیستم روغن‌کاری",
-                description: "بررسی سطح و کیفیت روغن",
-                critical: true,
-                completed: false
-            },
-            {
-                id: 4,
-                title: "بررسی ابزار و یراق آلات",
-                description: "مراقبت از خشک نبودن بلبرینگ",
-                critical: false,
-                completed: false
-            },
-            {
-                id: 5,
-                title: "بررسی سیستم خنک‌کننده",
-                description: "اطمینان از عملکرد صحیح سیستم خنک‌کننده",
-                critical: true,
-                completed: false
-            },
-            {
-                id: 6,
-                title: "تست اولیه دستگاه",
-                description: "گرم کردن دستگاه به مدت 20 دقیقه",
-                critical: false,
-                completed: false
-            }
-        ];
-
-        function loadDailyChecklist() {
-            const container = document.getElementById('dailyChecklistItems');
-            container.innerHTML = '';
-            
-            let completedCount = 0;
-            
-            dailyChecklistData.forEach(item => {
-                const itemElement = document.createElement('div');
-                itemElement.className = `checklist-item ${item.completed ? 'completed' : ''} ${item.critical ? 'critical' : ''}`;
-                
-                itemElement.innerHTML = `
-                    <div class="checklist-checkbox" onclick="toggleDailyChecklistItem(${item.id})">
-                        ${item.completed ? '✓' : ''}
-                    </div>
-                    <div class="checklist-content">
-                        <div class="checklist-item-title">${item.title}</div>
-                        <div class="checklist-item-desc">${item.description}</div>
-                    </div>
-                    <div class="checklist-badge ${item.critical ? 'badge-critical' : 'badge-normal'}">
-                        ${item.critical ? 'حیاتی' : 'عادی'}
-                    </div>
-                `;
-                
-                container.appendChild(itemElement);
-                if (item.completed) completedCount++;
-            });
-
-            const total = dailyChecklistData.length;
-            const percentage = (completedCount / total) * 100;
-            
-            document.getElementById('dailyProgressText').textContent = `${completedCount} از ${total} تکمیل شده`;
-            document.getElementById('dailyProgressFill').style.width = `${percentage}%`;
-            
-            // آپدیت آمار
-            document.getElementById('dailyCount').textContent = completedCount;
-        }
-
-        function toggleDailyChecklistItem(itemId) {
-            const item = dailyChecklistData.find(i => i.id === itemId);
-            if (item) {
-                item.completed = !item.completed;
-                loadDailyChecklist();
-                updateStats();
+                return `${minutes} دقیقه قبل`;
             }
         }
-
-        // ==================== چک‌لیست هفتگی ====================
-        const weeklyChecklistData = [
-            {
-                id: 1,
-                title: "بررسی سوزن‌ها و کلیپس‌ها از نظر شکستگی و خم شدگی",
-                description: "بررسی کامل تمام سوزن‌ها و کلیپس‌ها و جایگزینی موارد معیوب",
-                critical: true,
-                completed: false
-            },
-            {
-                id: 2,
-                title: "تمیز کردن ریل‌ها از روغن و پرز اضافی",
-                description: "پاک‌سازی کامل ریل‌ها با مواد مناسب",
-                critical: true,
-                completed: false
-            },
-            {
-                id: 3,
-                title: "نظافت توری‌های رادیاتور قسمت خشک‌ کن",
-                description: "تمیز کردن توری‌ها با فشار باد یا برس نرم",
-                critical: false,
-                completed: false
-            },
-            {
-                id: 4,
-                title: "نظافت غلطک‌ها و جایگاه مواد",
-                description: "پاک‌سازی غلطک‌ها و سینی‌های جمع‌آوری مواد",
-                critical: false,
-                completed: false
-            },
-            {
-                id: 5,
-                title: "تست عملکرد فن‌ها و دما",
-                description: "بررسی عملکرد فن‌ها و کالیبراسیون سنسورهای دما",
-                critical: true,
-                completed: false
-            }
-        ];
-
-        function loadWeeklyChecklist() {
-            const container = document.getElementById('weeklyChecklistItems');
-            container.innerHTML = '';
-            
-            let completedCount = 0;
-            
-            weeklyChecklistData.forEach(item => {
-                const itemElement = document.createElement('div');
-                itemElement.className = `checklist-item ${item.completed ? 'completed' : ''} ${item.critical ? 'critical' : ''}`;
-                
-                itemElement.innerHTML = `
-                    <div class="checklist-checkbox" onclick="toggleWeeklyChecklistItem(${item.id})">
-                        ${item.completed ? '✓' : ''}
-                    </div>
-                    <div class="checklist-content">
-                        <div class="checklist-item-title">${item.title}</div>
-                        <div class="checklist-item-desc">${item.description}</div>
-                    </div>
-                    <div class="checklist-badge ${item.critical ? 'badge-critical' : 'badge-normal'}">
-                        ${item.critical ? 'حیاتی' : 'عادی'}
-                    </div>
-                `;
-                
-                container.appendChild(itemElement);
-                if (item.completed) completedCount++;
-            });
-
-            const total = weeklyChecklistData.length;
-            const percentage = (completedCount / total) * 100;
-            
-            document.getElementById('weeklyProgressText').textContent = `${completedCount} از ${total} تکمیل شده`;
-            document.getElementById('weeklyProgressFill').style.width = `${percentage}%`;
-            
-            // آپدیت آمار
-            document.getElementById('weeklyCount').textContent = completedCount;
-        }
-
-        function toggleWeeklyChecklistItem(itemId) {
-            const item = weeklyChecklistData.find(i => i.id === itemId);
-            if (item) {
-                item.completed = !item.completed;
-                loadWeeklyChecklist();
-                updateStats();
-                updateWeeklyCountdown();
+        
+        // تابع برای به روز رسانی زمان آنلاین
+        function updateOnlineTime() {
+            const loginTimeElement = document.getElementById('loginTime');
+            if (loginTimeElement && window.loginTime) {
+                loginTimeElement.textContent = getTimeSinceLogin(window.loginTime);
             }
         }
-
-        // ==================== چک‌لیست ماهانه ====================
-        const monthlyChecklistData = [
-            {
-                id: 1,
-                title: "روغن‌کاری و گریس‌کاری ریل‌ها و زنجیرها",
-                description: "روغن‌کاری کامل تمام ریل‌ها و زنجیرهای متحرک",
-                critical: true,
-                completed: false
-            },
-            {
-                id: 2,
-                title: "بررسی سایش سوزن‌ها و کلیپس",
-                description: "اندازه‌گیری و بررسی میزان سایش قطعات",
-                critical: true,
-                completed: false
-            },
-            {
-                id: 3,
-                title: "کنترل تنظیم بودن زنجیرها",
-                description: "بررسی کشش و تنظیمات زنجیرها",
-                critical: true,
-                completed: false
-            },
-            {
-                id: 4,
-                title: "تست سلامت فن‌ها و یاتاقان‌ها",
-                description: "بررسی عملکرد و تست کامل فن‌ها و یاتاقان‌ها",
-                critical: false,
-                completed: false
-            },
-            {
-                id: 5,
-                title: "کنترل سنسور دما و درصورت نیاز کالیبره کردن",
-                description: "کالیبراسیون سنسورهای دما و کنترل دقت آن‌ها",
-                critical: true,
-                completed: false
-            }
-        ];
-
-        function loadMonthlyChecklist() {
-            const container = document.getElementById('monthlyChecklistItems');
-            container.innerHTML = '';
-            
-            let completedCount = 0;
-            
-            monthlyChecklistData.forEach(item => {
-                const itemElement = document.createElement('div');
-                itemElement.className = `checklist-item ${item.completed ? 'completed' : ''} ${item.critical ? 'critical' : ''}`;
+        
+        // بارگذاری داده‌های عیب‌یابی از سوپابیس (از گزارشات سرپرستان)
+        async function loadTroubleshootingData() {
+            try {
+                const { data, error } = await supabase
+                    .from('defect_reports')
+                    .select('*')
+                    .order('created_at', { ascending: false });
                 
-                itemElement.innerHTML = `
-                    <div class="checklist-checkbox" onclick="toggleMonthlyChecklistItem(${item.id})">
-                        ${item.completed ? '✓' : ''}
-                    </div>
-                    <div class="checklist-content">
-                        <div class="checklist-item-title">${item.title}</div>
-                        <div class="checklist-item-desc">${item.description}</div>
-                    </div>
-                    <div class="checklist-badge ${item.critical ? 'badge-critical' : 'badge-normal'}">
-                        ${item.critical ? 'حیاتی' : 'عادی'}
-                    </div>
-                `;
+                if (error) throw error;
                 
-                container.appendChild(itemElement);
-                if (item.completed) completedCount++;
-            });
-
-            const total = monthlyChecklistData.length;
-            const percentage = (completedCount / total) * 100;
-            
-            document.getElementById('monthlyProgressText').textContent = `${completedCount} از ${total} تکمیل شده`;
-            document.getElementById('monthlyProgressFill').style.width = `${percentage}%`;
-            
-            // آپدیت آمار
-            document.getElementById('monthlyCount').textContent = completedCount;
-        }
-
-        function toggleMonthlyChecklistItem(itemId) {
-            const item = monthlyChecklistData.find(i => i.id === itemId);
-            if (item) {
-                item.completed = !item.completed;
-                loadMonthlyChecklist();
-                updateStats();
-                updateMonthlyCountdown();
+                // تبدیل گزارشات به ساختار مورد نیاز برای عیب‌یابی
+                stenterFaultsFromDB = transformReportsToFaults(data || []);
+                console.log('داده‌های عیب‌یابی بارگذاری شد:', stenterFaultsFromDB);
+                
+            } catch (error) {
+                console.error('خطا در بارگذاری داده‌های عیب‌یابی:', error);
+                // در صورت خطا، از داده‌های پیش‌فرض استفاده می‌کنیم
+                stenterFaultsFromDB = {};
             }
         }
-
-        // ==================== دستگاه‌ها ====================
-        const machinesData = [
-            {
-                id: 1,
-                name: "دستگاه رول کن",
-                type: "تولید",
-                status: "operational",
-                metrics: {
-                    uptime: "98%",
-                    quality: "99.2%",
-                    speed: "120m/min"
-                }
-            },
-            {
-                id: 2,
-                name: "خشک کن صنعتی",
-                type: "پردازش",
-                status: "maintenance",
-                metrics: {
-                    uptime: "85%",
-                    quality: "97.8%",
-                    speed: "80°C"
-                }
-            },
-            {
-                id: 3,
-                name: "برش اتوماتیک",
-                type: "برش",
-                status: "operational",
-                metrics: {
-                    uptime: "96%",
-                    quality: "98.5%",
-                    speed: "150cut/min"
-                }
-            }
-        ];
-
-        function loadMachines() {
-            const container = document.getElementById('machinesGrid');
-            container.innerHTML = '';
+        
+        // تبدیل گزارشات به ساختار عیب‌ها
+        function transformReportsToFaults(reports) {
+            const faults = {
+                "ورودی": { "برقی": [], "مکانیکی": [], "پنوماتیک": [] },
+                "خشک کن": { "برقی": [], "مکانیکی": [], "پنوماتیک": [] },
+                "انتهایی": { "برقی": [], "مکانیکی": [], "پنوماتیک": [] }
+            };
             
-            machinesData.forEach(machine => {
-                const machineCard = document.createElement('div');
-                machineCard.className = 'machine-card';
-                machineCard.onclick = () => openReportPopup(machine.name);
+            reports.forEach(report => {
+                const section = report.machine_section;
+                const type = report.defect_type;
                 
-                let statusText, statusClass;
-                switch(machine.status) {
-                    case 'operational':
-                        statusText = 'در حال کار';
-                        statusClass = 'status-operational';
-                        break;
-                    case 'maintenance':
-                        statusText = 'در حال تعمیر';
-                        statusClass = 'status-maintenance';
-                        break;
-                    case 'down':
-                        statusText = 'خراب';
-                        statusClass = 'status-down';
-                        break;
-                }
-                
-                machineCard.innerHTML = `
-                    <div class="machine-header">
-                        <div>
-                            <div class="machine-name">${machine.name}</div>
-                            <div class="machine-type">${machine.type}</div>
-                        </div>
-                        <div class="status-badge ${statusClass}">${statusText}</div>
-                    </div>
+                if (section && type && faults[section] && faults[section][type]) {
+                    const fault = {
+                        id: report.id,
+                        title: report.defect_title,
+                        code: report.defect_code || 'بدون کد',
+                        description: report.defect_description || 'بدون شرح',
+                        solutions: Array.isArray(report.solutions) ? report.solutions : 
+                                  (typeof report.solutions === 'string' ? [report.solutions] : ['بدون راه‌حل ثبت شده']),
+                        category: type === 'برقی' ? 'electrical' : 
+                                 type === 'مکانیکی' ? 'mechanical' : 'pneumatic',
+                        reported_by: report.reported_by,
+                        report_date: new Date(report.created_at).toLocaleDateString('fa-IR'),
+                        actions_taken: report.actions_taken || ''
+                    };
                     
-                    <div class="machine-metrics">
-                        <div class="metric">
-                            <div class="metric-value">${machine.metrics.uptime}</div>
-                            <div class="metric-label">آپتایم</div>
-                        </div>
-                        <div class="metric">
-                            <div class="metric-value">${machine.metrics.quality}</div>
-                            <div class="metric-label">کیفیت</div>
-                        </div>
-                        <div class="metric">
-                            <div class="metric-value">${machine.metrics.speed}</div>
-                            <div class="metric-label">سرعت</div>
+                    faults[section][type].push(fault);
+                }
+            });
+            
+            return faults;
+        }
+        
+        // شروع عیب‌یابی
+        async function startTroubleshooting() {
+            selectedMachine = { name: 'دستگاه استنتر آرتوس' };
+            
+            // بارگذاری گزارشات از سوپابیس
+            await loadTroubleshootingData();
+            
+            // نمایش بخش عیب‌یابی
+            document.getElementById('troubleshootingSection').style.display = 'block';
+            
+            // آپدیت مرحله ۱
+            document.getElementById('selectedMachineInfo').textContent = `دستگاه انتخاب شده: ${selectedMachine.name}`;
+            
+            // اسکرول به بخش عیب‌یابی
+            document.getElementById('troubleshootingSection').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // انتخاب بخش دستگاه
+        function selectSection(section) {
+            selectedSection = section;
+            
+            // بررسی آیا بخش انتخاب شده داده دارد
+            const sectionHasData = stenterFaultsFromDB[section] && 
+                Object.values(stenterFaultsFromDB[section]).some(arr => arr.length > 0);
+            
+            if (!sectionHasData) {
+                alert(`❌ هیچ گزارشی برای بخش "${section}" ثبت نشده است.\nلطفاً صبر کنید تا سرپرستان گزارش‌های مربوطه را ثبت کنند.`);
+                return;
+            }
+            
+            // آپدیت مرحله
+            document.getElementById('step1').classList.remove('active');
+            document.getElementById('step2').classList.add('active');
+            document.getElementById('step1Content').classList.remove('active');
+            document.getElementById('step2Content').classList.add('active');
+            
+            document.getElementById('selectedSectionInfo').textContent = `بخش: ${section} | دستگاه: ${selectedMachine.name}`;
+            
+            // لود دسته‌بندی‌ها
+            loadCategories(section);
+            
+            // نمایش دکمه‌ها
+            document.getElementById('backToStep1Btn').style.display = 'flex';
+        }
+        
+        // لود دسته‌بندی‌ها
+        function loadCategories(section) {
+            const categoryTabs = document.getElementById('categoryTabs');
+            categoryTabs.innerHTML = '';
+            
+            const categories = Object.keys(stenterFaultsFromDB[section] || {});
+            
+            // فقط دسته‌بندی‌هایی که داده دارند را نمایش می‌دهیم
+            const availableCategories = categories.filter(category => 
+                stenterFaultsFromDB[section][category] && 
+                stenterFaultsFromDB[section][category].length > 0
+            );
+            
+            if (availableCategories.length === 0) {
+                categoryTabs.innerHTML = `
+                    <div class="alert alert-warning" style="width: 100%;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        هیچ گزارشی برای این بخش ثبت نشده است.
+                    </div>
+                `;
+                return;
+            }
+            
+            let firstCategory = null;
+            
+            availableCategories.forEach(category => {
+                if (!firstCategory) firstCategory = category;
+                
+                const tab = document.createElement('div');
+                tab.className = `category-tab ${category === 'برقی' ? 'electrical' : category === 'مکانیکی' ? 'mechanical' : 'pneumatic'}`;
+                tab.onclick = () => selectCategory(category);
+                
+                let icon = 'fas fa-bolt';
+                if (category === 'مکانیکی') icon = 'fas fa-cog';
+                if (category === 'پنوماتیک') icon = 'fas fa-wind';
+                
+                // شمارش تعداد مشکلات در این دسته
+                const count = stenterFaultsFromDB[section][category].length;
+                
+                tab.innerHTML = `
+                    <i class="${icon}"></i>
+                    ${category}
+                    <span style="font-size: 11px; background: rgba(0,0,0,0.1); padding: 2px 6px; border-radius: 10px;">${count}</span>
+                `;
+                
+                categoryTabs.appendChild(tab);
+            });
+            
+            // لود اولین دسته‌بندی به صورت پیش‌فرض
+            if (firstCategory) {
+                selectCategory(firstCategory);
+            }
+        }
+        
+        // انتخاب دسته‌بندی
+        function selectCategory(category) {
+            selectedCategory = category;
+            
+            // آپدیت تب‌های فعال
+            document.querySelectorAll('#categoryTabs .category-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+            
+            // لود مشکلات
+            loadFaults(selectedSection, category);
+        }
+        
+        // لود مشکلات
+        function loadFaults(section, category) {
+            const faultsList = document.getElementById('faultsList');
+            faultsList.innerHTML = '';
+            
+            const faults = stenterFaultsFromDB[section]?.[category] || [];
+            
+            if (faults.length === 0) {
+                faultsList.innerHTML = `
+                    <div class="empty-state" style="padding: 20px;">
+                        <i class="fas fa-search"></i>
+                        <p>مشکلی برای این دسته‌بندی ثبت نشده است</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            faults.forEach(fault => {
+                const faultCard = document.createElement('div');
+                faultCard.className = 'fault-card';
+                faultCard.onclick = () => selectFault(fault);
+                
+                const categoryClass = `category-${fault.category}`;
+                const categoryText = fault.category === 'electrical' ? 'برقی' : 
+                                   fault.category === 'mechanical' ? 'مکانیکی' : 'پنوماتیک';
+                
+                faultCard.innerHTML = `
+                    <div class="fault-header">
+                        <div class="fault-title">${fault.title}</div>
+                        <div class="fault-category ${categoryClass}">
+                            ${categoryText}
                         </div>
                     </div>
-                    
-                    <div class="machine-actions">
-                        <button class="action-btn report-btn" onclick="event.stopPropagation(); openReportPopup('${machine.name}')">
-                            <i class="fas fa-exclamation-triangle"></i>
-                            گزارش مشکل
-                        </button>
-                        <button class="action-btn checklist-btn" onclick="event.stopPropagation(); showMachineChecklist('${machine.name}')">
-                            <i class="fas fa-clipboard-check"></i>
-                            چک‌لیست
-                        </button>
+                    <div class="fault-code">${fault.code} | گزارش‌دهنده: ${fault.reported_by}</div>
+                    <div class="fault-description">${fault.description}</div>
+                    <div style="margin-top: 8px; font-size: 11px; color: var(--gray);">
+                        <i class="fas fa-calendar"></i> تاریخ گزارش: ${fault.report_date}
                     </div>
                 `;
                 
-                container.appendChild(machineCard);
+                faultsList.appendChild(faultCard);
             });
         }
-
-        // ==================== توابع کمکی ====================
-        function updateStats() {
-            const dailyCompleted = dailyChecklistData.filter(item => item.completed).length;
-            const weeklyCompleted = weeklyChecklistData.filter(item => item.completed).length;
-            const monthlyCompleted = monthlyChecklistData.filter(item => item.completed).length;
+        
+        // انتخاب مشکل
+        function selectFault(fault) {
+            selectedFault = fault;
             
-            // آپدیت آمار سریع با تعداد تکمیل شده
-            document.getElementById('dailyCount').textContent = dailyCompleted;
-            document.getElementById('weeklyCount').textContent = weeklyCompleted;
-            document.getElementById('monthlyCount').textContent = monthlyCompleted;
+            // آپدیت مرحله
+            document.getElementById('step2').classList.remove('active');
+            document.getElementById('step3').classList.add('active');
+            document.getElementById('step2Content').classList.remove('active');
+            document.getElementById('step3Content').classList.add('active');
+            
+            // نمایش اطلاعات مشکل انتخاب شده
+            document.getElementById('selectedFaultInfo').textContent = 
+                `مشکل: ${fault.title} | بخش: ${selectedSection} | دسته: ${selectedCategory}`;
+            
+            // لود راه حل‌ها
+            loadSolutions(fault);
+            
+            // نمایش دکمه‌ها
+            document.getElementById('backToStep1Btn').style.display = 'none';
+            document.getElementById('backToStep2Btn').style.display = 'flex';
+            document.getElementById('resetBtn').style.display = 'flex';
         }
-
-        function openReportPopup(machineName) {
-            document.getElementById('machineName').value = machineName;
-            document.getElementById('reportPopup').style.display = 'flex';
-            document.getElementById('reporterName').focus();
+        
+        // لود راه حل‌ها
+        function loadSolutions(fault) {
+            const solutionsContainer = document.getElementById('solutionsContainer');
+            solutionsContainer.innerHTML = '';
+            
+            // نمایش راه حل‌ها
+            if (fault.solutions && fault.solutions.length > 0) {
+                fault.solutions.forEach((solution, index) => {
+                    if (solution && solution.trim() !== '') {
+                        const solutionItem = document.createElement('div');
+                        solutionItem.className = 'solution-item';
+                        
+                        solutionItem.innerHTML = `
+                            <div class="solution-number">${index + 1}</div>
+                            <div class="solution-text">${solution}</div>
+                        `;
+                        
+                        solutionsContainer.appendChild(solutionItem);
+                    }
+                });
+            } else {
+                solutionsContainer.innerHTML = `
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        هیچ راه‌حلی برای این مشکل ثبت نشده است.
+                    </div>
+                `;
+            }
+            
+            // نمایش اطلاعات گزارش‌دهنده
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'alert alert-success';
+            infoDiv.style.marginTop = '15px';
+            infoDiv.innerHTML = `
+                <i class="fas fa-user"></i>
+                <div>
+                    <strong>اطلاعات گزارش:</strong><br>
+                    گزارش‌دهنده: ${fault.reported_by} (سرپرست)<br>
+                    تاریخ گزارش: ${fault.report_date}
+                </div>
+            `;
+            solutionsContainer.appendChild(infoDiv);
         }
-
-        function closeReportPopup() {
-            document.getElementById('reportPopup').style.display = 'none';
-            document.getElementById('reportForm').reset();
+        
+        // بازگشت به مرحله ۱
+        function backToStep1() {
+            document.getElementById('step2').classList.remove('active');
+            document.getElementById('step1').classList.add('active');
+            document.getElementById('step2Content').classList.remove('active');
+            document.getElementById('step1Content').classList.add('active');
+            
+            document.getElementById('backToStep1Btn').style.display = 'none';
         }
-
-        function showMachineChecklist(machineName) {
-            alert(`چک‌لیست دستگاه "${machineName}" در حال بارگذاری...`);
+        
+        // بازگشت به مرحله ۲
+        function backToStep2() {
+            document.getElementById('step3').classList.remove('active');
+            document.getElementById('step2').classList.add('active');
+            document.getElementById('step3Content').classList.remove('active');
+            document.getElementById('step2Content').classList.add('active');
+            
+            document.getElementById('backToStep2Btn').style.display = 'none';
+            document.getElementById('resetBtn').style.display = 'none';
+            document.getElementById('backToStep1Btn').style.display = 'flex';
         }
+        
+        // شروع مجدد
+        function resetTroubleshooting() {
+            selectedMachine = null;
+            selectedSection = null;
+            selectedCategory = null;
+            selectedFault = null;
+            
+            document.getElementById('step3').classList.remove('active');
+            document.getElementById('step2').classList.remove('active');
+            document.getElementById('step1').classList.add('active');
+            
+            document.getElementById('step3Content').classList.remove('active');
+            document.getElementById('step2Content').classList.remove('active');
+            document.getElementById('step1Content').classList.add('active');
+            
+            document.getElementById('troubleshootingSection').style.display = 'none';
+            document.getElementById('backToStep1Btn').style.display = 'none';
+            document.getElementById('backToStep2Btn').style.display = 'none';
+            document.getElementById('resetBtn').style.display = 'none';
+        }
+        
+        // ==================== آپدیت تابع ارسال گزارش ====================
+        document.getElementById('reportForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            e.stopPropagation(); 
+            
+            const problemDescription = document.getElementById('problem_description').value;
+            const { issueType, technician } = determineIssueTypeAndTechnician(problemDescription);
+            
+            const formData = {
+                reporter_name: document.getElementById('reporter_name').value,
+                machine_name: document.getElementById('machine_name').value,
+                machine_status: document.getElementById('machine_status').value,
+                problem_description: problemDescription,
+                priority: document.getElementById('priority').value,
+                action_type: issueType,
+                technician_name: technician,
+                status: 'جدید',
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+                actions_taken: problemDescription // ذخیره توضیحات در ستون actions_taken
+            };
+            
+            try {
+                const { data, error } = await supabase
+                    .from('operatourreports')
+                    .insert([formData]);
+                
+                if (error) {
+                    throw error;
+                }
+                
+                alert(`✅ گزارش با موفقیت ارسال شد!\n\n📋 دستگاه: ${formData.machine_name}\n⚡ نوع ایراد: ${issueType}\n👤 تکنسین: ${technician}\n📊 وضعیت: ${formData.machine_status}\n📝 اقدامات: ثبت شد`);
+                closeReportPopup();
+                loadReports();
+                
+            } catch (error) {
+                console.error('خطا در ارسال گزارش:', error);
+                alert('❌ خطا در ارسال گزارش. لطفاً دوباره تلاش کنید.');
+            }
+        });
+        
+        // ==================== آپدیت تابع نمایش گزارش‌ها ====================
+        function displayReports(reports) {
+            const container = document.getElementById('reportsTableContainer');
+            
+            if (!reports || reports.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <p>هنوز گزارشی ثبت نشده است</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let tableHTML = `
+                <table class="reports-table">
+                    <thead>
+                        <tr>
+                            <th>نام گزارش‌ دهنده</th>
+                            <th>دستگاه</th>
+                            <th>وضعیت دستگاه</th>
+                            <th>نوع ایراد</th>
+                            <th>تکنسین</th>
+                            <th>اولویت</th>
+                            <th>وضعیت گزارش</th>
+                            <th>مشکل نوشته شده</th>
+                            <th>تاریخ ثبت</th>
+                            <th>عملیات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            reports.forEach(report => {
+                const date = new Date(report.created_at).toLocaleDateString('fa-IR');
+                const issueType = report.action_type || 'فنی';
+                const technician = report.technician_name || 'نوروزی';
+                const actionsTaken = report.actions_taken || report.problem_description || '-';
+                
+                // ایجاد بج برای نوع ایراد
+                let issueTypeBadge;
+                if (issueType === 'برق') {
+                    issueTypeBadge = '<span class="issue-type-badge electrical-badge">⚡ برق</span>';
+                } else if (issueType === 'فنی') {
+                    issueTypeBadge = '<span class="issue-type-badge technical-badge">🔧 فنی</span>';
+                } else {
+                    issueTypeBadge = '<span class="issue-type-badge combined-badge">🔰 ترکیبی</span>';
+                }
+                
+                // ایجاد بج برای تکنسین
+                let technicianBadge;
+                if (technician === 'ابراهیمی') {
+                    technicianBadge = '<span class="technician-name electrical-technician">ابراهیمی</span>';
+                } else if (technician === 'نوروزی') {
+                    technicianBadge = '<span class="technician-name technical-technician">نوروزی</span>';
+                } else {
+                    technicianBadge = '<span class="technician-name combined-technician">هر دو</span>';
+                }
+                
+                // نمایش اقدامات انجام شده
+                let actionsDisplay = actionsTaken;
+                if (actionsTaken.length > 70) {
+                    actionsDisplay = actionsTaken.substring(0, 70) + '...';
+                }
+                
+                tableHTML += `
+                    <tr>
+                        <td>${report.reporter_name}</td>
+                        <td>${report.machine_name}</td>
+                        <td>${report.machine_status}</td>
+                        <td>${issueTypeBadge}</td>
+                        <td>${technicianBadge}</td>
+                        <td>${report.priority || '-'}</td>
+                        <td>${report.status || 'جدید'}</td>
+                        <td title="${report.manager_note}">
 
-        // ==================== INITIALIZATION ====================
+                               
+                                ${report.problem_description}
+    
+                        </td>
+                        <td>${date}</td>
+                        <td>
+                            <button class="delete-btn" onclick="deleteReport('${report.id}')">
+                                <i class="fas fa-trash"></i>
+                                حذف
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tableHTML += `
+                    </tbody>
+                </table>
+            `;
+            
+            container.innerHTML = tableHTML;
+        }
+        
+        // لود گزارش‌ها از Supabase
+        async function loadReports() {
+            try {
+                const { data: reports, error } = await supabase
+                    .from('operatourreports')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                
+                if (error) {
+                    throw error;
+                }
+                
+                displayReports(reports);
+                
+            } catch (error) {
+                console.error('خطا در دریافت گزارش‌ها:', error);
+                alert('خطا در دریافت گزارش‌ها');
+            }
+        }
+        
+        // حذف گزارش
+        async function deleteReport(reportId) {
+            const result = await confirm('آیا از حذف این گزارش اطمینان دارید؟');
+            if (!result) {
+                return;
+            }
+            
+            try {
+                const { error } = await supabase
+                    .from('operatourreports')
+                    .delete()
+                    .eq('id', reportId);
+                
+                if (error) {
+                    throw error;
+                }
+                
+                alert('گزارش با موفقیت حذف شد');
+                loadReports();
+                
+            } catch (error) {
+                console.error('خطا در حذف گزارش:', error);
+                alert('خطا در حذف گزارش');
+            }
+        }
+        
+        // تابع برای پاک کردن خودکار گزارش‌های قدیمی (هر ماه)
+        async function autoDeleteOldReports() {
+            try {
+                // تاریخ یک ماه پیش
+                const oneMonthAgo = new Date();
+                oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+                
+                const { error } = await supabase
+                    .from('operatourreports')
+                    .delete()
+                    .lt('created_at', oneMonthAgo.toISOString());
+                
+                if (error) {
+                    throw error;
+                }
+                
+                console.log('گزارش‌های قدیمی با موفقیت پاک شدند');
+                
+            } catch (error) {
+                console.error('خطا در پاک کردن گزارش‌های قدیمی:', error);
+            }
+        }
+        
+        // جلوگیری از زوم در دستگاه‌های موبایل و مدیریت زمان ورود
         document.addEventListener('DOMContentLoaded', function() {
-            // جلوگیری از زوم
+            // جلوگیری از زوم با حرکات چندلمسی
             document.addEventListener('touchstart', function(e) {
                 if (e.touches.length > 1) {
                     e.preventDefault();
                 }
             }, { passive: false });
-
+        
             let lastTouchEnd = 0;
             document.addEventListener('touchend', function(e) {
                 const now = (new Date()).getTime();
@@ -2022,77 +2193,140 @@
                 }
                 lastTouchEnd = now;
             }, false);
-
-            // نمایش تاریخ امروز
-            const today = new PersianDate();
-            document.getElementById('todayDate').textContent = today.getFullDate();
+        
+            document.addEventListener('gesturestart', function(e) {
+                e.preventDefault();
+            });
+        
+            document.addEventListener('gesturechange', function(e) {
+                e.preventDefault();
+            });
+        
+            document.addEventListener('gestureend', function(e) {
+                e.preventDefault();
+            });
+        
+            // مدیریت زمان ورود کاربر
+            const now = new Date();
+            window.loginTime = now;
             
             // نمایش زمان ورود
-            const now = new Date();
             const loginTimeElement = document.getElementById('loginTime');
+            const lastLoginTimeElement = document.getElementById('lastLoginTime');
+            const userNameElement = document.getElementById('userName');
+            const userAvatarElement = document.getElementById('userAvatar');
+            
             if (loginTimeElement) {
-                loginTimeElement.textContent = today.getFormattedDate();
+                loginTimeElement.textContent = formatPersianDateTime(now);
             }
-
-            // بارگذاری اولیه
-            loadDailyChecklist();
-            updateWeeklyCountdown();
-            loadWeeklyChecklist();
-            updateMonthlyCountdown();
-            loadMonthlyChecklist();
-            loadMachines();
-            updateStats();
-
-            // مدیریت فرم گزارش
-            document.getElementById('reportForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                const formData = {
-                    reporterName: document.getElementById('reporterName').value,
-                    machineName: document.getElementById('machineName').value,
-                    machineStatus: document.getElementById('machineStatus').value,
-                    problemDescription: document.getElementById('problemDescription').value,
-                    timestamp: new Date().toLocaleString('fa-IR')
-                };
-                
-                console.log('داده‌های گزارش:', formData);
-                alert(`گزارش برای دستگاه "${formData.machineName}" با موفقیت ارسال شد!`);
-                closeReportPopup();
+            
+            if (lastLoginTimeElement) {
+                lastLoginTimeElement.textContent = formatPersianDateTime(now);
+            }
+        
+            // به روز رسانی زمان آنلاین هر دقیقه
+            setInterval(updateOnlineTime, 60000);
+        
+            // تغییر وضعیت فعال در نویگیشن
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+                });
             });
-
-            // بستن پاپاپ با کلیک خارج از آن
-            document.getElementById('reportPopup').addEventListener('click', function(e) {
-                if (e.target === this) {
-                    closeReportPopup();
+        
+            // لود گزارش‌ها هنگام بارگذاری صفحه
+            loadReports();
+            
+            // اجرای پاک‌سازی خودکار هر بار که صفحه لود می‌شود
+            autoDeleteOldReports();
+        
+            // محافظت از صفحه و نمایش اطلاعات کاربر
+            if (typeof auth !== 'undefined') {
+                if (auth.protectPageByRole('operator')) {
+                    // نمایش اطلاعات کاربر
+                    if (userNameElement) {
+                        userNameElement.textContent = auth.getUsername() || 'اپراتور';
+                    }
+                    if (userAvatarElement) {
+                        userAvatarElement.textContent = auth.getUsername() ? auth.getUsername().charAt(0) : 'O';
+                    }
                 }
-            });
-
-            // مدیریت آفلاین/آنلاین
-            window.addEventListener('online', function() {
-                document.getElementById('offlineAlert').style.display = 'none';
-            });
-
-            window.addEventListener('offline', function() {
-                document.getElementById('offlineAlert').style.display = 'block';
-            });
-
-            if (!navigator.onLine) {
-                document.getElementById('offlineAlert').style.display = 'block';
+            } else {
+                // حالت توسعه - وقتی auth.js وجود ندارد
+                console.log('حالت توسعه: فایل auth.js یافت نشد');
+                if (userNameElement) {
+                    userNameElement.textContent = 'اپراتور';
+                }
+                if (userAvatarElement) {
+                    userAvatarElement.textContent = 'O';
+                }
             }
-
-            // به روز رسانی شمارشگرها هر دقیقه
-            setInterval(() => {
-                updateWeeklyCountdown();
-                updateMonthlyCountdown();
-            }, 60000);
         });
-
-        // سرویس ورکر
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
-                navigator.serviceWorker.register('../sw.js');
-            });
+        
+        // جلوگیری از اسکرول هنگام زوم در iOS
+        // document.addEventListener('touchmove', function(e) {
+        //     if(e.scale !== 1) {
+        //         e.preventDefault();
+        //     }
+        // }, { passive: false });
+        
+        // مدیریت پاپاپ گزارش
+        function openReportPopup(machine_name) {
+            document.getElementById('machine_name').value = machine_name;
+            document.getElementById('reportPopup').style.display = 'flex';
+            document.getElementById('reporter_name').focus();
+            document.getElementById('problem_description').value = '';
         }
-    </script>
+        
+        function closeReportPopup() {
+            document.getElementById('reportPopup').style.display = 'none';
+            document.getElementById('reportForm').reset();
+        }
+        
+        // بستن پاپاپ با کلیک خارج از آن
+        document.getElementById('reportPopup').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeReportPopup();
+            }
+        });
+        
+        // فعال کردن اسکرول فقط در container اصلی
+        // const container = document.getElementById('mainContainer');
+        // container.addEventListener('touchmove', function(e) {
+        //     e.stopPropagation();
+        // }, { passive: true });
+        
+        // جلوگیری از اسکرول در body
+        // document.body.addEventListener('touchmove', function(e) {
+        //     if (e.target === document.body) {
+        //         e.preventDefault();
+        //     }
+        // }, { passive: false });
+        
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+            document.body.style.overscrollBehavior = 'none';
+        }
+
+        if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+        navigator.serviceWorker.register('../sw.js');
+    });
+}
+
+// مدیریت آفلاین
+window.addEventListener('online', function() {
+    document.getElementById('offlineAlert').style.display = 'none';
+});
+
+window.addEventListener('offline', function() {
+    document.getElementById('offlineAlert').style.display = 'block';
+});
+
+if (!navigator.onLine) {
+    document.getElementById('offlineAlert').style.display = 'block';
+}
+        </script>
 </body>
 </html>
