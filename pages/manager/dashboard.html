@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#2c3e50">
-    <title>TMP</title>
+    <title>TMP  </title>
     <link rel="icon" href="icons/icon-192x192.png">
     <link rel="apple-touch-icon" href="icons/icon-192x192.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -1026,1353 +1026,1421 @@
     <!-- اسکریپت Supabase و Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // حذف alert اصلی و جایگزینی با کاستوم
-        delete window.alert;
-        
-        window.alert = function(message) {
-            return new Promise((resolve) => {
-                const overlay = document.createElement('div');
-                overlay.style.cssText = `
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    background: rgba(0,0,0,0.5);
-                    z-index: 10000;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    padding: 20px;
-                `;
-                
-                const dialog = document.createElement('div');
-                dialog.style.cssText = `
-                    background: white;
-                    padding: 25px;
-                    border-radius: 12px;
-                    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-                    text-align: center;
-                    min-width: 300px;
-                    max-width: 90%;
-                    font-family: Vazirmatn, sans-serif;
-                    border: 2px solid #2c3e50;
-                `;
-                
-                dialog.innerHTML = `
-                    <div style="margin-bottom: 20px; font-size: 16px; color: #2c3e50; line-height: 1.5;">${message}</div>
-                    <button onclick="closeCustomAlert()" 
-                            style="padding: 10px 25px; background: #2c3e50; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
-                        تأیید
-                    </button>
-                `;
-                
-                overlay.appendChild(dialog);
-                document.body.appendChild(overlay);
-                
-                window.closeCustomAlert = function() {
-                    document.body.removeChild(overlay);
-                    resolve();
-                };
-            });
-        };
+       // ==================== CUSTOM ALERT SYSTEM ====================
+delete window.alert;
 
-        // ==================== تنظیمات اولیه ====================
-        const SUPABASE_URL = 'https://kalykylvjqigqlaprlca.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImthbHlreWx2anFpZ3FsYXBybGNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM1NjI1OTcsImV4cCI6MjA3OTEzODU5N30.S8YtogVrxkqYjkgfkGpy4_mS6mqaNxmsHjxnhyBPwEY';
+window.alert = function(message) {
+    return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        `;
         
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const dialog = document.createElement('div');
+        dialog.style.cssText = `
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            text-align: center;
+            min-width: 300px;
+            max-width: 90%;
+            font-family: Vazirmatn, sans-serif;
+            border: 2px solid #2c3e50;
+        `;
         
-        let dailyChart = null;
-        let monthlyChart = null;
-        let partsChart = null;
-        let trendChart = null;
-        let allData = [];
-        let machines = [];
+        dialog.innerHTML = `
+            <div style="margin-bottom: 20px; font-size: 16px; color: #2c3e50; line-height: 1.5;">${message}</div>
+            <button onclick="closeCustomAlert()" 
+                    style="padding: 10px 25px; background: #2c3e50; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                تأیید
+            </button>
+        `;
         
-        // ==================== توابع تبدیل تاریخ ====================
-        function gregorianToJalali(gy, gm, gd) {
-            let g_d_m = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
-            let jy = (gy <= 1600) ? 0 : 979;
-            gy -= (gy <= 1600) ? 621 : 1600;
-            let gy2 = (gm > 2) ? (gy + 1) : gy;
-            let days = (365 * gy) + parseInt((gy2 + 3) / 4) - parseInt((gy2 + 99) / 100) + parseInt((gy2 + 399) / 400) - 80 + gd + g_d_m[gm - 1];
-            jy += 33 * parseInt(days / 12053);
-            days %= 12053;
-            jy += 4 * parseInt(days / 1461);
-            days %= 1461;
-            jy += parseInt((days - 1) / 365);
-            if (days > 365) days = (days - 1) % 365;
-            let jm = (days < 186) ? 1 + parseInt(days / 31) : 7 + parseInt((days - 186) / 30);
-            let jd = 1 + ((days < 186) ? (days % 31) : ((days - 186) % 30));
-            return [jy, jm, jd];
-        }
+        overlay.appendChild(dialog);
+        document.body.appendChild(overlay);
         
-        function formatJalaliDate(dateArray) {
-            const [year, month, day] = dateArray;
-            return `${year}/${month.toString().padStart(2, '0')}/${day.toString().padStart(2, '0')}`;
-        }
-        
-        function getJalaliFromISO(isoDate) {
-            try {
-                const date = new Date(isoDate);
-                if (isNaN(date.getTime())) {
-                    return '1403/01/01';
-                }
-                const [jy, jm, jd] = gregorianToJalali(
-                    date.getFullYear(),
-                    date.getMonth() + 1,
-                    date.getDate()
-                );
-                return formatJalaliDate([jy, jm, jd]);
-            } catch (error) {
-                console.error('خطا در تبدیل تاریخ:', error);
+        window.closeCustomAlert = function() {
+            if (document.body.contains(overlay)) {
+                document.body.removeChild(overlay);
+            }
+            resolve();
+        };
+    });
+};
+
+// ==================== اصلی کد ====================
+document.addEventListener('DOMContentLoaded', function() {
+    // ==================== تنظیمات اولیه ====================
+    const SUPABASE_URL = 'https://kalykylvjqigqlaprlca.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImthbHlreWx2anFpZ3FsYXBybGNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM1NjI1OTcsImV4cCI6MjA3OTEzODU5N30.S8YtogVrxkqYjkgfkGpy4_mS6mqaNxmsHjxnhyBPwEY';
+    
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    let dailyChart = null;
+    let monthlyChart = null;
+    let partsChart = null;
+    let trendChart = null;
+    let allData = [];
+    let machines = [];
+    
+    // ==================== توابع تبدیل تاریخ ====================
+    function gregorianToJalali(gy, gm, gd) {
+        let g_d_m = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
+        let jy = (gy <= 1600) ? 0 : 979;
+        gy -= (gy <= 1600) ? 621 : 1600;
+        let gy2 = (gm > 2) ? (gy + 1) : gy;
+        let days = (365 * gy) + parseInt((gy2 + 3) / 4) - parseInt((gy2 + 99) / 100) + parseInt((gy2 + 399) / 400) - 80 + gd + g_d_m[gm - 1];
+        jy += 33 * parseInt(days / 12053);
+        days %= 12053;
+        jy += 4 * parseInt(days / 1461);
+        days %= 1461;
+        jy += parseInt((days - 1) / 365);
+        if (days > 365) days = (days - 1) % 365;
+        let jm = (days < 186) ? 1 + parseInt(days / 31) : 7 + parseInt((days - 186) / 30);
+        let jd = 1 + ((days < 186) ? (days % 31) : ((days - 186) % 30));
+        return [jy, jm, jd];
+    }
+    
+    function formatJalaliDate(dateArray) {
+        const [year, month, day] = dateArray;
+        return `${year}/${month.toString().padStart(2, '0')}/${day.toString().padStart(2, '0')}`;
+    }
+    
+    function getJalaliFromISO(isoDate) {
+        try {
+            const date = new Date(isoDate);
+            if (isNaN(date.getTime())) {
                 return '1403/01/01';
             }
+            const [jy, jm, jd] = gregorianToJalali(
+                date.getFullYear(),
+                date.getMonth() + 1,
+                date.getDate()
+            );
+            return formatJalaliDate([jy, jm, jd]);
+        } catch (error) {
+            console.error('خطا در تبدیل تاریخ:', error);
+            return '1403/01/01';
         }
-        
-        function getMonthName(monthNumber) {
-            const monthNames = [
-                'فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور',
-                'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'
-            ];
-            return monthNames[monthNumber - 1] || monthNumber;
-        }
-        
-        // ==================== توابع استخراج قطعات ====================
-        function extractPartsFromText(text, consumableQuantity = 0) {
-    // شرط اصلی: اگر طول actions_taken کمتر از 1 و تعداد قطعات مصرفی 0 باشد، خالی برگردان
-    if ((!text || text.toString().trim().length < 1) && (parseInt(consumableQuantity) || 0) === 0) {
-        return [];
     }
     
-    // اگر تعداد قطعات مشخص است اما توضیح ندارد
-    if ((!text || text.toString().trim().length < 1) && (parseInt(consumableQuantity) || 0) > 0) {
-        return ['قطعات مصرفی'];
+    function getMonthName(monthNumber) {
+        const monthNames = [
+            'فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور',
+            'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'
+        ];
+        return monthNames[monthNumber - 1] || monthNumber;
     }
     
-    const actionWords = ['تعویض', 'تعمیر', 'سرویس', 'روغن‌کاری', 'بازسازی', 'تنظیم', 'تعمیرات', 'تعویض شد', 'تعویض کرد', 'عوض کرد'];
-    const reasonWords = ['به دلیل', 'به علت', 'به خاطر', 'چون', 'زیرا', 'بدلیل', 'بعلت'];
-    const connectorWords = ['و', 'با', 'در', 'برای', 'از', 'به'];
-    
-    let cleanText = text.toString();
-    
-    actionWords.forEach(word => {
-        const regex = new RegExp(word, 'gi');
-        cleanText = cleanText.replace(regex, '|');
-    });
-    
-    reasonWords.forEach(word => {
-        const regex = new RegExp(word + '\\s+', 'gi');
-        cleanText = cleanText.replace(regex, '|');
-    });
-    
-    connectorWords.forEach(word => {
-        const regex = new RegExp('\\s+' + word + '\\s+', 'gi');
-        cleanText = cleanText.replace(regex, '|');
-    });
-    
-    const parts = cleanText.split('|')
-        .map(part => part.trim())
-        .filter(part => part.length > 2)
-        .filter(part => !/^\d+$/.test(part))
-        .filter(part => part.length < 50);
-    
-    // اگر هیچ قطعه‌ای پیدا نشد اما توضیح وجود دارد
-    if (parts.length === 0 && text.toString().trim().length > 0) {
-        return [text.toString().trim().substring(0, 40)];
-    }
-    
-    return parts;
-}
-        
-        // ==================== توابع تحلیل داده ====================
-        async function loadData() {
-            try {
-                // نمایش نوبار
-                document.getElementById('loader').style.display = 'block';
-                document.getElementById('statsGrid').style.display = 'none';
-                document.getElementById('chartsTabsContainer').style.display = 'none';
-                document.getElementById('machinesContainer').style.display = 'none';
-                document.getElementById('monthsContainer').style.display = 'none';
-                
-                const timeRange = parseInt(document.getElementById('timeRangeSelect').value) || 30;
-                const daysAgo = new Date();
-                daysAgo.setDate(daysAgo.getDate() - timeRange);
-                
-                // تغییر: دریافت consumable_quantity هم
-                const { data, error } = await supabase
-                    .from('managerreports')
-                    .select('*, consumable_quantity')
-                    .gte('created_at', daysAgo.toISOString())
-                    .order('created_at', { ascending: false });
-                
-                if (error) throw error;
-                
-                allData = data || [];
-                
-                document.getElementById('lastUpdateTime').textContent = formatPersianDateTime(new Date());
-                
-                machines = [...new Set(allData.map(item => item.machine_name).filter(name => name))];
-                
-                updateMachineSelect();
-                updateMachinesGrid();
-                updateStats();
-                updateAllCharts();
-                
-                // مخفی کردن نوبار
-                document.getElementById('loader').style.display = 'none';
-                document.getElementById('statsGrid').style.display = 'grid';
-                document.getElementById('chartsTabsContainer').style.display = 'block';
-                
-            } catch (error) {
-                console.error('خطا در بارگذاری داده‌ها:', error);
-                document.getElementById('loader').style.display = 'none';
-                alert('خطا در دریافت داده‌ها از سرور. لطفاً اتصال اینترنت را بررسی کنید.');
-            }
+    // ==================== توابع استخراج قطعات ====================
+    function extractPartsFromText(text, consumableQuantity = 0) {
+        // شرط اصلی: اگر طول actions_taken کمتر از 1 و تعداد قطعات مصرفی 0 باشد، خالی برگردان
+        if ((!text || text.toString().trim().length < 1) && (parseInt(consumableQuantity) || 0) === 0) {
+            return [];
         }
         
-        function updateMachineSelect() {
-            const select = document.getElementById('machineSelect');
-            select.innerHTML = '<option value="all">همه دستگاه‌ها</option>';
-            
-            machines.forEach(machine => {
-                const option = document.createElement('option');
-                option.value = machine;
-                option.textContent = machine;
-                select.appendChild(option);
-            });
+        // اگر تعداد قطعات مشخص است اما توضیح ندارد
+        if ((!text || text.toString().trim().length < 1) && (parseInt(consumableQuantity) || 0) > 0) {
+            return ['قطعات مصرفی'];
         }
         
-        function updateMachinesGrid() {
-    const grid = document.getElementById('machinesGrid');
-    grid.innerHTML = '';
-    
-    machines.forEach(machine => {
-        const machineData = allData.filter(item => item.machine_name === machine);
-        const failures = machineData.length;
+        const actionWords = ['تعویض', 'تعمیر', 'سرویس', 'روغن‌کاری', 'بازسازی', 'تنظیم', 'تعمیرات', 'تعویض شد', 'تعویض کرد', 'عوض کرد'];
+        const reasonWords = ['به دلیل', 'به علت', 'به خاطر', 'چون', 'زیرا', 'بدلیل', 'بعلت'];
+        const connectorWords = ['و', 'با', 'در', 'برای', 'از', 'به'];
         
-        if (failures === 0) return;
+        let cleanText = text.toString();
         
-        // محاسبه کل قطعات مصرفی این دستگاه
-        const totalParts = machineData.reduce((sum, item) => {
-            return sum + (parseInt(item.consumable_quantity) || 0);
-        }, 0);
-        
-        // محاسبه میانگین قطعات مصرفی
-        const avgPartsPerFailure = (totalParts / failures).toFixed(1);
-        
-        // پیدا کردن قطعه پرمصرف با در نظر گرفتن تعداد
-        const partCounts = {};
-        machineData.forEach(item => {
-            const parts = extractPartsFromText(item.actions_taken, item.consumable_quantity);
-            const quantity = parseInt(item.consumable_quantity) || 1;
-            parts.forEach(part => {
-                if (part) {
-                    partCounts[part] = (partCounts[part] || 0) + quantity;
-                }
-            });
+        actionWords.forEach(word => {
+            const regex = new RegExp(word, 'gi');
+            cleanText = cleanText.replace(regex, '|');
         });
         
-        const frequentPart = Object.entries(partCounts)
-            .sort((a, b) => b[1] - a[1])[0];
-        
-        const card = document.createElement('div');
-        card.className = 'machine-card';
-        card.dataset.machine = machine;
-        
-        card.innerHTML = `
-            <div class="machine-header">
-                <div class="machine-icon-small">
-                    <i class="fas fa-cog"></i>
-                </div>
-                <div class="machine-name">${machine}</div>
-            </div>
-            <div class="machine-stats">
-                <div class="stat-item">
-                    <span>خرابی‌ها:</span>
-                    <span>${failures}</span>
-                </div>
-                <div class="stat-item">
-                    <span>قطعات مصرفی:</span>
-                    <span>${totalParts} عدد</span>
-                </div>
-                <div class="stat-item">
-                    <span>میانگین مصرف:</span>
-                    <span>${avgPartsPerFailure} عدد/خرابی</span>
-                </div>
-                <div class="stat-item">
-                    <span>قطعه پرمصرف:</span>
-                    <span>${frequentPart ? frequentPart[0].substring(0, 12) + (frequentPart[0].length > 12 ? '...' : '') : '--'}</span>
-                </div>
-            </div>
-        `;
-        
-        card.addEventListener('click', () => {
-            document.querySelectorAll('.machine-card').forEach(c => c.classList.remove('active'));
-            card.classList.add('active');
-            document.getElementById('machineSelect').value = machine;
-            updateStats();
-            updateAllCharts();
+        reasonWords.forEach(word => {
+            const regex = new RegExp(word + '\\s+', 'gi');
+            cleanText = cleanText.replace(regex, '|');
         });
         
-        grid.appendChild(card);
-    });
-    
-    document.getElementById('machinesContainer').style.display = 'block';
-}
+        connectorWords.forEach(word => {
+            const regex = new RegExp('\\s+' + word + '\\s+', 'gi');
+            cleanText = cleanText.replace(regex, '|');
+        });
         
-function updateStats() {
-    const selectedMachine = document.getElementById('machineSelect').value;
-    const filteredData = selectedMachine === 'all' 
-        ? allData 
-        : allData.filter(item => item.machine_name === selectedMachine);
+        const parts = cleanText.split('|')
+            .map(part => part.trim())
+            .filter(part => part.length > 2)
+            .filter(part => !/^\d+$/.test(part))
+            .filter(part => part.length < 50);
+        
+        // اگر هیچ قطعه‌ای پیدا نشد اما توضیح وجود دارد
+        if (parts.length === 0 && text.toString().trim().length > 0) {
+            return [text.toString().trim().substring(0, 40)];
+        }
+        
+        return parts;
+    }
     
-    // تحلیل دقیق قطعات با تعداد
-    const partAnalysis = {
-        totalParts: 0,
-        partDetails: {}, // { نام قطعه: تعداد کل }
-        uniqueParts: new Set(),
-        partsByReport: []
-    };
-    
-    filteredData.forEach(item => {
-        const parts = extractPartsWithIndividualCounts(item.actions_taken, item.consumable_quantity);
-        const reportParts = {
-            date: item.created_at,
-            totalQuantity: parseInt(item.consumable_quantity) || 0,
-            parts: parts
+    // تابع جدید برای استخراج قطعات با تعداد
+    function extractPartsWithIndividualCounts(text, consumableQuantity = 0) {
+        if ((!text || text.toString().trim().length < 1) && (parseInt(consumableQuantity) || 0) === 0) {
+            return [];
+        }
+        
+        // لیست کلمات اعداد فارسی و انگلیسی
+        const numberWords = {
+            'یک': 1, 'دو': 2, 'سه': 3, 'چهار': 4, 'پنج': 5,
+            'شش': 6, 'هفت': 7, 'هشت': 8, 'نه': 9, 'ده': 10,
+            'یازده': 11, 'دوازده': 12, 'سیزده': 13, 'چهارده': 14, 'پانزده': 15,
+            'شانزده': 16, 'هفده': 17, 'هجده': 18, 'نوزده': 19, 'بیست': 20
         };
         
-        parts.forEach(part => {
-            partAnalysis.totalParts += part.quantity;
-            partAnalysis.uniqueParts.add(part.name);
+        let cleanText = text.toString();
+        const extractedParts = [];
+        
+        // الگوهای مختلف برای تشخیص تعداد
+        const patterns = [
+            // الگو: "2 عدد فیلتر"
+            /(\d+)\s*(عدد|تا|قطعه)?\s*([آ-یa-zA-Z0-9\s]+)/gi,
             
-            if (!partAnalysis.partDetails[part.name]) {
-                partAnalysis.partDetails[part.name] = 0;
+            // الگو: "دو فیلتر"
+            /(یک|دو|سه|چهار|پنج|شش|هفت|هشت|نه|ده|یازده|دوازده|سیزده|چهارده|پانزده|شانزده|هفده|هجده|نوزده|بیست)\s+([آ-یa-zA-Z0-9\s]+)/gi,
+            
+            // الگو: "فیلتر 3 عدد"
+            /([آ-یa-zA-Z0-9\s]+)\s+(\d+)\s*(عدد|تا|قطعه)/gi,
+        ];
+        
+        // تلاش برای استخراج با الگوها
+        let hasExplicitCount = false;
+        
+        patterns.forEach((pattern, index) => {
+            let match;
+            while ((match = pattern.exec(cleanText)) !== null) {
+                let partName, quantity;
+                
+                if (index === 0 || index === 2) {
+                    // الگوهای عددی
+                    quantity = parseInt(match[1]) || 1;
+                    partName = index === 0 ? match[3] : match[1];
+                } else {
+                    // الگوی کلمه عددی
+                    quantity = numberWords[match[1]] || 1;
+                    partName = match[2];
+                }
+                
+                partName = partName.trim();
+                if (partName.length > 1 && !/\d/.test(partName)) {
+                    extractedParts.push({ name: partName, quantity: quantity });
+                    hasExplicitCount = true;
+                    
+                    // حذف قسمت پیدا شده از متن برای جلوگیری از تکرار
+                    cleanText = cleanText.replace(match[0], '');
+                }
             }
-            partAnalysis.partDetails[part.name] += part.quantity;
         });
         
-        partAnalysis.partsByReport.push(reportParts);
-    });
-    
-    // پیدا کردن قطعات برتر
-    const sortedParts = Object.entries(partAnalysis.partDetails)
-        .sort((a, b) => b[1] - a[1]);
-    
-    const mostUsedPart = sortedParts[0];
-    const topThreeParts = sortedParts.slice(0, 3);
-    
-    // محاسبه میانگین‌ها
-    const uniqueDays = [...new Set(filteredData.map(item => getJalaliFromISO(item.created_at)))];
-    const avgPartsPerDay = uniqueDays.length > 0 
-        ? (partAnalysis.totalParts / uniqueDays.length).toFixed(1)
-        : 0;
-    
-    // آپدیت آمار
-    const elements = {
-        totalFailures: document.querySelector('#statsGrid .stat-card:nth-child(1) .stat-number'),
-        uniqueParts: document.querySelector('#statsGrid .stat-card:nth-child(2) .stat-number'),
-        avgPartsPerDay: document.querySelector('#statsGrid .stat-card:nth-child(3) .stat-number'),
-        topPart: document.querySelector('#statsGrid .stat-card:nth-child(4) .stat-number')
-    };
-    
-    elements.totalFailures.textContent = filteredData.length;
-    elements.uniqueParts.textContent = `${partAnalysis.uniqueParts.size} نوع`;
-    elements.avgPartsPerDay.textContent = `${avgPartsPerDay} عدد/روز`;
-    
-    // نمایش ۳ قطعه برتر به صورت مختصر
-    if (topThreeParts.length > 0) {
-        const topThreeText = topThreeParts.map(([name, count], index) => 
-            `${index + 1}. ${name.substring(0, 8)}... (${count})`
-        ).join('<br>');
-        
-        elements.topPart.innerHTML = topThreeText;
-    } else {
-        elements.topPart.textContent = '-';
-    }
-    
-    // نمایش جدول جزئیات قطعات
-    // تابع جدید برای نمایش جدول جزئیات
-function updatePartsDetailsTable(partDetails, totalParts) {
-    // حذف جدول قبلی اگر وجود دارد
-    const existingTable = document.getElementById('partsDetailsTable');
-    if (existingTable) {
-        existingTable.remove();
-    }
-    
-    // اگر داده‌ای وجود ندارد
-    if (Object.keys(partDetails).length === 0) {
-        return;
-    }
-    
-    // مرتب‌سازی قطعات بر اساس تعداد
-    const sortedParts = Object.entries(partDetails)
-        .sort((a, b) => b[1] - a[1]);
-    
-    // ایجاد جدول جدید
-    const tableContainer = document.createElement('div');
-    tableContainer.id = 'partsDetailsTable';
-    tableContainer.className = 'card';
-    tableContainer.style.marginTop = '20px';
-    tableContainer.innerHTML = `
-        <h3 class="section-title">
-            <i class="fas fa-list-ol"></i>
-            جزئیات قطعات مصرفی
-        </h3>
-        <div style="overflow-x: auto;">
-            <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
-                <thead>
-                    <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
-                        <th style="padding: 12px; text-align: right; width: 40%;">نام قطعه</th>
-                        <th style="padding: 12px; text-align: center; width: 20%;">تعداد مصرف</th>
-                        <th style="padding: 12px; text-align: center; width: 20%;">درصد از کل</th>
-                        <th style="padding: 12px; text-align: center; width: 20%;">میانگین/روز</th>
-                    </tr>
-                </thead>
-                <tbody id="partsTableBody">
-                    ${sortedParts.map(([partName, count], index) => {
-                        const percentage = ((count / totalParts) * 100).toFixed(1);
-                        const avgPerDay = (count / 30).toFixed(1); // فرض: 30 روز
-                        const rowColor = index < 3 ? 'background: rgba(255, 193, 7, 0.1);' : '';
-                        
-                        return `
-                            <tr style="${rowColor} border-bottom: 1px solid #eee;">
-                                <td style="padding: 10px 12px; text-align: right;">
-                                    ${partName}
-                                    ${index < 3 ? '<span style="color: #ff9800; margin-right: 5px;">🏆</span>' : ''}
-                                </td>
-                                <td style="padding: 10px 12px; text-align: center; font-weight: bold;">
-                                    ${count} عدد
-                                </td>
-                                <td style="padding: 10px 12px; text-align: center;">
-                                    <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
-                                        <span>${percentage}%</span>
-                                        <div style="width: 60px; height: 6px; background: #e0e0e0; border-radius: 3px;">
-                                            <div style="width: ${percentage}%; height: 100%; background: #3498db; border-radius: 3px;"></div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td style="padding: 10px 12px; text-align: center;">
-                                    ${avgPerDay}
-                                </td>
-                            </tr>
-                        `;
-                    }).join('')}
-                </tbody>
-                <tfoot>
-                    <tr style="background: #2c3e50; color: white; font-weight: bold;">
-                        <td style="padding: 12px; text-align: right;">مجموع</td>
-                        <td style="padding: 12px; text-align: center;">${totalParts} عدد</td>
-                        <td style="padding: 12px; text-align: center;">100%</td>
-                        <td style="padding: 12px; text-align: center;">${(totalParts / 30).toFixed(1)}</td>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
-    `;
-    
-    // قرار دادن جدول بعد از آمارها
-    document.getElementById('statsGrid').parentNode.insertBefore(
-        tableContainer, 
-        document.getElementById('chartsTabsContainer')
-    );
-}
-}
-        
-        function updateAllCharts() {
-            const selectedMachine = document.getElementById('machineSelect').value;
-            const filteredData = selectedMachine === 'all' 
-                ? allData 
-                : allData.filter(item => item.machine_name === selectedMachine);
+        // اگر تعداد صریحی پیدا نشد، از متد قدیمی استفاده کن
+        if (!hasExplicitCount && cleanText.trim().length > 0) {
+            const simpleParts = extractPartsFromText(cleanText, consumableQuantity);
             
-            // گروه‌بندی داده‌ها با در نظر گرفتن تعداد قطعات
-            const dailyData = {};
-            const monthlyData = {};
-            
-            filteredData.forEach(item => {
-                const jalaliDate = getJalaliFromISO(item.created_at);
-                const [year, month, day] = jalaliDate.split('/').map(Number);
+            if (simpleParts.length > 0) {
+                // توزیع تعداد کل بین قطعات پیدا شده
+                const totalQuantity = parseInt(consumableQuantity) || 1;
+                const quantityPerPart = Math.max(1, Math.floor(totalQuantity / simpleParts.length));
                 
-                const dayKey = jalaliDate;
-                const monthKey = `${year}/${month.toString().padStart(2, '0')}`;
-                
-                // تعداد قطعات مصرفی این گزارش
-                const partQuantity = parseInt(item.consumable_quantity) || 0;
-                
-                // روزانه - هم تعداد خرابی و هم تعداد قطعات
-                if (!dailyData[dayKey]) {
-                    dailyData[dayKey] = {
-                        failureCount: 0,
-                        partsCount: 0,
-                        parts: []
-                    };
-                }
-                dailyData[dayKey].failureCount++;
-                dailyData[dayKey].partsCount += partQuantity;
-                dailyData[dayKey].parts.push(...extractPartsFromText(item.actions_taken, item.consumable_quantity));
-                
-                // ماهانه
-                if (!monthlyData[monthKey]) {
-                    monthlyData[monthKey] = {
-                        failureCount: 0,
-                        partsCount: 0,
-                        days: {},
-                        monthName: getMonthName(month),
-                        year: year
-                    };
-                }
-                monthlyData[monthKey].failureCount++;
-                monthlyData[monthKey].partsCount += partQuantity;
-                
-                if (!monthlyData[monthKey].days[dayKey]) {
-                    monthlyData[monthKey].days[dayKey] = {
-                        failures: 0,
-                        parts: 0
-                    };
-                }
-                monthlyData[monthKey].days[dayKey].failures++;
-                monthlyData[monthKey].days[dayKey].parts += partQuantity;
-            });
-            
-            // ایجاد همه نمودارها
-            createDailyChart(dailyData, selectedMachine);
-            createMonthlyChart(monthlyData, selectedMachine);
-            createPartsChart(filteredData);
-            createTrendChart(dailyData, selectedMachine);
-            updateMonthlyStats(monthlyData);
-        }
-        
-        function createDailyChart(dailyData, selectedMachine) {
-    if (dailyChart) {
-        dailyChart.destroy();
-    }
-    
-    const sortedDays = Object.keys(dailyData).sort();
-    let displayDays = sortedDays;
-    if (sortedDays.length > 30) {
-        displayDays = sortedDays.slice(-30);
-    }
-    
-    // داده‌های جدید: تعداد خرابی‌ها و تعداد قطعات
-    const dailyFailures = displayDays.map(day => dailyData[day].failureCount);
-    const dailyParts = displayDays.map(day => dailyData[day].partsCount);
-    
-    const ctx = document.getElementById('dailyChart').getContext('2d');
-    dailyChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: displayDays.map(day => {
-                const [y, m, d] = day.split('/');
-                return `${d}/${m}`;
-            }),
-            datasets: [
-                {
-                    label: 'تعداد خرابی‌ها',
-                    data: dailyFailures,
-                    backgroundColor: 'rgba(52, 152, 219, 0.7)',
-                    borderColor: 'rgba(52, 152, 219, 1)',
-                    borderWidth: 1,
-                    borderRadius: 4,
-                    borderSkipped: false,
-                },
-                {
-                    label: 'تعداد قطعات مصرفی',
-                    data: dailyParts,
-                    backgroundColor: 'rgba(231, 76, 60, 0.7)',
-                    borderColor: 'rgba(231, 76, 60, 1)',
-                    borderWidth: 1,
-                    borderRadius: 4,
-                    borderSkipped: false,
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                title: {
-                    display: true,
-                    text: `گزارش روزانه - ${selectedMachine === 'all' ? 'همه دستگاه‌ها' : selectedMachine}`,
-                    font: {
-                        size: window.innerWidth <= 768 ? 14 : 16,
-                        family: 'Vazirmatn',
-                        weight: 'bold'
-                    },
-                    padding: {
-                        bottom: 20
+                simpleParts.forEach(part => {
+                    if (part.trim().length > 1) {
+                        extractedParts.push({ 
+                            name: part.trim(), 
+                            quantity: quantityPerPart 
+                        });
                     }
-                },
-                legend: {
-                    rtl: true,
-                    labels: {
-                        font: {
-                            family: 'Vazirmatn',
-                            size: window.innerWidth <= 768 ? 10 : 11
-                        }
-                    }
-                },
-                tooltip: {
-                    rtl: true,
-                    titleFont: {
-                        family: 'Vazirmatn',
-                        size: window.innerWidth <= 768 ? 11 : 12
-                    },
-                    bodyFont: {
-                        family: 'Vazirmatn',
-                        size: window.innerWidth <= 768 ? 11 : 12
-                    },
-                    callbacks: {
-                        label: function(context) {
-                            const dayIndex = context.dataIndex;
-                            const day = displayDays[dayIndex];
-                            const isParts = context.datasetIndex === 1;
-                            
-                            if (isParts) {
-                                const count = dailyData[day].partsCount;
-                                return `تعداد قطعات: ${count} عدد`;
-                            } else {
-                                const count = dailyData[day].failureCount;
-                                return `تعداد خرابی: ${count}`;
-                            }
-                        }
-                    }
-                }
-            },
-            scales: {
-                x: {
-                    stacked: true,
-                    title: {
-                        display: true,
-                        text: 'روز / ماه',
-                        font: {
-                            family: 'Vazirmatn',
-                            size: window.innerWidth <= 768 ? 11 : 12,
-                            weight: 'bold'
-                        }
-                    },
-                    ticks: {
-                        font: {
-                            family: 'Vazirmatn',
-                            size: window.innerWidth <= 768 ? 10 : 11
-                        },
-                        maxRotation: window.innerWidth <= 768 ? 90 : 45,
-                        minRotation: window.innerWidth <= 768 ? 90 : 45
-                    },
-                    grid: {
-                        display: false
-                    }
-                },
-                y: {
-                    beginAtZero: true,
-                    stacked: true,
-                    title: {
-                        display: true,
-                        text: 'تعداد',
-                        font: {
-                            family: 'Vazirmatn',
-                            size: window.innerWidth <= 768 ? 11 : 12,
-                            weight: 'bold'
-                        }
-                    },
-                    ticks: {
-                        font: {
-                            family: 'Vazirmatn',
-                            size: window.innerWidth <= 768 ? 10 : 11
-                        },
-                        precision: 0,
-                        stepSize: 1
-                    },
-                    grid: {
-                        color: 'rgba(0, 0, 0, 0.05)'
-                    }
-                }
-            },
-            animation: {
-                duration: 1000,
-                easing: 'easeOutQuart'
+                });
+            } else if (parseInt(consumableQuantity) > 0) {
+                // اگر قطعه مشخص نیست اما تعداد دارد
+                extractedParts.push({ 
+                    name: 'قطعات مصرفی', 
+                    quantity: parseInt(consumableQuantity) 
+                });
             }
         }
-    });
-}
         
-        function createMonthlyChart(monthlyData, selectedMachine) {
-            if (monthlyChart) {
-                monthlyChart.destroy();
-            }
-            
-            const sortedMonths = Object.keys(monthlyData).sort();
-            const monthlyCounts = sortedMonths.map(month => monthlyData[month].count);
-            const monthLabels = sortedMonths.map(month => {
-                const [y, m] = month.split('/');
-                return `${getMonthName(parseInt(m))} ${y}`;
-            });
-            
-            const ctx = document.getElementById('monthlyChart').getContext('2d');
-            
-            // ایجاد گرادیان
-            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-            gradient.addColorStop(0, 'rgba(52, 152, 219, 0.8)');
-            gradient.addColorStop(1, 'rgba(52, 152, 219, 0.1)');
-            
-            monthlyChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: monthLabels,
-                    datasets: [{
-                        label: 'تعداد خرابی‌ها',
-                        data: monthlyCounts,
-                        backgroundColor: gradient,
-                        borderColor: 'rgba(52, 152, 219, 1)',
-                        borderWidth: 2,
-                        borderRadius: 6,
-                        borderSkipped: false,
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: `گزارش ماهانه خرابی‌ها - ${selectedMachine === 'all' ? 'همه دستگاه‌ها' : selectedMachine}`,
-                            font: {
-                                size: window.innerWidth <= 768 ? 14 : 16,
-                                family: 'Vazirmatn',
-                                weight: 'bold'
-                            },
-                            padding: {
-                                bottom: 20
-                            }
-                        },
-                        legend: {
-                            display: false,
-                        },
-                        tooltip: {
-                            rtl: true,
-                            titleFont: {
-                                family: 'Vazirmatn',
-                                size: window.innerWidth <= 768 ? 11 : 12
-                            },
-                            bodyFont: {
-                                family: 'Vazirmatn',
-                                size: window.innerWidth <= 768 ? 11 : 12
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'ماه',
-                                font: {
-                                    family: 'Vazirmatn',
-                                    size: window.innerWidth <= 768 ? 11 : 12,
-                                    weight: 'bold'
-                                }
-                            },
-                            ticks: {
-                                font: {
-                                    family: 'Vazirmatn',
-                                    size: window.innerWidth <= 768 ? 10 : 11
-                                }
-                            },
-                            grid: {
-                                display: false
-                            }
-                        },
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'تعداد خرابی',
-                                font: {
-                                    family: 'Vazirmatn',
-                                    size: window.innerWidth <= 768 ? 11 : 12,
-                                    weight: 'bold'
-                                }
-                            },
-                            ticks: {
-                                font: {
-                                    family: 'Vazirmatn',
-                                    size: window.innerWidth <= 768 ? 10 : 11
-                                },
-                                precision: 0
-                            },
-                            grid: {
-                                color: 'rgba(0, 0, 0, 0.05)'
-                            }
-                        }
-                    },
-                    animation: {
-                        duration: 1000,
-                        easing: 'easeOutQuart'
-                    }
-                }
-            });
-        }
-        
-        function createPartsChart(filteredData) {
-    if (partsChart) {
-        partsChart.destroy();
+        return extractedParts;
     }
     
-    // تحلیل دقیق قطعات با تعداد
-    const partDetails = {};
-    filteredData.forEach(item => {
-        const parts = extractPartsWithIndividualCounts(item.actions_taken, item.consumable_quantity);
-        parts.forEach(part => {
-            if (!partDetails[part.name]) {
-                partDetails[part.name] = 0;
-            }
-            partDetails[part.name] += part.quantity;
+    // ==================== توابع تحلیل داده ====================
+    async function loadData() {
+        try {
+            // نمایش نوبار
+            const loader = document.getElementById('loader');
+            const statsGrid = document.getElementById('statsGrid');
+            const chartsTabsContainer = document.getElementById('chartsTabsContainer');
+            const machinesContainer = document.getElementById('machinesContainer');
+            const monthsContainer = document.getElementById('monthsContainer');
+            
+            if (loader) loader.style.display = 'block';
+            if (statsGrid) statsGrid.style.display = 'none';
+            if (chartsTabsContainer) chartsTabsContainer.style.display = 'none';
+            if (machinesContainer) machinesContainer.style.display = 'none';
+            if (monthsContainer) monthsContainer.style.display = 'none';
+            
+            const timeRangeSelect = document.getElementById('timeRangeSelect');
+            const timeRange = parseInt(timeRangeSelect ? timeRangeSelect.value : 30) || 30;
+            const daysAgo = new Date();
+            daysAgo.setDate(daysAgo.getDate() - timeRange);
+            
+            // تغییر: دریافت consumable_quantity هم
+            const { data, error } = await supabase
+                .from('managerreports')
+                .select('*, consumable_quantity')
+                .gte('created_at', daysAgo.toISOString())
+                .order('created_at', { ascending: false });
+            
+            if (error) throw error;
+            
+            allData = data || [];
+            
+            const lastUpdateTime = document.getElementById('lastUpdateTime');
+            if (lastUpdateTime) lastUpdateTime.textContent = formatPersianDateTime(new Date());
+            
+            machines = [...new Set(allData.map(item => item.machine_name).filter(name => name))];
+            
+            updateMachineSelect();
+            updateMachinesGrid();
+            updateStats();
+            updateAllCharts();
+            
+            // مخفی کردن نوبار
+            if (loader) loader.style.display = 'none';
+            if (statsGrid) statsGrid.style.display = 'grid';
+            if (chartsTabsContainer) chartsTabsContainer.style.display = 'block';
+            
+        } catch (error) {
+            console.error('خطا در بارگذاری داده‌ها:', error);
+            const loader = document.getElementById('loader');
+            if (loader) loader.style.display = 'none';
+            alert('خطا در دریافت داده‌ها از سرور. لطفاً اتصال اینترنت را بررسی کنید.');
+        }
+    }
+    
+    function updateMachineSelect() {
+        const select = document.getElementById('machineSelect');
+        if (!select) return;
+        
+        select.innerHTML = '<option value="all">همه دستگاه‌ها</option>';
+        
+        machines.forEach(machine => {
+            const option = document.createElement('option');
+            option.value = machine;
+            option.textContent = machine;
+            select.appendChild(option);
         });
-    });
-    
-    const sortedParts = Object.entries(partDetails)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 10); // ۱۰ قطعه برتر
-    
-    // اگر داده‌ای وجود ندارد
-    if (sortedParts.length === 0) {
-        const ctx = document.getElementById('partsChart').getContext('2d');
-        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-        
-        ctx.fillStyle = '#95a5a6';
-        ctx.font = '16px Vazirmatn';
-        ctx.textAlign = 'center';
-        ctx.fillText('داده‌ای برای نمایش وجود ندارد', ctx.canvas.width / 2, ctx.canvas.height / 2);
-        return;
     }
     
-    // نمودار دایره‌ای برای نمایش سهم هر قطعه
-    const ctx = document.getElementById('partsChart').getContext('2d');
-    
-    const colors = [
-        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
-        '#FF9F40', '#8AC926', '#1982C4', '#FF6B6B', '#06D6A0'
-    ];
-    
-    partsChart = new Chart(ctx, {
-        type: 'pie',
-        data: {
-            labels: sortedParts.map(p => {
-                const label = p[0];
-                const count = p[1];
-                return `${label} (${count})`;
-            }),
-            datasets: [{
-                data: sortedParts.map(p => p[1]),
-                backgroundColor: colors,
-                borderColor: 'white',
-                borderWidth: 2,
-                hoverOffset: 15
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'سهم هر قطعه از کل مصرف',
-                    font: {
-                        size: window.innerWidth <= 768 ? 14 : 16,
-                        family: 'Vazirmatn',
-                        weight: 'bold'
-                    },
-                    padding: {
-                        bottom: 20
-                    }
-                },
-                legend: {
-                    position: 'left',
-                    rtl: true,
-                    labels: {
-                        font: {
-                            family: 'Vazirmatn',
-                            size: window.innerWidth <= 768 ? 10 : 11
-                        },
-                        padding: 20,
-                        usePointStyle: true
-                    }
-                },
-                tooltip: {
-                    rtl: true,
-                    titleFont: {
-                        family: 'Vazirmatn',
-                        size: window.innerWidth <= 768 ? 11 : 12
-                    },
-                    bodyFont: {
-                        family: 'Vazirmatn',
-                        size: window.innerWidth <= 768 ? 11 : 12
-                    },
-                    callbacks: {
-                        label: function(context) {
-                            const label = context.label || '';
-                            const value = context.raw || 0;
-                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                            const percentage = Math.round((value / total) * 100);
-                            return `${label.split(' (')[0]}: ${value} عدد (${percentage}%)`;
-                        }
-                    }
-                }
-            }
-        }
-    });
-}
+    function updateMachinesGrid() {
+        const grid = document.getElementById('machinesGrid');
+        if (!grid) return;
         
-        function createTrendChart(dailyData, selectedMachine) {
-            if (trendChart) {
-                trendChart.destroy();
-            }
+        grid.innerHTML = '';
+        
+        machines.forEach(machine => {
+            const machineData = allData.filter(item => item.machine_name === machine);
+            const failures = machineData.length;
             
-            const sortedDays = Object.keys(dailyData).sort();
-            let displayDays = sortedDays;
-            if (sortedDays.length > 30) {
-                displayDays = sortedDays.slice(-30);
-            }
+            if (failures === 0) return;
             
-            const dailyParts = displayDays.map(day => dailyData[day].partsCount);
+            // محاسبه کل قطعات مصرفی این دستگاه
+            const totalParts = machineData.reduce((sum, item) => {
+                return sum + (parseInt(item.consumable_quantity) || 0);
+            }, 0);
             
-            // محاسبه میانگین متحرک برای قطعات
-            const movingAverageParts = [];
-            for (let i = 0; i < dailyParts.length; i++) {
-                const start = Math.max(0, i - 2);
-                const end = i + 1;
-                const slice = dailyParts.slice(start, end);
-                const avg = slice.reduce((a, b) => a + b, 0) / slice.length;
-                movingAverageParts.push(avg.toFixed(1));
-            }
+            // محاسبه میانگین قطعات مصرفی
+            const avgPartsPerFailure = (totalParts / failures).toFixed(1);
             
-            const ctx = document.getElementById('trendChart').getContext('2d');
-            
-            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-            gradient.addColorStop(0, 'rgba(46, 204, 113, 0.8)');
-            gradient.addColorStop(1, 'rgba(46, 204, 113, 0.1)');
-            
-            trendChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: displayDays.map(day => {
-                        const [y, m, d] = day.split('/');
-                        return `${d}/${m}`;
-                    }),
-                    datasets: [
-                        {
-                            label: 'قطعات مصرفی روزانه',
-                            data: dailyParts,
-                            borderColor: '#27ae60',
-                            backgroundColor: gradient,
-                            borderWidth: 3,
-                            fill: true,
-                            tension: 0.4,
-                            pointBackgroundColor: '#27ae60',
-                            pointBorderColor: '#fff',
-                            pointBorderWidth: 2,
-                            pointRadius: window.innerWidth <= 768 ? 4 : 5,
-                            pointHoverRadius: window.innerWidth <= 768 ? 6 : 7
-                        },
-                        {
-                            label: 'میانگین متحرک قطعات (۳ روزه)',
-                            data: movingAverageParts,
-                            borderColor: '#3498db',
-                            borderWidth: 2,
-                            borderDash: [5, 5],
-                            fill: false,
-                            tension: 0.4,
-                            pointBackgroundColor: '#3498db',
-                            pointBorderColor: '#fff',
-                            pointBorderWidth: 2,
-                            pointRadius: window.innerWidth <= 768 ? 3 : 4,
-                            pointHoverRadius: window.innerWidth <= 768 ? 5 : 6
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: `روند مصرف قطعات - ${selectedMachine === 'all' ? 'همه دستگاه‌ها' : selectedMachine}`,
-                            font: {
-                                size: window.innerWidth <= 768 ? 14 : 16,
-                                family: 'Vazirmatn',
-                                weight: 'bold'
-                            },
-                            padding: {
-                                bottom: 20
-                            }
-                        },
-                        legend: {
-                            rtl: true,
-                            labels: {
-                                font: {
-                                    family: 'Vazirmatn',
-                                    size: window.innerWidth <= 768 ? 10 : 11
-                                }
-                            }
-                        },
-                        tooltip: {
-                            rtl: true,
-                            titleFont: {
-                                family: 'Vazirmatn',
-                                size: window.innerWidth <= 768 ? 11 : 12
-                            },
-                            bodyFont: {
-                                family: 'Vazirmatn',
-                                size: window.innerWidth <= 768 ? 11 : 12
-                            },
-                            mode: 'index',
-                            intersect: false,
-                            callbacks: {
-                                label: function(context) {
-                                    const value = context.raw;
-                                    const datasetLabel = context.dataset.label;
-                                    return `${datasetLabel}: ${value} عدد`;
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'روز / ماه',
-                                font: {
-                                    family: 'Vazirmatn',
-                                    size: window.innerWidth <= 768 ? 11 : 12,
-                                    weight: 'bold'
-                                }
-                            },
-                            ticks: {
-                                font: {
-                                    family: 'Vazirmatn',
-                                    size: window.innerWidth <= 768 ? 10 : 11
-                                },
-                                maxRotation: window.innerWidth <= 768 ? 90 : 45,
-                                minRotation: window.innerWidth <= 768 ? 90 : 45
-                            },
-                            grid: {
-                                color: 'rgba(0, 0, 0, 0.05)'
-                            }
-                        },
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'تعداد قطعات مصرفی',
-                                font: {
-                                    family: 'Vazirmatn',
-                                    size: window.innerWidth <= 768 ? 11 : 12,
-                                    weight: 'bold'
-                                }
-                            },
-                            ticks: {
-                                font: {
-                                    family: 'Vazirmatn',
-                                    size: window.innerWidth <= 768 ? 10 : 11
-                                },
-                                precision: 0
-                            },
-                            grid: {
-                                color: 'rgba(0, 0, 0, 0.05)'
-                            }
-                        }
-                    },
-                    animation: {
-                        duration: 2000,
-                        easing: 'easeOutQuart'
+            // پیدا کردن قطعه پرمصرف با در نظر گرفتن تعداد
+            const partCounts = {};
+            machineData.forEach(item => {
+                const parts = extractPartsFromText(item.actions_taken, item.consumable_quantity);
+                const quantity = parseInt(item.consumable_quantity) || 1;
+                parts.forEach(part => {
+                    if (part) {
+                        partCounts[part] = (partCounts[part] || 0) + quantity;
                     }
-                }
+                });
             });
-        }
-        
-        function updateMonthlyStats(monthlyData) {
-    const sortedMonths = Object.keys(monthlyData).sort().reverse();
-    
-    if (sortedMonths.length === 0) {
-        document.getElementById('monthsContainer').style.display = 'none';
-        return;
-    }
-    
-    const monthsGrid = document.getElementById('monthsGrid');
-    monthsGrid.innerHTML = '';
-    
-    sortedMonths.slice(0, 6).forEach(monthKey => {
-        const monthData = monthlyData[monthKey];
-        const avgFailuresPerDay = (monthData.failureCount / Object.keys(monthData.days).length).toFixed(1);
-        const avgPartsPerDay = (monthData.partsCount / Object.keys(monthData.days).length).toFixed(1);
-        const maxPartsPerDay = Math.max(...Object.values(monthData.days).map(day => day.parts));
-        
-        let cardClass = 'month-card';
-        if (monthData.partsCount > 100) {
-            cardClass += ' level-3';
-        } else if (monthData.partsCount > 50) {
-            cardClass += ' level-2';
-        } else if (monthData.partsCount > 10) {
-            cardClass += ' level-1';
-        } else {
-            cardClass += ' level-0';
-        }
-        
-        const monthCard = document.createElement('div');
-        monthCard.className = cardClass;
-        monthCard.innerHTML = `
-            <div class="month-header">
-                <div class="month-name">${monthData.monthName} ${monthData.year}</div>
-                <div class="month-count">
-                    ${monthData.partsCount} قطعه
-                    <div style="font-size: 12px; opacity: 0.8;">
-                        در ${monthData.failureCount} گزارش
+            
+            const frequentPart = Object.entries(partCounts)
+                .sort((a, b) => b[1] - a[1])[0];
+            
+            const card = document.createElement('div');
+            card.className = 'machine-card';
+            card.dataset.machine = machine;
+            
+            card.innerHTML = `
+                <div class="machine-header">
+                    <div class="machine-icon-small">
+                        <i class="fas fa-cog"></i>
+                    </div>
+                    <div class="machine-name">${machine}</div>
+                </div>
+                <div class="machine-stats">
+                    <div class="stat-item">
+                        <span>خرابی‌ها:</span>
+                        <span>${failures}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>قطعات مصرفی:</span>
+                        <span>${totalParts} عدد</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>میانگین مصرف:</span>
+                        <span>${avgPartsPerFailure} عدد/خرابی</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>قطعه پرمصرف:</span>
+                        <span>${frequentPart ? frequentPart[0].substring(0, 12) + (frequentPart[0].length > 12 ? '...' : '') : '--'}</span>
                     </div>
                 </div>
-            </div>
-            <div class="month-details">
-                <div class="detail-item">
-                    <span>روزهای مصرف:</span>
-                    <span>${Object.keys(monthData.days).length} روز</span>
-                </div>
-                <div class="detail-item">
-                    <span>میانگین قطعات/روز:</span>
-                    <span>${avgPartsPerDay}</span>
-                </div>
-                <div class="detail-item">
-                    <span>میانگین خرابی/روز:</span>
-                    <span>${avgFailuresPerDay}</span>
-                </div>
-                <div class="detail-item">
-                    <span>بیشترین در روز:</span>
-                    <span>${maxPartsPerDay} قطعه</span>
-                </div>
+            `;
+            
+            card.addEventListener('click', () => {
+                document.querySelectorAll('.machine-card').forEach(c => c.classList.remove('active'));
+                card.classList.add('active');
+                const machineSelect = document.getElementById('machineSelect');
+                if (machineSelect) machineSelect.value = machine;
+                updateStats();
+                updateAllCharts();
+            });
+            
+            grid.appendChild(card);
+        });
+        
+        const machinesContainer = document.getElementById('machinesContainer');
+        if (machinesContainer) machinesContainer.style.display = 'block';
+    }
+    
+    function updateStats() {
+        const machineSelect = document.getElementById('machineSelect');
+        const selectedMachine = machineSelect ? machineSelect.value : 'all';
+        const filteredData = selectedMachine === 'all' 
+            ? allData 
+            : allData.filter(item => item.machine_name === selectedMachine);
+        
+        // تحلیل دقیق قطعات با تعداد
+        const partAnalysis = {
+            totalParts: 0,
+            partDetails: {}, // { نام قطعه: تعداد کل }
+            uniqueParts: new Set(),
+            partsByReport: []
+        };
+        
+        filteredData.forEach(item => {
+            const parts = extractPartsWithIndividualCounts(item.actions_taken, item.consumable_quantity);
+            const reportParts = {
+                date: item.created_at,
+                totalQuantity: parseInt(item.consumable_quantity) || 0,
+                parts: parts
+            };
+            
+            parts.forEach(part => {
+                partAnalysis.totalParts += part.quantity;
+                partAnalysis.uniqueParts.add(part.name);
+                
+                if (!partAnalysis.partDetails[part.name]) {
+                    partAnalysis.partDetails[part.name] = 0;
+                }
+                partAnalysis.partDetails[part.name] += part.quantity;
+            });
+            
+            partAnalysis.partsByReport.push(reportParts);
+        });
+        
+        // پیدا کردن قطعات برتر
+        const sortedParts = Object.entries(partAnalysis.partDetails)
+            .sort((a, b) => b[1] - a[1]);
+        
+        const mostUsedPart = sortedParts[0];
+        const topThreeParts = sortedParts.slice(0, 3);
+        
+        // محاسبه میانگین‌ها
+        const uniqueDays = [...new Set(filteredData.map(item => getJalaliFromISO(item.created_at)))];
+        const avgPartsPerDay = uniqueDays.length > 0 
+            ? (partAnalysis.totalParts / uniqueDays.length).toFixed(1)
+            : 0;
+        
+        // آپدیت آمار
+        const elements = {
+            totalFailures: document.querySelector('#statsGrid .stat-card:nth-child(1) .stat-number'),
+            uniqueParts: document.querySelector('#statsGrid .stat-card:nth-child(2) .stat-number'),
+            avgPartsPerDay: document.querySelector('#statsGrid .stat-card:nth-child(3) .stat-number'),
+            topPart: document.querySelector('#statsGrid .stat-card:nth-child(4) .stat-number')
+        };
+        
+        if (elements.totalFailures) elements.totalFailures.textContent = filteredData.length;
+        if (elements.uniqueParts) elements.uniqueParts.textContent = `${partAnalysis.uniqueParts.size} نوع`;
+        if (elements.avgPartsPerDay) elements.avgPartsPerDay.textContent = `${avgPartsPerDay} عدد/روز`;
+        
+        // نمایش ۳ قطعه برتر به صورت مختصر
+        if (topThreeParts.length > 0 && elements.topPart) {
+            const topThreeText = topThreeParts.map(([name, count], index) => 
+                `${index + 1}. ${name.substring(0, 8)}... (${count})`
+            ).join('<br>');
+            
+            elements.topPart.innerHTML = topThreeText;
+        } else if (elements.topPart) {
+            elements.topPart.textContent = '-';
+        }
+        
+        // نمایش جدول جزئیات قطعات
+        updatePartsDetailsTable(partAnalysis.partDetails, partAnalysis.totalParts);
+    }
+    
+    // تابع جدید برای نمایش جدول جزئیات
+    function updatePartsDetailsTable(partDetails, totalParts) {
+        // حذف جدول قبلی اگر وجود دارد
+        const existingTable = document.getElementById('partsDetailsTable');
+        if (existingTable) {
+            existingTable.remove();
+        }
+        
+        // اگر داده‌ای وجود ندارد
+        if (Object.keys(partDetails).length === 0) {
+            return;
+        }
+        
+        // مرتب‌سازی قطعات بر اساس تعداد
+        const sortedParts = Object.entries(partDetails)
+            .sort((a, b) => b[1] - a[1]);
+        
+        // ایجاد جدول جدید
+        const tableContainer = document.createElement('div');
+        tableContainer.id = 'partsDetailsTable';
+        tableContainer.className = 'card';
+        tableContainer.style.marginTop = '20px';
+        tableContainer.innerHTML = `
+            <h3 class="section-title">
+                <i class="fas fa-list-ol"></i>
+                جزئیات قطعات مصرفی
+            </h3>
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                    <thead>
+                        <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+                            <th style="padding: 12px; text-align: right; width: 40%;">نام قطعه</th>
+                            <th style="padding: 12px; text-align: center; width: 20%;">تعداد مصرف</th>
+                            <th style="padding: 12px; text-align: center; width: 20%;">درصد از کل</th>
+                            <th style="padding: 12px; text-align: center; width: 20%;">میانگین/روز</th>
+                        </tr>
+                    </thead>
+                    <tbody id="partsTableBody">
+                        ${sortedParts.map(([partName, count], index) => {
+                            const percentage = ((count / totalParts) * 100).toFixed(1);
+                            const avgPerDay = (count / 30).toFixed(1); // فرض: 30 روز
+                            const rowColor = index < 3 ? 'background: rgba(255, 193, 7, 0.1);' : '';
+                            
+                            return `
+                                <tr style="${rowColor} border-bottom: 1px solid #eee;">
+                                    <td style="padding: 10px 12px; text-align: right;">
+                                        ${partName}
+                                        ${index < 3 ? '<span style="color: #ff9800; margin-right: 5px;">🏆</span>' : ''}
+                                    </td>
+                                    <td style="padding: 10px 12px; text-align: center; font-weight: bold;">
+                                        ${count} عدد
+                                    </td>
+                                    <td style="padding: 10px 12px; text-align: center;">
+                                        <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                            <span>${percentage}%</span>
+                                            <div style="width: 60px; height: 6px; background: #e0e0e0; border-radius: 3px;">
+                                                <div style="width: ${percentage}%; height: 100%; background: #3498db; border-radius: 3px;"></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td style="padding: 10px 12px; text-align: center;">
+                                        ${avgPerDay}
+                                    </td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                    <tfoot>
+                        <tr style="background: #2c3e50; color: white; font-weight: bold;">
+                            <td style="padding: 12px; text-align: right;">مجموع</td>
+                            <td style="padding: 12px; text-align: center;">${totalParts} عدد</td>
+                            <td style="padding: 12px; text-align: center;">100%</td>
+                            <td style="padding: 12px; text-align: center;">${(totalParts / 30).toFixed(1)}</td>
+                        </tr>
+                    </tfoot>
+                </table>
             </div>
         `;
         
-        monthsGrid.appendChild(monthCard);
-    });
-    
-    document.getElementById('monthsContainer').style.display = 'block';
-}
+        // قرار دادن جدول بعد از آمارها
+        const statsGrid = document.getElementById('statsGrid');
+        const chartsTabsContainer = document.getElementById('chartsTabsContainer');
         
-        // ==================== توابع کمکی ====================
-        function formatPersianDateTime(date) {
-            try {
-                const options = {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
+        if (statsGrid && chartsTabsContainer) {
+            statsGrid.parentNode.insertBefore(
+                tableContainer, 
+                chartsTabsContainer
+            );
+        }
+    }
+    
+    function updateAllCharts() {
+        const machineSelect = document.getElementById('machineSelect');
+        const selectedMachine = machineSelect ? machineSelect.value : 'all';
+        const filteredData = selectedMachine === 'all' 
+            ? allData 
+            : allData.filter(item => item.machine_name === selectedMachine);
+        
+        // گروه‌بندی داده‌ها با در نظر گرفتن تعداد قطعات
+        const dailyData = {};
+        const monthlyData = {};
+        
+        filteredData.forEach(item => {
+            const jalaliDate = getJalaliFromISO(item.created_at);
+            const [year, month, day] = jalaliDate.split('/').map(Number);
+            
+            const dayKey = jalaliDate;
+            const monthKey = `${year}/${month.toString().padStart(2, '0')}`;
+            
+            // تعداد قطعات مصرفی این گزارش
+            const partQuantity = parseInt(item.consumable_quantity) || 0;
+            
+            // روزانه - هم تعداد خرابی و هم تعداد قطعات
+            if (!dailyData[dayKey]) {
+                dailyData[dayKey] = {
+                    failureCount: 0,
+                    partsCount: 0,
+                    parts: []
                 };
-                return new Intl.DateTimeFormat('fa-IR', options).format(date);
-            } catch (error) {
-                return date.toLocaleString('fa-IR');
             }
-        }
-        
-        // ==================== رویدادها ====================
-        document.addEventListener('DOMContentLoaded', function() {
-            const now = new Date();
-            document.getElementById('loginTime').textContent = formatPersianDateTime(now);
-            document.getElementById('lastUpdateTime').textContent = formatPersianDateTime(now);
+            dailyData[dayKey].failureCount++;
+            dailyData[dayKey].partsCount += partQuantity;
+            dailyData[dayKey].parts.push(...extractPartsFromText(item.actions_taken, item.consumable_quantity));
             
-            loadData();
-            
-            document.getElementById('machineSelect').addEventListener('change', function() {
-                updateStats();
-                updateAllCharts();
-                
-                document.querySelectorAll('.machine-card').forEach(card => {
-                    card.classList.toggle('active', card.dataset.machine === this.value);
-                });
-            });
-            
-            document.getElementById('timeRangeSelect').addEventListener('change', loadData);
-            
-            document.getElementById('refreshBtn').addEventListener('click', loadData);
-            
-            window.addEventListener('online', () => {
-                document.getElementById('offlineAlert').style.display = 'none';
-                loadData();
-            });
-            
-            window.addEventListener('offline', () => {
-                document.getElementById('offlineAlert').style.display = 'block';
-            });
-            
-            if (!navigator.onLine) {
-                document.getElementById('offlineAlert').style.display = 'block';
+            // ماهانه
+            if (!monthlyData[monthKey]) {
+                monthlyData[monthKey] = {
+                    failureCount: 0,
+                    partsCount: 0,
+                    days: {},
+                    monthName: getMonthName(month),
+                    year: year
+                };
             }
+            monthlyData[monthKey].failureCount++;
+            monthlyData[monthKey].partsCount += partQuantity;
             
-            setInterval(() => {
-                if (navigator.onLine) {
-                    loadData();
-                }
-            }, 300000);
-            
-            // مدیریت تب‌های نمودار
-            document.querySelectorAll('.chart-tab').forEach(tab => {
-                tab.addEventListener('click', function() {
-                    const chartType = this.dataset.chart;
-                    
-                    document.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
-                    this.classList.add('active');
-                    
-                    document.querySelectorAll('.chart-wrapper').forEach(wrapper => {
-                        wrapper.style.display = 'none';
-                    });
-                    
-                    document.getElementById(`${chartType}ChartContainer`).style.display = 'block';
-                });
-            });
-            
-            // جلوگیری از double-tap zoom در iOS
-            let lastTouchEnd = 0;
-            document.addEventListener('touchend', function(event) {
-                const now = Date.now();
-                if (now - lastTouchEnd <= 300) {
-                    event.preventDefault();
-                }
-                lastTouchEnd = now;
-            }, false);
+            if (!monthlyData[monthKey].days[dayKey]) {
+                monthlyData[monthKey].days[dayKey] = {
+                    failures: 0,
+                    parts: 0
+                };
+            }
+            monthlyData[monthKey].days[dayKey].failures++;
+            monthlyData[monthKey].days[dayKey].parts += partQuantity;
         });
-        // تابع جدید برای نمایش جدول جزئیات
-// تابع جدید برای استخراج قطعات با تعداد
-function extractPartsWithIndividualCounts(text, consumableQuantity = 0) {
-    if ((!text || text.toString().trim().length < 1) && (parseInt(consumableQuantity) || 0) === 0) {
-        return [];
+        
+        // ایجاد همه نمودارها
+        createDailyChart(dailyData, selectedMachine);
+        createMonthlyChart(monthlyData, selectedMachine);
+        createPartsChart(filteredData);
+        createTrendChart(dailyData, selectedMachine);
+        updateMonthlyStats(monthlyData);
     }
     
-    // لیست کلمات اعداد فارسی و انگلیسی
-    const numberWords = {
-        'یک': 1, 'دو': 2, 'سه': 3, 'چهار': 4, 'پنج': 5,
-        'شش': 6, 'هفت': 7, 'هشت': 8, 'نه': 9, 'ده': 10,
-        'یازده': 11, 'دوازده': 12, 'سیزده': 13, 'چهارده': 14, 'پانزده': 15,
-        'شانزده': 16, 'هفده': 17, 'هجده': 18, 'نوزده': 19, 'بیست': 20
-    };
-    
-    let cleanText = text.toString();
-    const extractedParts = [];
-    
-    // الگوهای مختلف برای تشخیص تعداد
-    const patterns = [
-        // الگو: "2 عدد فیلتر"
-        /(\d+)\s*(عدد|تا|قطعه)?\s*([آ-یa-zA-Z0-9\s]+)/gi,
-        
-        // الگو: "دو فیلتر"
-        /(یک|دو|سه|چهار|پنج|شش|هفت|هشت|نه|ده|یازده|دوازده|سیزده|چهارده|پانزده|شانزده|هفده|هجده|نوزده|بیست)\s+([آ-یa-zA-Z0-9\s]+)/gi,
-        
-        // الگو: "فیلتر 3 عدد"
-        /([آ-یa-zA-Z0-9\s]+)\s+(\d+)\s*(عدد|تا|قطعه)/gi,
-    ];
-    
-    // تلاش برای استخراج با الگوها
-    let hasExplicitCount = false;
-    
-    patterns.forEach((pattern, index) => {
-        let match;
-        while ((match = pattern.exec(cleanText)) !== null) {
-            let partName, quantity;
-            
-            if (index === 0 || index === 2) {
-                // الگوهای عددی
-                quantity = parseInt(match[1]) || 1;
-                partName = index === 0 ? match[3] : match[1];
-            } else {
-                // الگوی کلمه عددی
-                quantity = numberWords[match[1]] || 1;
-                partName = match[2];
-            }
-            
-            partName = partName.trim();
-            if (partName.length > 1 && !/\d/.test(partName)) {
-                extractedParts.push({ name: partName, quantity: quantity });
-                hasExplicitCount = true;
-                
-                // حذف قسمت پیدا شده از متن برای جلوگیری از تکرار
-                cleanText = cleanText.replace(match[0], '');
-            }
+    function createDailyChart(dailyData, selectedMachine) {
+        if (dailyChart) {
+            dailyChart.destroy();
         }
+        
+        const sortedDays = Object.keys(dailyData).sort();
+        let displayDays = sortedDays;
+        if (sortedDays.length > 30) {
+            displayDays = sortedDays.slice(-30);
+        }
+        
+        // داده‌های جدید: تعداد خرابی‌ها و تعداد قطعات
+        const dailyFailures = displayDays.map(day => dailyData[day].failureCount);
+        const dailyParts = displayDays.map(day => dailyData[day].partsCount);
+        
+        const ctx = document.getElementById('dailyChart')?.getContext('2d');
+        if (!ctx) return;
+        
+        dailyChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: displayDays.map(day => {
+                    const [y, m, d] = day.split('/');
+                    return `${d}/${m}`;
+                }),
+                datasets: [
+                    {
+                        label: 'تعداد خرابی‌ها',
+                        data: dailyFailures,
+                        backgroundColor: 'rgba(52, 152, 219, 0.7)',
+                        borderColor: 'rgba(52, 152, 219, 1)',
+                        borderWidth: 1,
+                        borderRadius: 4,
+                        borderSkipped: false,
+                    },
+                    {
+                        label: 'تعداد قطعات مصرفی',
+                        data: dailyParts,
+                        backgroundColor: 'rgba(231, 76, 60, 0.7)',
+                        borderColor: 'rgba(231, 76, 60, 1)',
+                        borderWidth: 1,
+                        borderRadius: 4,
+                        borderSkipped: false,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: `گزارش روزانه - ${selectedMachine === 'all' ? 'همه دستگاه‌ها' : selectedMachine}`,
+                        font: {
+                            size: window.innerWidth <= 768 ? 14 : 16,
+                            family: 'Vazirmatn',
+                            weight: 'bold'
+                        },
+                        padding: {
+                            bottom: 20
+                        }
+                    },
+                    legend: {
+                        rtl: true,
+                        labels: {
+                            font: {
+                                family: 'Vazirmatn',
+                                size: window.innerWidth <= 768 ? 10 : 11
+                            }
+                        }
+                    },
+                    tooltip: {
+                        rtl: true,
+                        titleFont: {
+                            family: 'Vazirmatn',
+                            size: window.innerWidth <= 768 ? 11 : 12
+                        },
+                        bodyFont: {
+                            family: 'Vazirmatn',
+                            size: window.innerWidth <= 768 ? 11 : 12
+                        },
+                        callbacks: {
+                            label: function(context) {
+                                const dayIndex = context.dataIndex;
+                                const day = displayDays[dayIndex];
+                                const isParts = context.datasetIndex === 1;
+                                
+                                if (isParts) {
+                                    const count = dailyData[day].partsCount;
+                                    return `تعداد قطعات: ${count} عدد`;
+                                } else {
+                                    const count = dailyData[day].failureCount;
+                                    return `تعداد خرابی: ${count}`;
+                                }
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        stacked: true,
+                        title: {
+                            display: true,
+                            text: 'روز / ماه',
+                            font: {
+                                family: 'Vazirmatn',
+                                size: window.innerWidth <= 768 ? 11 : 12,
+                                weight: 'bold'
+                            }
+                        },
+                        ticks: {
+                            font: {
+                                family: 'Vazirmatn',
+                                size: window.innerWidth <= 768 ? 10 : 11
+                            },
+                            maxRotation: window.innerWidth <= 768 ? 90 : 45,
+                            minRotation: window.innerWidth <= 768 ? 90 : 45
+                        },
+                        grid: {
+                            display: false
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        stacked: true,
+                        title: {
+                            display: true,
+                            text: 'تعداد',
+                            font: {
+                                family: 'Vazirmatn',
+                                size: window.innerWidth <= 768 ? 11 : 12,
+                                weight: 'bold'
+                            }
+                        },
+                        ticks: {
+                            font: {
+                                family: 'Vazirmatn',
+                                size: window.innerWidth <= 768 ? 10 : 11
+                            },
+                            precision: 0,
+                            stepSize: 1
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    }
+                },
+                animation: {
+                    duration: 1000,
+                    easing: 'easeOutQuart'
+                }
+            }
+        });
+    }
+    
+    function createMonthlyChart(monthlyData, selectedMachine) {
+        if (monthlyChart) {
+            monthlyChart.destroy();
+        }
+        
+        const sortedMonths = Object.keys(monthlyData).sort();
+        const monthlyCounts = sortedMonths.map(month => monthlyData[month].count);
+        const monthLabels = sortedMonths.map(month => {
+            const [y, m] = month.split('/');
+            return `${getMonthName(parseInt(m))} ${y}`;
+        });
+        
+        const ctx = document.getElementById('monthlyChart')?.getContext('2d');
+        if (!ctx) return;
+        
+        // ایجاد گرادیان
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(52, 152, 219, 0.8)');
+        gradient.addColorStop(1, 'rgba(52, 152, 219, 0.1)');
+        
+        monthlyChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: monthLabels,
+                datasets: [{
+                    label: 'تعداد خرابی‌ها',
+                    data: monthlyCounts,
+                    backgroundColor: gradient,
+                    borderColor: 'rgba(52, 152, 219, 1)',
+                    borderWidth: 2,
+                    borderRadius: 6,
+                    borderSkipped: false,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: `گزارش ماهانه خرابی‌ها - ${selectedMachine === 'all' ? 'همه دستگاه‌ها' : selectedMachine}`,
+                        font: {
+                            size: window.innerWidth <= 768 ? 14 : 16,
+                            family: 'Vazirmatn',
+                            weight: 'bold'
+                        },
+                        padding: {
+                            bottom: 20
+                        }
+                    },
+                    legend: {
+                        display: false,
+                    },
+                    tooltip: {
+                        rtl: true,
+                        titleFont: {
+                            family: 'Vazirmatn',
+                            size: window.innerWidth <= 768 ? 11 : 12
+                        },
+                        bodyFont: {
+                            family: 'Vazirmatn',
+                            size: window.innerWidth <= 768 ? 11 : 12
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'ماه',
+                            font: {
+                                family: 'Vazirmatn',
+                                size: window.innerWidth <= 768 ? 11 : 12,
+                                weight: 'bold'
+                            }
+                        },
+                        ticks: {
+                            font: {
+                                family: 'Vazirmatn',
+                                size: window.innerWidth <= 768 ? 10 : 11
+                            }
+                        },
+                        grid: {
+                            display: false
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'تعداد خرابی',
+                            font: {
+                                family: 'Vazirmatn',
+                                size: window.innerWidth <= 768 ? 11 : 12,
+                                weight: 'bold'
+                            }
+                        },
+                        ticks: {
+                            font: {
+                                family: 'Vazirmatn',
+                                size: window.innerWidth <= 768 ? 10 : 11
+                            },
+                            precision: 0
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    }
+                },
+                animation: {
+                    duration: 1000,
+                    easing: 'easeOutQuart'
+                }
+            }
+        });
+    }
+    
+    function createPartsChart(filteredData) {
+        if (partsChart) {
+            partsChart.destroy();
+        }
+        
+        // تحلیل دقیق قطعات با تعداد
+        const partDetails = {};
+        filteredData.forEach(item => {
+            const parts = extractPartsWithIndividualCounts(item.actions_taken, item.consumable_quantity);
+            parts.forEach(part => {
+                if (!partDetails[part.name]) {
+                    partDetails[part.name] = 0;
+                }
+                partDetails[part.name] += part.quantity;
+            });
+        });
+        
+        const sortedParts = Object.entries(partDetails)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 10); // ۱۰ قطعه برتر
+        
+        const ctx = document.getElementById('partsChart')?.getContext('2d');
+        if (!ctx) return;
+        
+        // اگر داده‌ای وجود ندارد
+        if (sortedParts.length === 0) {
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+            ctx.fillStyle = '#95a5a6';
+            ctx.font = '16px Vazirmatn';
+            ctx.textAlign = 'center';
+            ctx.fillText('داده‌ای برای نمایش وجود ندارد', ctx.canvas.width / 2, ctx.canvas.height / 2);
+            return;
+        }
+        
+        // نمودار دایره‌ای برای نمایش سهم هر قطعه
+        const colors = [
+            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+            '#FF9F40', '#8AC926', '#1982C4', '#FF6B6B', '#06D6A0'
+        ];
+        
+        partsChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: sortedParts.map(p => {
+                    const label = p[0];
+                    const count = p[1];
+                    return `${label} (${count})`;
+                }),
+                datasets: [{
+                    data: sortedParts.map(p => p[1]),
+                    backgroundColor: colors,
+                    borderColor: 'white',
+                    borderWidth: 2,
+                    hoverOffset: 15
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'سهم هر قطعه از کل مصرف',
+                        font: {
+                            size: window.innerWidth <= 768 ? 14 : 16,
+                            family: 'Vazirmatn',
+                            weight: 'bold'
+                        },
+                        padding: {
+                            bottom: 20
+                        }
+                    },
+                    legend: {
+                        position: 'left',
+                        rtl: true,
+                        labels: {
+                            font: {
+                                family: 'Vazirmatn',
+                                size: window.innerWidth <= 768 ? 10 : 11
+                            },
+                            padding: 20,
+                            usePointStyle: true
+                        }
+                    },
+                    tooltip: {
+                        rtl: true,
+                        titleFont: {
+                            family: 'Vazirmatn',
+                            size: window.innerWidth <= 768 ? 11 : 12
+                        },
+                        bodyFont: {
+                            family: 'Vazirmatn',
+                            size: window.innerWidth <= 768 ? 11 : 12
+                        },
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.raw || 0;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = Math.round((value / total) * 100);
+                                return `${label.split(' (')[0]}: ${value} عدد (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    function createTrendChart(dailyData, selectedMachine) {
+        if (trendChart) {
+            trendChart.destroy();
+        }
+        
+        const sortedDays = Object.keys(dailyData).sort();
+        let displayDays = sortedDays;
+        if (sortedDays.length > 30) {
+            displayDays = sortedDays.slice(-30);
+        }
+        
+        const dailyParts = displayDays.map(day => dailyData[day].partsCount);
+        
+        // محاسبه میانگین متحرک برای قطعات
+        const movingAverageParts = [];
+        for (let i = 0; i < dailyParts.length; i++) {
+            const start = Math.max(0, i - 2);
+            const end = i + 1;
+            const slice = dailyParts.slice(start, end);
+            const avg = slice.reduce((a, b) => a + b, 0) / slice.length;
+            movingAverageParts.push(avg.toFixed(1));
+        }
+        
+        const ctx = document.getElementById('trendChart')?.getContext('2d');
+        if (!ctx) return;
+        
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(46, 204, 113, 0.8)');
+        gradient.addColorStop(1, 'rgba(46, 204, 113, 0.1)');
+        
+        trendChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: displayDays.map(day => {
+                    const [y, m, d] = day.split('/');
+                    return `${d}/${m}`;
+                }),
+                datasets: [
+                    {
+                        label: 'قطعات مصرفی روزانه',
+                        data: dailyParts,
+                        borderColor: '#27ae60',
+                        backgroundColor: gradient,
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#27ae60',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: window.innerWidth <= 768 ? 4 : 5,
+                        pointHoverRadius: window.innerWidth <= 768 ? 6 : 7
+                    },
+                    {
+                        label: 'میانگین متحرک قطعات (۳ روزه)',
+                        data: movingAverageParts,
+                        borderColor: '#3498db',
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        fill: false,
+                        tension: 0.4,
+                        pointBackgroundColor: '#3498db',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: window.innerWidth <= 768 ? 3 : 4,
+                        pointHoverRadius: window.innerWidth <= 768 ? 5 : 6
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: `روند مصرف قطعات - ${selectedMachine === 'all' ? 'همه دستگاه‌ها' : selectedMachine}`,
+                        font: {
+                            size: window.innerWidth <= 768 ? 14 : 16,
+                            family: 'Vazirmatn',
+                            weight: 'bold'
+                        },
+                        padding: {
+                            bottom: 20
+                        }
+                    },
+                    legend: {
+                        rtl: true,
+                        labels: {
+                            font: {
+                                family: 'Vazirmatn',
+                                size: window.innerWidth <= 768 ? 10 : 11
+                            }
+                        }
+                    },
+                    tooltip: {
+                        rtl: true,
+                        titleFont: {
+                            family: 'Vazirmatn',
+                            size: window.innerWidth <= 768 ? 11 : 12
+                        },
+                        bodyFont: {
+                            family: 'Vazirmatn',
+                            size: window.innerWidth <= 768 ? 11 : 12
+                        },
+                        mode: 'index',
+                        intersect: false,
+                        callbacks: {
+                            label: function(context) {
+                                const value = context.raw;
+                                const datasetLabel = context.dataset.label;
+                                return `${datasetLabel}: ${value} عدد`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'روز / ماه',
+                            font: {
+                                family: 'Vazirmatn',
+                                size: window.innerWidth <= 768 ? 11 : 12,
+                                weight: 'bold'
+                            }
+                        },
+                        ticks: {
+                            font: {
+                                family: 'Vazirmatn',
+                                size: window.innerWidth <= 768 ? 10 : 11
+                            },
+                            maxRotation: window.innerWidth <= 768 ? 90 : 45,
+                            minRotation: window.innerWidth <= 768 ? 90 : 45
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'تعداد قطعات مصرفی',
+                            font: {
+                                family: 'Vazirmatn',
+                                size: window.innerWidth <= 768 ? 11 : 12,
+                                weight: 'bold'
+                            }
+                        },
+                        ticks: {
+                            font: {
+                                family: 'Vazirmatn',
+                                size: window.innerWidth <= 768 ? 10 : 11
+                            },
+                            precision: 0
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    }
+                },
+                animation: {
+                    duration: 2000,
+                    easing: 'easeOutQuart'
+                }
+            }
+        });
+    }
+    
+    function updateMonthlyStats(monthlyData) {
+        const sortedMonths = Object.keys(monthlyData).sort().reverse();
+        const monthsContainer = document.getElementById('monthsContainer');
+        
+        if (sortedMonths.length === 0) {
+            if (monthsContainer) monthsContainer.style.display = 'none';
+            return;
+        }
+        
+        const monthsGrid = document.getElementById('monthsGrid');
+        if (!monthsGrid) return;
+        
+        monthsGrid.innerHTML = '';
+        
+        sortedMonths.slice(0, 6).forEach(monthKey => {
+            const monthData = monthlyData[monthKey];
+            const avgFailuresPerDay = (monthData.failureCount / Object.keys(monthData.days).length).toFixed(1);
+            const avgPartsPerDay = (monthData.partsCount / Object.keys(monthData.days).length).toFixed(1);
+            const maxPartsPerDay = Math.max(...Object.values(monthData.days).map(day => day.parts));
+            
+            let cardClass = 'month-card';
+            if (monthData.partsCount > 100) {
+                cardClass += ' level-3';
+            } else if (monthData.partsCount > 50) {
+                cardClass += ' level-2';
+            } else if (monthData.partsCount > 10) {
+                cardClass += ' level-1';
+            } else {
+                cardClass += ' level-0';
+            }
+            
+            const monthCard = document.createElement('div');
+            monthCard.className = cardClass;
+            monthCard.innerHTML = `
+                <div class="month-header">
+                    <div class="month-name">${monthData.monthName} ${monthData.year}</div>
+                    <div class="month-count">
+                        ${monthData.partsCount} قطعه
+                        <div style="font-size: 12px; opacity: 0.8;">
+                            در ${monthData.failureCount} گزارش
+                        </div>
+                    </div>
+                </div>
+                <div class="month-details">
+                    <div class="detail-item">
+                        <span>روزهای مصرف:</span>
+                        <span>${Object.keys(monthData.days).length} روز</span>
+                    </div>
+                    <div class="detail-item">
+                        <span>میانگین قطعات/روز:</span>
+                        <span>${avgPartsPerDay}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span>میانگین خرابی/روز:</span>
+                        <span>${avgFailuresPerDay}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span>بیشترین در روز:</span>
+                        <span>${maxPartsPerDay} قطعه</span>
+                    </div>
+                </div>
+            `;
+            
+            monthsGrid.appendChild(monthCard);
+        });
+        
+        if (monthsContainer) monthsContainer.style.display = 'block';
+    }
+    
+    // ==================== توابع کمکی ====================
+    function formatPersianDateTime(date) {
+        try {
+            const options = {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            };
+            return new Intl.DateTimeFormat('fa-IR', options).format(date);
+        } catch (error) {
+            return date.toLocaleString('fa-IR');
+        }
+    }
+    
+    // ==================== مدیریت responsive ====================
+    function handleMobileView() {
+        const chartWrappers = document.querySelectorAll('.chart-wrapper');
+        const isMobile = window.innerWidth <= 768;
+        const isLandscape = window.innerWidth > window.innerHeight;
+        
+        let height;
+        if (isMobile && isLandscape) {
+            height = '250px';
+        } else if (isMobile) {
+            height = '250px';
+        } else {
+            height = '400px';
+        }
+        
+        chartWrappers.forEach(el => {
+            el.style.height = height;
+        });
+        
+        // به‌روزرسانی font-size در نمودارها
+        if (dailyChart) {
+            dailyChart.options.plugins.title.font.size = isMobile ? 14 : 16;
+            dailyChart.update();
+        }
+        
+        if (monthlyChart) {
+            monthlyChart.options.plugins.title.font.size = isMobile ? 14 : 16;
+            monthlyChart.update();
+        }
+        
+        if (partsChart) {
+            partsChart.options.plugins.title.font.size = isMobile ? 14 : 16;
+            partsChart.options.plugins.legend.position = isMobile ? 'top' : 'left';
+            partsChart.update();
+        }
+        
+        if (trendChart) {
+            trendChart.options.plugins.title.font.size = isMobile ? 14 : 16;
+            trendChart.update();
+        }
+    }
+    
+    // ==================== راه‌اندازی اولیه ====================
+    const now = new Date();
+    const loginTime = document.getElementById('loginTime');
+    const lastUpdateTime = document.getElementById('lastUpdateTime');
+    
+    if (loginTime) loginTime.textContent = formatPersianDateTime(now);
+    if (lastUpdateTime) lastUpdateTime.textContent = formatPersianDateTime(now);
+    
+    loadData();
+    
+    const machineSelect = document.getElementById('machineSelect');
+    if (machineSelect) {
+        machineSelect.addEventListener('change', function() {
+            updateStats();
+            updateAllCharts();
+            
+            document.querySelectorAll('.machine-card').forEach(card => {
+                card.classList.toggle('active', card.dataset.machine === this.value);
+            });
+        });
+    }
+    
+    const timeRangeSelect = document.getElementById('timeRangeSelect');
+    if (timeRangeSelect) {
+        timeRangeSelect.addEventListener('change', loadData);
+    }
+    
+    const refreshBtn = document.getElementById('refreshBtn');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', loadData);
+    }
+    
+    window.addEventListener('online', () => {
+        const offlineAlert = document.getElementById('offlineAlert');
+        if (offlineAlert) offlineAlert.style.display = 'none';
+        loadData();
     });
     
-    // اگر تعداد صریحی پیدا نشد، از متد قدیمی استفاده کن
-    if (!hasExplicitCount && cleanText.trim().length > 0) {
-        const simpleParts = extractPartsFromText(cleanText, consumableQuantity);
-        
-        if (simpleParts.length > 0) {
-            // توزیع تعداد کل بین قطعات پیدا شده
-            const totalQuantity = parseInt(consumableQuantity) || 1;
-            const quantityPerPart = Math.max(1, Math.floor(totalQuantity / simpleParts.length));
-            
-            simpleParts.forEach(part => {
-                if (part.trim().length > 1) {
-                    extractedParts.push({ 
-                        name: part.trim(), 
-                        quantity: quantityPerPart 
-                    });
-                }
-            });
-        } else if (parseInt(consumableQuantity) > 0) {
-            // اگر قطعه مشخص نیست اما تعداد دارد
-            extractedParts.push({ 
-                name: 'قطعات مصرفی', 
-                quantity: parseInt(consumableQuantity) 
-            });
-        }
+    window.addEventListener('offline', () => {
+        const offlineAlert = document.getElementById('offlineAlert');
+        if (offlineAlert) offlineAlert.style.display = 'block';
+    });
+    
+    if (!navigator.onLine) {
+        const offlineAlert = document.getElementById('offlineAlert');
+        if (offlineAlert) offlineAlert.style.display = 'block';
     }
     
-    return extractedParts;
-}
-        // تابع برای تنظیم اندازه نمودارها بر اساس viewport
-        function handleMobileView() {
-            const chartWrappers = document.querySelectorAll('.chart-wrapper');
-            const isMobile = window.innerWidth <= 768;
-            const isLandscape = window.innerWidth > window.innerHeight;
+    // مدیریت تب‌های نمودار
+    document.querySelectorAll('.chart-tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+            const chartType = this.dataset.chart;
             
-            let height;
-            if (isMobile && isLandscape) {
-                height = '250px';
-            } else if (isMobile) {
-                height = '250px';
-            } else {
-                height = '400px';
-            }
+            document.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
             
-            chartWrappers.forEach(el => {
-                el.style.height = height;
+            document.querySelectorAll('.chart-wrapper').forEach(wrapper => {
+                wrapper.style.display = 'none';
             });
             
-            // به‌روزرسانی font-size در نمودارها
-            if (dailyChart) {
-                dailyChart.options.plugins.title.font.size = isMobile ? 14 : 16;
-                dailyChart.update();
-            }
-            
-            if (monthlyChart) {
-                monthlyChart.options.plugins.title.font.size = isMobile ? 14 : 16;
-                monthlyChart.update();
-            }
-            
-            if (partsChart) {
-                partsChart.options.plugins.title.font.size = isMobile ? 14 : 16;
-                partsChart.options.plugins.legend.position = isMobile ? 'top' : 'left';
-                partsChart.update();
-            }
-            
-            if (trendChart) {
-                trendChart.options.plugins.title.font.size = isMobile ? 14 : 16;
-                trendChart.update();
-            }
-        }
-        
-        window.addEventListener('resize', handleMobileView);
-        window.addEventListener('orientationchange', function() {
-            setTimeout(handleMobileView, 100);
+            const chartContainer = document.getElementById(`${chartType}ChartContainer`);
+            if (chartContainer) chartContainer.style.display = 'block';
         });
-        
-        handleMobileView();
+    });
+    
+    // جلوگیری از double-tap zoom در iOS
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', function(event) {
+        const now = Date.now();
+        if (now - lastTouchEnd <= 300) {
+            event.preventDefault();
+        }
+        lastTouchEnd = now;
+    }, false);
+    
+    window.addEventListener('resize', handleMobileView);
+    window.addEventListener('orientationchange', function() {
+        setTimeout(handleMobileView, 100);
+    });
+    
+    handleMobileView();
+    
+    // ==================== قرار دادن توابع در scope سراسری ====================
+    
+    window.loadData = loadData;
+    window.updateStats = updateStats;
+    window.updateAllCharts = updateAllCharts;
+    window.updateMachineSelect = updateMachineSelect;
+    window.updateMachinesGrid = updateMachinesGrid;
+    window.formatPersianDateTime = formatPersianDateTime;
+    window.getJalaliFromISO = getJalaliFromISO;
+    window.getMonthName = getMonthName;
+    window.extractPartsFromText = extractPartsFromText;
+    window.extractPartsWithIndividualCounts = extractPartsWithIndividualCounts;
+    window.updateMonthlyStats = updateMonthlyStats;
+    window.handleMobileView = handleMobileView;
+    
+    console.log('✅ تمام توابع در scope سراسری قرار گرفتند');
+});
+
+// Service Worker
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+        navigator.serviceWorker.register('../sw.js');
+    });
+}
     </script>
 </body>
 </html>
