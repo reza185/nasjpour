@@ -934,314 +934,737 @@
     </div>
 
     <!-- اسکریپت‌ها -->
-    <script async>
-       // حذف alert و confirm اصلی
-       delete window.alert;
-        delete window.confirm;
+    <script>// Override default alert and confirm
+      // ==================== ALERT & CONFIRM OVERRIDE ====================
+delete window.alert;
+delete window.confirm;
 
-        // ساخت alert کاستوم با توقف کامل
-        window.alert = function(message) {
-            return new Promise((resolve) => {
-                const overlay = document.createElement('div');
-                overlay.style.cssText = `
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    background: rgba(0,0,0,0.5);
-                    z-index: 10000;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    padding: 20px;
-                `;
-                
-                const dialog = document.createElement('div');
-                dialog.style.cssText = `
-                    background: white;
-                    padding: 25px;
-                    border-radius: 12px;
-                    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-                    text-align: center;
-                    min-width: 300px;
-                    max-width: 90%;
-                    font-family: Vazirmatn, sans-serif;
-                    border: 2px solid #2c3e50;
-                `;
-                
-                dialog.innerHTML = `
-                    <div style="margin-bottom: 20px; font-size: 16px; color: #2c3e50; line-height: 1.5;">${message}</div>
-                    <button onclick="closeCustomAlert()" 
-                            style="padding: 10px 25px; background: #2c3e50; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
-                        تأیید
-                    </button>
-                `;
-                
-                overlay.appendChild(dialog);
-                document.body.appendChild(overlay);
-                
-                window.closeCustomAlert = function() {
-                    document.body.removeChild(overlay);
-                    resolve();
-                };
-            });
-        };
-
-        // ساخت confirm کاستوم با توقف کامل
-        window.confirm = function(message) {
-            return new Promise((resolve) => {
-                const overlay = document.createElement('div');
-                overlay.style.cssText = `
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    background: rgba(0,0,0,0.5);
-                    z-index: 10000;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    padding: 20px;
-                `;
-                
-                const dialog = document.createElement('div');
-                dialog.style.cssText = `
-                    background: white;
-                    padding: 25px;
-                    border-radius: 12px;
-                    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-                    text-align: center;
-                    min-width: 300px;
-                    max-width: 90%;
-                    font-family: Vazirmatn, sans-serif;
-                    border: 2px solid #2c3e50;
-                `;
-                
-                dialog.innerHTML = `
-                    <div style="margin-bottom: 20px; font-size: 16px; color: #2c3e50; line-height: 1.5;">${message}</div>
-                    <div style="display: flex; gap: 10px; justify-content: center;">
-                        <button onclick="closeCustomConfirm(true)" 
-                                style="padding: 10px 25px; background: #2c3e50; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
-                            بله
-                        </button>
-                        <button onclick="closeCustomConfirm(false)" 
-                                style="padding: 10px 25px; background: #6c757d; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
-                            خیر
-                        </button>
-                    </div>
-                `;
-                
-                overlay.appendChild(dialog);
-                document.body.appendChild(overlay);
-                
-                window.closeCustomConfirm = function(result) {
-                    document.body.removeChild(overlay);
-                    resolve(result);
-                };
-            });
-        };
-
-       
-       // ==================== CONFIGURATION ====================
-        const SUPABASE_URL = 'https://kalykylvjqigqlaprlca.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImthbHlreWx2anFpZ3FsYXBybGNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM1NjI1OTcsImV4cCI6MjA3OTEzODU5N30.S8YtogVrxkqYjkgfkGpy4_mS6mqaNxmsHjxnhyBPwEY';
+// ساخت alert کاستوم با توقف کامل
+window.alert = function(message) {
+    return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        `;
         
-        // ایجاد کلاینت Supabase
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const dialog = document.createElement('div');
+        dialog.style.cssText = `
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            text-align: center;
+            min-width: 300px;
+            max-width: 90%;
+            font-family: Vazirmatn, sans-serif;
+            border: 2px solid #2c3e50;
+        `;
         
-        console.log('Supabase initialized');
+        dialog.innerHTML = `
+            <div style="margin-bottom: 20px; font-size: 16px; color: #2c3e50; line-height: 1.5;">${message}</div>
+            <button onclick="closeCustomAlert()" 
+                    style="padding: 10px 25px; background: #2c3e50; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                تأیید
+            </button>
+        `;
+        
+        overlay.appendChild(dialog);
+        document.body.appendChild(overlay);
+        
+        window.closeCustomAlert = function() {
+            document.body.removeChild(overlay);
+            resolve();
+        };
+    });
+};
 
-        // ==================== GLOBAL VARIABLES ====================
-        const priorityLabels = {
-            'low': 'کم',
-            'medium': 'متوسط',
-            'high': 'بالا',
-            'critical': 'حیاتی'
-        };
+// ساخت confirm کاستوم با توقف کامل
+window.confirm = function(message) {
+    return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        `;
         
-        const priorityColors = {
-            'low': '#27ae60',
-            'medium': '#f39c12',
-            'high': '#e74c3c',
-            'critical': '#c0392b'
-        };
+        const dialog = document.createElement('div');
+        dialog.style.cssText = `
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            text-align: center;
+            min-width: 300px;
+            max-width: 90%;
+            font-family: Vazirmatn, sans-serif;
+            border: 2px solid #2c3e50;
+        `;
         
-        const statusLabels = {
-            'pending': 'در انتظار',
-            'in-progress': 'در حال انجام',
-            'completed': 'تکمیل شده',
-            'cancelled': 'لغو شده'
-        };
-        
-        const requestTypeLabels = {
-            'supervisor': 'توسط سرپرست',
-            'operator': 'توسط اپراتور'
-        };
-
-        let allWorkOrders = []; // کش جهانی برای داده‌ها
-        let filterTimeout;
-
-        // ==================== HELPER FUNCTIONS ====================
-        function showAlert(containerId, type, message, autoClose = false) {
-            const container = document.getElementById(containerId);
-            const alertDiv = document.createElement('div');
-            alertDiv.className = `alert alert-${type}`;
-            alertDiv.innerHTML = `
-                <i class="fas fa-${getAlertIcon(type)}"></i>
-                <div style="flex: 1;">${message}</div>
-                <button onclick="this.parentElement.remove()" 
-                        style="background: none; border: none; color: inherit; cursor: pointer; padding: 0 5px;">
-                    <i class="fas fa-times"></i>
+        dialog.innerHTML = `
+            <div style="margin-bottom: 20px; font-size: 16px; color: #2c3e50; line-height: 1.5;">${message}</div>
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button onclick="closeCustomConfirm(true)" 
+                        style="padding: 10px 25px; background: #2c3e50; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                    بله
                 </button>
-            `;
-            
-            container.innerHTML = '';
-            container.appendChild(alertDiv);
-            container.style.display = 'block';
-            
-            if (autoClose) {
-                setTimeout(() => {
-                    if (alertDiv.parentElement === container) {
-                        container.style.display = 'none';
-                    }
-                }, 5000);
-            }
-        }
+                <button onclick="closeCustomConfirm(false)" 
+                        style="padding: 10px 25px; background: #6c757d; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                    خیر
+                </button>
+            </div>
+        `;
         
-        function getAlertIcon(type) {
-            const icons = {
-                'success': 'check-circle',
-                'danger': 'exclamation-circle',
-                'warning': 'exclamation-triangle',
-                'info': 'info-circle'
-            };
-            return icons[type] || 'info-circle';
-        }
+        overlay.appendChild(dialog);
+        document.body.appendChild(overlay);
         
-        function formatPersianDate(dateString) {
-            const date = new Date(dateString);
-            return date.toLocaleDateString('fa-IR', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-        }
-        
-        function updateCharCount() {
-            const textarea = document.getElementById('woDescription');
-            const charCount = document.getElementById('charCount');
-            const count = textarea.value.length;
-            charCount.textContent = count;
-            
-            if (count > 450) {
-                charCount.style.color = 'var(--danger)';
-            } else if (count > 400) {
-                charCount.style.color = 'var(--warning)';
-            } else {
-                charCount.style.color = 'var(--gray)';
-            }
-        }
+        window.closeCustomConfirm = function(result) {
+            document.body.removeChild(overlay);
+            resolve(result);
+        };
+    });
+};
 
-        // ==================== REAL-TIME FUNCTIONS ====================
-        async function setupRealtimeSubscription() {
-            try {
-                console.log('در حال راه‌اندازی Real-time...');
-                
-                // عضویت در تغییرات جدول work_orders
-                const subscription = supabase
-                    .channel('work_orders_channel')
-                    .on(
-                        'postgres_changes',
-                        {
-                            event: '*',
-                            schema: 'public',
-                            table: 'work_orders'
-                        },
-                        async (payload) => {
-                            console.log('تغییر Real-time دریافت شد:', payload);
-                            
-                            // به روزرسانی کش محلی
-                            handleRealtimeUpdate(payload);
-                            
-                            // نمایش اعلان
-                            let message = '';
-                            let type = 'info';
-                            
-                            switch(payload.eventType) {
-                                case 'INSERT':
-                                    message = '📝 دستورکار جدید ثبت شد';
-                                    type = 'success';
-                                    break;
-                                case 'UPDATE':
-                                    message = '🔄 دستورکار به‌روزرسانی شد';
-                                    type = 'warning';
-                                    break;
-                                case 'DELETE':
-                                    message = '🗑️ دستورکار حذف شد';
-                                    type = 'danger';
-                                    break;
-                            }
-                            
-                            if (message) {
-                                showAlert('systemAlert', type, message, true);
-                            }
-                            
-                            // به روزرسانی UI بدون بارگذاری مجدد از سرور
-                            updateUIFromCache();
-                        }
-                    )
-                    .subscribe((status) => {
-                        console.log('وضعیت Real-time:', status);
-                        
-                        if (status === 'SUBSCRIBED') {
-                            console.log('✅ Real-time فعال شد');
-                            showAlert('systemAlert', 'success', 'سیستم Real-time فعال شد - تغییرات به صورت خودکار نمایش داده می‌شوند', true);
-                        }
-                        
-                        if (status === 'CHANNEL_ERROR') {
-                            console.error('خطا در اتصال Real-time');
-                            showAlert('systemAlert', 'warning', 'اتصال Real-time قطع شد', true);
-                        }
-                    });
-                
-                window.supabaseSubscription = subscription;
-                
-            } catch (error) {
-                console.error('خطا در راه‌اندازی Real-time:', error);
-                showAlert('systemAlert', 'warning', 'خطا در اتصال Real-time', true);
-            }
-        }
+// ==================== MAIN CODE ====================
+document.addEventListener('DOMContentLoaded', function() {
+    
+    // ==================== CONFIGURATION ====================
+    const SUPABASE_URL = 'https://kalykylvjqigqlaprlca.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImthbHlreWx2anFpZ3FsYXBybGNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM1NjI1OTcsImV4cCI6MjA3OTEzODU5N30.S8YtogVrxkqYjkgfkGpy4_mS6mqaNxmsHjxnhyBPwEY';
+    
+    // ایجاد کلاینت Supabase
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    console.log('Supabase initialized');
+
+    // ==================== GLOBAL VARIABLES ====================
+    const priorityLabels = {
+        'low': 'کم',
+        'medium': 'متوسط',
+        'high': 'بالا',
+        'critical': 'حیاتی'
+    };
+    
+    const priorityColors = {
+        'low': '#27ae60',
+        'medium': '#f39c12',
+        'high': '#e74c3c',
+        'critical': '#c0392b'
+    };
+    
+    const statusLabels = {
+        'pending': 'در انتظار',
+        'in-progress': 'در حال انجام',
+        'completed': 'تکمیل شده',
+        'cancelled': 'لغو شده'
+    };
+    
+    const requestTypeLabels = {
+        'supervisor': 'توسط سرپرست',
+        'operator': 'توسط اپراتور'
+    };
+
+    let allWorkOrders = []; // کش جهانی برای داده‌ها
+    let filterTimeout;
+
+    // ==================== HELPER FUNCTIONS ====================
+    function showAlert(containerId, type, message, autoClose = false) {
+        const container = document.getElementById(containerId);
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type}`;
+        alertDiv.innerHTML = `
+            <i class="fas fa-${getAlertIcon(type)}"></i>
+            <div style="flex: 1;">${message}</div>
+            <button onclick="this.parentElement.remove()" 
+                    style="background: none; border: none; color: inherit; cursor: pointer; padding: 0 5px;">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
         
-        function handleRealtimeUpdate(payload) {
-            switch(payload.eventType) {
-                case 'INSERT':
-                    // اضافه کردن به ابتدای لیست
-                    allWorkOrders.unshift(payload.new);
-                    break;
-                    
-                case 'UPDATE':
-                    // به روزرسانی آیتم موجود
-                    const updateIndex = allWorkOrders.findIndex(item => item.id === payload.new.id);
-                    if (updateIndex !== -1) {
-                        allWorkOrders[updateIndex] = payload.new;
-                    } else {
-                        // اگر پیدا نشد، اضافه کن
-                        allWorkOrders.unshift(payload.new);
+        container.innerHTML = '';
+        container.appendChild(alertDiv);
+        container.style.display = 'block';
+        
+        if (autoClose) {
+            setTimeout(() => {
+                if (alertDiv.parentElement === container) {
+                    container.style.display = 'none';
+                }
+            }, 5000);
+        }
+    }
+    
+    function getAlertIcon(type) {
+        const icons = {
+            'success': 'check-circle',
+            'danger': 'exclamation-circle',
+            'warning': 'exclamation-triangle',
+            'info': 'info-circle'
+        };
+        return icons[type] || 'info-circle';
+    }
+    
+    function formatPersianDate(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('fa-IR', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+    
+    function updateCharCount() {
+        const textarea = document.getElementById('woDescription');
+        const charCount = document.getElementById('charCount');
+        const count = textarea.value.length;
+        charCount.textContent = count;
+        
+        if (count > 450) {
+            charCount.style.color = 'var(--danger)';
+        } else if (count > 400) {
+            charCount.style.color = 'var(--warning)';
+        } else {
+            charCount.style.color = 'var(--gray)';
+        }
+    }
+
+    // ==================== REAL-TIME FUNCTIONS ====================
+    async function setupRealtimeSubscription() {
+        try {
+            console.log('در حال راه‌اندازی Real-time...');
+            
+            // عضویت در تغییرات جدول work_orders
+            const subscription = supabase
+                .channel('work_orders_channel')
+                .on(
+                    'postgres_changes',
+                    {
+                        event: '*',
+                        schema: 'public',
+                        table: 'work_orders'
+                    },
+                    async (payload) => {
+                        console.log('تغییر Real-time دریافت شد:', payload);
+                        
+                        // به روزرسانی کش محلی
+                        handleRealtimeUpdate(payload);
+                        
+                        // نمایش اعلان
+                        let message = '';
+                        let type = 'info';
+                        
+                        switch(payload.eventType) {
+                            case 'INSERT':
+                                message = '📝 دستورکار جدید ثبت شد';
+                                type = 'success';
+                                break;
+                            case 'UPDATE':
+                                message = '🔄 دستورکار به‌روزرسانی شد';
+                                type = 'warning';
+                                break;
+                            case 'DELETE':
+                                message = '🗑️ دستورکار حذف شد';
+                                type = 'danger';
+                                break;
+                        }
+                        
+                        if (message) {
+                            showAlert('systemAlert', type, message, true);
+                        }
+                        
+                        // به روزرسانی UI بدون بارگذاری مجدد از سرور
+                        updateUIFromCache();
                     }
-                    break;
+                )
+                .subscribe((status) => {
+                    console.log('وضعیت Real-time:', status);
                     
-                case 'DELETE':
-                    // حذف از لیست
-                    allWorkOrders = allWorkOrders.filter(item => item.id !== payload.old.id);
-                    break;
+                    if (status === 'SUBSCRIBED') {
+                        console.log('✅ Real-time فعال شد');
+                        showAlert('systemAlert', 'success', 'سیستم Real-time فعال شد - تغییرات به صورت خودکار نمایش داده می‌شوند', true);
+                    }
+                    
+                    if (status === 'CHANNEL_ERROR') {
+                        console.error('خطا در اتصال Real-time');
+                        showAlert('systemAlert', 'warning', 'اتصال Real-time قطع شد', true);
+                    }
+                });
+            
+            window.supabaseSubscription = subscription;
+            
+        } catch (error) {
+            console.error('خطا در راه‌اندازی Real-time:', error);
+            showAlert('systemAlert', 'warning', 'خطا در اتصال Real-time', true);
+        }
+    }
+    
+    function handleRealtimeUpdate(payload) {
+        switch(payload.eventType) {
+            case 'INSERT':
+                // اضافه کردن به ابتدای لیست
+                allWorkOrders.unshift(payload.new);
+                break;
+                
+            case 'UPDATE':
+                // به روزرسانی آیتم موجود
+                const updateIndex = allWorkOrders.findIndex(item => item.id === payload.new.id);
+                if (updateIndex !== -1) {
+                    allWorkOrders[updateIndex] = payload.new;
+                } else {
+                    // اگر پیدا نشد، اضافه کن
+                    allWorkOrders.unshift(payload.new);
+                }
+                break;
+                
+            case 'DELETE':
+                // حذف از لیست
+                allWorkOrders = allWorkOrders.filter(item => item.id !== payload.old.id);
+                break;
+        }
+    }
+    
+    function updateUIFromCache() {
+        const filters = {
+            status: document.getElementById('statusFilter').value,
+            priority: document.getElementById('priorityFilter').value,
+            dateFrom: document.getElementById('dateFromFilter').value,
+            dateTo: document.getElementById('dateToFilter').value
+        };
+        
+        const filteredData = filterWorkOrders(allWorkOrders, filters);
+        updateReportsTable(filteredData);
+        
+        const stats = calculateStatsFromData(filteredData);
+        updateStats(stats);
+    }
+    
+    function filterWorkOrders(workOrders, filters) {
+        return workOrders.filter(wo => {
+            if (filters.status && filters.status !== 'all' && wo.status !== filters.status) {
+                return false;
+            }
+            
+            if (filters.priority && filters.priority !== 'all' && wo.priority !== filters.priority) {
+                return false;
+            }
+            
+            if (filters.dateFrom) {
+                const woDate = new Date(wo.created_at).toISOString().split('T')[0];
+                if (woDate < filters.dateFrom) return false;
+            }
+            
+            if (filters.dateTo) {
+                const woDate = new Date(wo.created_at).toISOString().split('T')[0];
+                if (woDate > filters.dateTo) return false;
+            }
+            
+            return true;
+        });
+    }
+    
+    function calculateStatsFromData(workOrders) {
+        return {
+            total: workOrders.length,
+            pending: workOrders.filter(d => d.status === 'pending').length,
+            inProgress: workOrders.filter(d => d.status === 'in-progress').length,
+            completed: workOrders.filter(d => d.status === 'completed').length,
+            cancelled: workOrders.filter(d => d.status === 'cancelled').length
+        };
+    }
+    
+    function unsubscribeRealtime() {
+        if (window.supabaseSubscription) {
+            supabase.removeChannel(window.supabaseSubscription);
+            console.log('اتصال Real-time قطع شد');
+        }
+    }
+
+    // ==================== SUPABASE FUNCTIONS ====================
+    async function createWorkOrder(workOrderData) {
+        try {
+            const dataToInsert = {
+                problem_title: workOrderData.problemTitle,
+                assigned_to: workOrderData.assignedTo,
+                priority: workOrderData.priority,
+                problem_description: workOrderData.problemDescription,
+                request_type: workOrderData.requestType,
+                notes: workOrderData.notes || null,
+                status: 'pending'
+            };
+            
+            console.log('ارسال داده به Supabase:', dataToInsert);
+            
+            const { data, error } = await supabase
+                .from('work_orders')
+                .insert([dataToInsert])
+                .select();
+            
+            if (error) throw error;
+            
+            console.log('دستورکار ثبت شد:', data[0]);
+            return {
+                success: true,
+                data: data[0],
+                message: 'دستورکار با موفقیت ثبت شد'
+            };
+            
+        } catch (error) {
+            console.error('خطا در ثبت دستورکار:', error);
+            return {
+                success: false,
+                message: error.message || 'خطا در ثبت دستورکار'
+            };
+        }
+    }
+    
+    async function updateWorkOrder(workOrderId, workOrderData) {
+        try {
+            const dataToUpdate = {
+                problem_title: workOrderData.problemTitle,
+                assigned_to: workOrderData.assignedTo,
+                priority: workOrderData.priority,
+                problem_description: workOrderData.problemDescription,
+                request_type: workOrderData.requestType,
+                notes: workOrderData.notes || null,
+                updated_at: new Date().toISOString()
+            };
+            
+            console.log('ارسال داده به‌روزرسانی به Supabase:', dataToUpdate);
+            
+            const { data, error } = await supabase
+                .from('work_orders')
+                .update(dataToUpdate)
+                .eq('id', workOrderId)
+                .select();
+            
+            if (error) throw error;
+            
+            console.log('دستورکار به‌روزرسانی شد:', data[0]);
+            return {
+                success: true,
+                data: data[0],
+                message: 'دستورکار با موفقیت به‌روزرسانی شد'
+            };
+            
+        } catch (error) {
+            console.error('خطا در به‌روزرسانی دستورکار:', error);
+            return {
+                success: false,
+                message: error.message || 'خطا در به‌روزرسانی دستورکار'
+            };
+        }
+    }
+    
+    async function getAllWorkOrders(filters = {}) {
+        try {
+            let query = supabase
+                .from('work_orders')
+                .select('*')
+                .order('created_at', { ascending: false });
+            
+            if (filters.status && filters.status !== 'all') {
+                query = query.eq('status', filters.status);
+            }
+            
+            if (filters.priority && filters.priority !== 'all') {
+                query = query.eq('priority', filters.priority);
+            }
+            
+            if (filters.dateFrom) {
+                query = query.gte('created_at', filters.dateFrom + 'T00:00:00');
+            }
+            
+            if (filters.dateTo) {
+                query = query.lte('created_at', filters.dateTo + 'T23:59:59');
+            }
+            
+            const { data, error } = await query;
+            
+            if (error) throw error;
+            
+            // ذخیره در کش جهانی
+            allWorkOrders = data;
+            
+            return data;
+        } catch (error) {
+            console.error('خطا در دریافت دستورکارها:', error);
+            throw error;
+        }
+    }
+    
+    async function getWorkOrderStats() {
+        try {
+            const { data, error } = await supabase
+                .from('work_orders')
+                .select('status');
+            
+            if (error) throw error;
+            
+            const stats = {
+                total: data.length,
+                pending: data.filter(d => d.status === 'pending').length,
+                inProgress: data.filter(d => d.status === 'in-progress').length,
+                completed: data.filter(d => d.status === 'completed').length,
+                cancelled: data.filter(d => d.status === 'cancelled').length
+            };
+            
+            return stats;
+        } catch (error) {
+            console.error('خطا در دریافت آمار:', error);
+            return {
+                total: 0,
+                pending: 0,
+                inProgress: 0,
+                completed: 0,
+                cancelled: 0
+            };
+        }
+    }
+    
+    async function updateWorkOrderStatus(id, status, notes = '') {
+        try {
+            const updates = {
+                status: status,
+                updated_at: new Date().toISOString()
+            };
+            
+            if (status === 'completed') {
+                updates.completed_at = new Date().toISOString();
+            }
+            
+            if (notes) {
+                updates.notes = (updates.notes || '') + '\n' + notes;
+            }
+            
+            const { data, error } = await supabase
+                .from('work_orders')
+                .update(updates)
+                .eq('id', id)
+                .select();
+            
+            if (error) throw error;
+            return { success: true, data: data[0] };
+        } catch (error) {
+            console.error('خطا در به‌روزرسانی وضعیت:', error);
+            return { success: false, message: error.message };
+        }
+    }
+    
+    async function deleteWorkOrderFromSupabase(id) {
+        try {
+            const { error } = await supabase
+                .from('work_orders')
+                .delete()
+                .eq('id', id);
+            
+            if (error) throw error;
+            return { success: true };
+        } catch (error) {
+            console.error('خطا در حذف دستورکار:', error);
+            return { success: false, message: error.message };
+        }
+    }
+
+    // ==================== UI FUNCTIONS ====================
+    function openWorkOrderPopup() {
+        resetWorkOrderPopup();
+        document.getElementById('workOrderPopup').style.display = 'flex';
+        document.getElementById('woTitle').focus();
+        document.getElementById('formAlert').style.display = 'none';
+    }
+    
+    function closeWorkOrderPopup() {
+        document.getElementById('workOrderPopup').style.display = 'none';
+        document.getElementById('workOrderForm').reset();
+        document.getElementById('formAlert').style.display = 'none';
+        document.getElementById('loadingIndicator').style.display = 'none';
+        document.getElementById('workOrderForm').style.display = 'block';
+        resetWorkOrderPopup();
+    }
+    
+    function resetWorkOrderPopup() {
+        document.getElementById('workOrderPopup').dataset.editingId = '';
+        document.querySelector('#workOrderPopup .popup-title').textContent = 'ثبت دستورکار جدید';
+        
+        const submitBtn = document.querySelector('#workOrderForm button[type="submit"]');
+        submitBtn.innerHTML = '<i class="fas fa-save"></i> ثبت دستورکار';
+        delete submitBtn.dataset.editing;
+    }
+    
+    async function editWorkOrderUI(workOrder) {
+        // بستن پاپاپ جزئیات
+        closeDetailsPopup();
+        
+        // باز کردن پاپاپ ویرایش
+        openEditWorkOrderPopup(workOrder);
+    }
+    
+    function openEditWorkOrderPopup(workOrder) {
+        // پر کردن فرم با داده‌های موجود
+        document.getElementById('woTitle').value = workOrder.problem_title;
+        document.getElementById('woAssignedTo').value = workOrder.assigned_to;
+        document.getElementById('woPriority').value = workOrder.priority;
+        document.getElementById('woRequestType').value = workOrder.request_type;
+        document.getElementById('woDescription').value = workOrder.problem_description;
+        document.getElementById('woNotes').value = workOrder.notes || '';
+        
+        // به روزرسانی شمارنده کاراکتر
+        updateCharCount();
+        
+        // ذخیره ID برای استفاده در ارسال
+        document.getElementById('workOrderPopup').dataset.editingId = workOrder.id;
+        
+        // نمایش پاپاپ
+        document.getElementById('workOrderPopup').style.display = 'flex';
+        document.getElementById('woTitle').focus();
+        document.getElementById('formAlert').style.display = 'none';
+    }
+    
+    function openDetailsPopup(workOrder) {
+        const detailsContent = document.getElementById('detailsContent');
+        
+        detailsContent.innerHTML = `
+            <div style="margin-bottom: 20px;">
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <div>
+                            <strong>شناسه:</strong> ${workOrder.id}
+                        </div>
+                        <div>
+                            <span class="status-badge status-${workOrder.status}" 
+                                  style="background: ${workOrder.status === 'pending' ? '#fff3cd' : 
+                                                     workOrder.status === 'in-progress' ? '#d1ecf1' : 
+                                                     workOrder.status === 'completed' ? '#d4edda' : '#f8d7da'}; 
+                                        color: ${workOrder.status === 'pending' ? '#856404' : 
+                                                workOrder.status === 'in-progress' ? '#0c5460' : 
+                                                workOrder.status === 'completed' ? '#155724' : '#721c24'};">
+                                ${statusLabels[workOrder.status]}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <h3 style="color: var(--primary); margin-bottom: 10px;">${workOrder.problem_title}</h3>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                        <div>
+                            <strong>مسئول پیگیری:</strong><br>
+                            ${workOrder.assigned_to}
+                        </div>
+                        <div>
+                            <strong>اولویت:</strong><br>
+                            <span style="color: ${priorityColors[workOrder.priority]}; font-weight: bold;">
+                                ${priorityLabels[workOrder.priority]}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 10px;">
+                        <strong>نوع درخواست:</strong><br>
+                        ${requestTypeLabels[workOrder.request_type]}
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <strong>شرح مشکل:</strong>
+                    <div style="background: white; padding: 10px; border-radius: 6px; border: 1px solid #eaeaea; margin-top: 5px;">
+                        ${workOrder.problem_description}
+                    </div>
+                </div>
+                
+                ${workOrder.notes ? `
+                <div style="margin-bottom: 15px;">
+                    <strong>یادداشت‌ها:</strong>
+                    <div style="background: white; padding: 10px; border-radius: 6px; border: 1px solid #eaeaea; margin-top: 5px;">
+                        ${workOrder.notes}
+                    </div>
+                </div>
+                ` : ''}
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 12px; color: var(--gray);">
+                    <div>
+                        <strong>تاریخ ثبت:</strong><br>
+                        ${formatPersianDate(workOrder.created_at)}
+                    </div>
+                    ${workOrder.completed_at ? `
+                    <div>
+                        <strong>تاریخ تکمیل:</strong><br>
+                        ${formatPersianDate(workOrder.completed_at)}
+                    </div>
+                    ` : ''}
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <button type="button" class="btn btn-primary" onclick="deleteWorkOrderUI(${workOrder.id})">
+                    <i class="fas fa-trash"></i> حذف
+                </button>
+            </div>
+        `;
+        
+        document.getElementById('detailsPopup').style.display = 'flex';
+    }
+    
+    function closeDetailsPopup() {
+        document.getElementById('detailsPopup').style.display = 'none';
+    }
+    
+    async function changeStatus(workOrderId, newStatus) {
+        const confirmed = await confirm('آیا از تغییر وضعیت اطمینان دارید؟');
+        if (confirmed) {
+            const result = await updateWorkOrderStatus(workOrderId, newStatus);
+            if (result.success) {
+                // وضعیت در Real-time به‌روزرسانی می‌شود
+                closeDetailsPopup();
+                
+                // نمایش اعلان سیستم
+                const statusText = statusLabels[newStatus];
+                showAlert('systemAlert', 'success', 
+                    `وضعیت دستورکار به "${statusText}" تغییر یافت`, 
+                    true);
+            } else {
+                showAlert('systemAlert', 'danger', result.message, true);
             }
         }
-        
-        function updateUIFromCache() {
+    }
+    
+    async function deleteWorkOrderUI(workOrderId) {
+        const confirmed = await confirm('آیا از حذف این دستورکار اطمینان دارید؟');
+        if (confirmed) {
+            const result = await deleteWorkOrderFromSupabase(workOrderId);
+            if (result.success) {
+                // حذف در Real-time به‌روزرسانی می‌شود
+                closeDetailsPopup();
+                
+                // نمایش اعلان سیستم
+                showAlert('systemAlert', 'success', 'دستورکار با موفقیت حذف شد', true);
+            } else {
+                showAlert('systemAlert', 'danger', result.message, true);
+            }
+        }
+    }
+    
+    async function loadReports(forceReload = false) {
+        try {
             const filters = {
                 status: document.getElementById('statusFilter').value,
                 priority: document.getElementById('priorityFilter').value,
@@ -1249,709 +1672,323 @@
                 dateTo: document.getElementById('dateToFilter').value
             };
             
-            const filteredData = filterWorkOrders(allWorkOrders, filters);
-            updateReportsTable(filteredData);
+            // اگر forceReload true باشد یا داده‌ای در کش نیست، از سرور بگیر
+            if (forceReload || allWorkOrders.length === 0) {
+                const workOrders = await getAllWorkOrders(filters);
+                const filteredData = filterWorkOrders(workOrders, filters);
+                updateReportsTable(filteredData);
+                
+                const stats = calculateStatsFromData(filteredData);
+                updateStats(stats);
+            } else {
+                // از کش استفاده کن
+                const filteredData = filterWorkOrders(allWorkOrders, filters);
+                updateReportsTable(filteredData);
+                
+                const stats = calculateStatsFromData(filteredData);
+                updateStats(stats);
+            }
             
-            const stats = calculateStatsFromData(filteredData);
-            updateStats(stats);
+        } catch (error) {
+            console.error('خطا در بارگذاری گزارشات:', error);
+            document.getElementById('reportsTableBody').innerHTML = `
+                <tr>
+                    <td colspan="8" style="text-align: center; color: var(--danger); padding: 20px;">
+                        خطا در بارگذاری داده‌ها
+                    </td>
+                </tr>
+            `;
+            document.getElementById('tableInfo').textContent = 'خطا در بارگذاری';
+            showAlert('systemAlert', 'danger', 'خطا در بارگذاری داده‌ها', true);
+        }
+    }
+    
+    function updateReportsTable(workOrders) {
+        const tbody = document.getElementById('reportsTableBody');
+        
+        if (workOrders.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8" style="text-align: center; color: var(--gray); padding: 20px;">
+                        هیچ دستورکاری یافت نشد
+                    </td>
+                </tr>
+            `;
+            document.getElementById('tableInfo').textContent = 'هیچ رکوردی یافت نشد';
+            return;
         }
         
-        function filterWorkOrders(workOrders, filters) {
-            return workOrders.filter(wo => {
-                if (filters.status && filters.status !== 'all' && wo.status !== filters.status) {
-                    return false;
-                }
-                
-                if (filters.priority && filters.priority !== 'all' && wo.priority !== filters.priority) {
-                    return false;
-                }
-                
-                if (filters.dateFrom) {
-                    const woDate = new Date(wo.created_at).toISOString().split('T')[0];
-                    if (woDate < filters.dateFrom) return false;
-                }
-                
-                if (filters.dateTo) {
-                    const woDate = new Date(wo.created_at).toISOString().split('T')[0];
-                    if (woDate > filters.dateTo) return false;
-                }
-                
-                return true;
-            });
-        }
+        let html = '';
+        workOrders.forEach(wo => {
+            html += `
+                <tr>
+                    <td>${wo.id}</td>
+                    <td><strong>${wo.problem_title}</strong></td>
+                    <td>${wo.assigned_to}</td>
+                    <td>
+                        <span style="color: ${priorityColors[wo.priority]}; font-weight: bold;">
+                            ${priorityLabels[wo.priority]}
+                        </span>
+                    </td>
+                    <td>${requestTypeLabels[wo.request_type]}</td>
+                    <td>${formatPersianDate(wo.created_at)}</td>
+                    <td>
+                        <span class="status-badge status-${wo.status}" 
+                              style="background: ${wo.status === 'pending' ? '#fff3cd' : 
+                                                 wo.status === 'in-progress' ? '#d1ecf1' : 
+                                                 wo.status === 'completed' ? '#d4edda' : '#f8d7da'}; 
+                                    color: ${wo.status === 'pending' ? '#856404' : 
+                                            wo.status === 'in-progress' ? '#0c5460' : 
+                                            wo.status === 'completed' ? '#155724' : '#721c24'};">
+                            ${statusLabels[wo.status]}
+                        </span>
+                    </td>
+                    <td>
+                        <button onclick="openDetailsPopup(${JSON.stringify(wo).replace(/"/g, '&quot;')})" 
+                                style="background: var(--secondary); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                            <i class="fas fa-eye"></i> مشاهده
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
         
-        function calculateStatsFromData(workOrders) {
-            return {
-                total: workOrders.length,
-                pending: workOrders.filter(d => d.status === 'pending').length,
-                inProgress: workOrders.filter(d => d.status === 'in-progress').length,
-                completed: workOrders.filter(d => d.status === 'completed').length,
-                cancelled: workOrders.filter(d => d.status === 'cancelled').length
-            };
-        }
+        tbody.innerHTML = html;
+        document.getElementById('tableInfo').textContent = `تعداد رکوردها: ${workOrders.length}`;
+    }
+    
+    function updateStats(stats) {
+        document.getElementById('statsContainer').innerHTML = `
+            <div class="stat-card">
+                <div class="stat-number">${stats.total}</div>
+                <div class="stat-label">کل دستورکارها</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" style="color: var(--warning);">${stats.pending}</div>
+                <div class="stat-label">در انتظار</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" style="color: var(--secondary);">${stats.inProgress}</div>
+                <div class="stat-label">در حال انجام</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" style="color: var(--success);">${stats.completed}</div>
+                <div class="stat-label">تکمیل شده</div>
+            </div>
+        `;
+    }
+    
+    function filterReports() {
+        // استفاده از debouncing برای جلوگیری از درخواست‌های زیاد
+        clearTimeout(filterTimeout);
+        filterTimeout = setTimeout(() => {
+            loadReports(false); // false یعنی از کش استفاده کن
+        }, 300);
+    }
+    
+    function exportData() {
+        showAlert('systemAlert', 'info', 'این ویژگی در نسخه فعلی فعال نیست', true);
+    }
+    
+    function checkEndOfMonth() {
+        const today = new Date();
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
         
-        function unsubscribeRealtime() {
-            if (window.supabaseSubscription) {
-                supabase.removeChannel(window.supabaseSubscription);
-                console.log('اتصال Real-time قطع شد');
-            }
+        if (tomorrow.getDate() === 1) {
+            document.getElementById('cleanupAlert').style.display = 'flex';
+            showAlert('systemAlert', 'warning', 'فردا اولین روز ماه جدید است. لطفاً از داده‌های خود خروجی بگیرید.', false);
         }
+    }
 
-        // ==================== SUPABASE FUNCTIONS ====================
-        async function createWorkOrder(workOrderData) {
-            try {
-                const dataToInsert = {
-                    problem_title: workOrderData.problemTitle,
-                    assigned_to: workOrderData.assignedTo,
-                    priority: workOrderData.priority,
-                    problem_description: workOrderData.problemDescription,
-                    request_type: workOrderData.requestType,
-                    notes: workOrderData.notes || null,
-                    status: 'pending'
-                };
-                
-                console.log('ارسال داده به Supabase:', dataToInsert);
-                
-                const { data, error } = await supabase
-                    .from('work_orders')
-                    .insert([dataToInsert])
-                    .select();
-                
-                if (error) throw error;
-                
-                console.log('دستورکار ثبت شد:', data[0]);
-                return {
-                    success: true,
-                    data: data[0],
-                    message: 'دستورکار با موفقیت ثبت شد'
-                };
-                
-            } catch (error) {
-                console.error('خطا در ثبت دستورکار:', error);
-                return {
-                    success: false,
-                    message: error.message || 'خطا در ثبت دستورکار'
-                };
-            }
+    // ==================== EVENT HANDLERS ====================
+    // مدیریت کاربر
+    const userNameElement = document.getElementById('userName');
+    const userAvatarElement = document.getElementById('userAvatar');
+    const loginTimeElement = document.getElementById('loginTime');
+    
+    const now = new Date();
+    if (loginTimeElement) {
+        loginTimeElement.textContent = now.toLocaleTimeString('fa-IR');
+    }
+    
+    if (userNameElement) {
+        userNameElement.textContent = 'مدیر سیستم';
+    }
+    if (userAvatarElement) {
+        userAvatarElement.textContent = 'M';
+    }
+    
+    // تنظیم تاریخ امروز در فیلترها
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('dateFromFilter').value = today;
+    document.getElementById('dateToFilter').value = today;
+    
+    // بارگذاری اولیه داده‌ها
+    try {
+         loadReports(true); // true برای بارگذاری اولیه از سرور
+        checkEndOfMonth();
+        showAlert('systemAlert', 'success', 'اتصال به سرور برقرار شد', true);
+    } catch (error) {
+        showAlert('systemAlert', 'danger', 'خطا در اتصال به سرور', true);
+    }
+    
+    // راه‌اندازی Real-time
+     setupRealtimeSubscription();
+    
+    // مدیریت فرم ثبت دستورکار
+    document.getElementById('workOrderForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const submitBtn = document.querySelector('#workOrderForm button[type="submit"]');
+        const isEditing = submitBtn.dataset.editing === 'true';
+        const workOrderId = document.getElementById('workOrderPopup').dataset.editingId;
+        
+        const title = document.getElementById('woTitle').value.trim();
+        const assignedTo = document.getElementById('woAssignedTo').value;
+        const priority = document.getElementById('woPriority').value;
+        const requestType = document.getElementById('woRequestType').value;
+        const description = document.getElementById('woDescription').value.trim();
+        
+        // اعتبارسنجی
+        if (!title || !assignedTo || !priority || !requestType || !description) {
+            showAlert('formAlert', 'danger', 'لطفا تمام فیلدهای ضروری را پر کنید');
+            return;
         }
         
-        async function updateWorkOrder(workOrderId, workOrderData) {
-            try {
-                const dataToUpdate = {
-                    problem_title: workOrderData.problemTitle,
-                    assigned_to: workOrderData.assignedTo,
-                    priority: workOrderData.priority,
-                    problem_description: workOrderData.problemDescription,
-                    request_type: workOrderData.requestType,
-                    notes: workOrderData.notes || null,
-                    updated_at: new Date().toISOString()
-                };
-                
-                console.log('ارسال داده به‌روزرسانی به Supabase:', dataToUpdate);
-                
-                const { data, error } = await supabase
-                    .from('work_orders')
-                    .update(dataToUpdate)
-                    .eq('id', workOrderId)
-                    .select();
-                
-                if (error) throw error;
-                
-                console.log('دستورکار به‌روزرسانی شد:', data[0]);
-                return {
-                    success: true,
-                    data: data[0],
-                    message: 'دستورکار با موفقیت به‌روزرسانی شد'
-                };
-                
-            } catch (error) {
-                console.error('خطا در به‌روزرسانی دستورکار:', error);
-                return {
-                    success: false,
-                    message: error.message || 'خطا در به‌روزرسانی دستورکار'
-                };
-            }
+        if (description.length < 10) {
+            showAlert('formAlert', 'danger', 'شرح مشکل باید حداقل ۱۰ کاراکتر باشد');
+            return;
         }
         
-        async function getAllWorkOrders(filters = {}) {
-            try {
-                let query = supabase
-                    .from('work_orders')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-                
-                if (filters.status && filters.status !== 'all') {
-                    query = query.eq('status', filters.status);
-                }
-                
-                if (filters.priority && filters.priority !== 'all') {
-                    query = query.eq('priority', filters.priority);
-                }
-                
-                if (filters.dateFrom) {
-                    query = query.gte('created_at', filters.dateFrom + 'T00:00:00');
-                }
-                
-                if (filters.dateTo) {
-                    query = query.lte('created_at', filters.dateTo + 'T23:59:59');
-                }
-                
-                const { data, error } = await query;
-                
-                if (error) throw error;
-                
-                // ذخیره در کش جهانی
-                allWorkOrders = data;
-                
-                return data;
-            } catch (error) {
-                console.error('خطا در دریافت دستورکارها:', error);
-                throw error;
-            }
-        }
+        const workOrderData = {
+            problemTitle: title,
+            assignedTo: assignedTo,
+            priority: priority,
+            requestType: requestType,
+            problemDescription: description,
+            notes: document.getElementById('woNotes').value.trim() || null
+        };
         
-        async function getWorkOrderStats() {
-            try {
-                const { data, error } = await supabase
-                    .from('work_orders')
-                    .select('status');
-                
-                if (error) throw error;
-                
-                const stats = {
-                    total: data.length,
-                    pending: data.filter(d => d.status === 'pending').length,
-                    inProgress: data.filter(d => d.status === 'in-progress').length,
-                    completed: data.filter(d => d.status === 'completed').length,
-                    cancelled: data.filter(d => d.status === 'cancelled').length
-                };
-                
-                return stats;
-            } catch (error) {
-                console.error('خطا در دریافت آمار:', error);
-                return {
-                    total: 0,
-                    pending: 0,
-                    inProgress: 0,
-                    completed: 0,
-                    cancelled: 0
-                };
-            }
-        }
+        // نمایش بارگذاری
+        document.getElementById('loadingIndicator').style.display = 'block';
+        document.getElementById('workOrderForm').style.display = 'none';
         
-        async function updateWorkOrderStatus(id, status, notes = '') {
-            try {
-                const updates = {
-                    status: status,
-                    updated_at: new Date().toISOString()
-                };
-                
-                if (status === 'completed') {
-                    updates.completed_at = new Date().toISOString();
-                }
-                
-                if (notes) {
-                    updates.notes = (updates.notes || '') + '\n' + notes;
-                }
-                
-                const { data, error } = await supabase
-                    .from('work_orders')
-                    .update(updates)
-                    .eq('id', id)
-                    .select();
-                
-                if (error) throw error;
-                return { success: true, data: data[0] };
-            } catch (error) {
-                console.error('خطا در به‌روزرسانی وضعیت:', error);
-                return { success: false, message: error.message };
+        try {
+            let result;
+            
+            if (isEditing && workOrderId) {
+                // ویرایش دستورکار موجود
+                result = await updateWorkOrder(workOrderId, workOrderData);
+            } else {
+                // ایجاد دستورکار جدید
+                result = await createWorkOrder(workOrderData);
             }
-        }
-        
-        async function deleteWorkOrderFromSupabase(id) {
-            try {
-                const { error } = await supabase
-                    .from('work_orders')
-                    .delete()
-                    .eq('id', id);
+            
+            if (result.success) {
+                const actionText = isEditing ? 'به‌روزرسانی' : 'ثبت';
+                showAlert('formAlert', 'success', `
+                    ✅ دستورکار با موفقیت ${actionText} شد<br>
+                    <small>شناسه: ${result.data.id}</small>
+                `);
                 
-                if (error) throw error;
-                return { success: true };
-            } catch (error) {
-                console.error('خطا در حذف دستورکار:', error);
-                return { success: false, message: error.message };
+                setTimeout(() => {
+                    closeWorkOrderPopup();
+                    resetWorkOrderPopup();
+                    // اعلان سیستم
+                    showAlert('systemAlert', 'success', 
+                        isEditing ? 'تغییرات با موفقیت ذخیره شد' : 'دستورکار جدید ثبت شد', 
+                        true);
+                }, 2000);
+            } else {
+                showAlert('formAlert', 'danger', result.message);
+                document.getElementById('loadingIndicator').style.display = 'none';
+                document.getElementById('workOrderForm').style.display = 'block';
             }
-        }
-
-        // ==================== UI FUNCTIONS ====================
-        function openWorkOrderPopup() {
-            resetWorkOrderPopup();
-            document.getElementById('workOrderPopup').style.display = 'flex';
-            document.getElementById('woTitle').focus();
-            document.getElementById('formAlert').style.display = 'none';
-        }
-        
-        function closeWorkOrderPopup() {
-            document.getElementById('workOrderPopup').style.display = 'none';
-            document.getElementById('workOrderForm').reset();
-            document.getElementById('formAlert').style.display = 'none';
+        } catch (error) {
+            showAlert('formAlert', 'danger', 'خطا در ثبت دستورکار: ' + error.message);
             document.getElementById('loadingIndicator').style.display = 'none';
             document.getElementById('workOrderForm').style.display = 'block';
-            resetWorkOrderPopup();
         }
-        
-        function resetWorkOrderPopup() {
-            document.getElementById('workOrderPopup').dataset.editingId = '';
-            document.querySelector('#workOrderPopup .popup-title').textContent = 'ثبت دستورکار جدید';
-            
-            const submitBtn = document.querySelector('#workOrderForm button[type="submit"]');
-            submitBtn.innerHTML = '<i class="fas fa-save"></i> ثبت دستورکار';
-            delete submitBtn.dataset.editing;
-        }
-        
-        async function editWorkOrderUI(workOrder) {
-            // بستن پاپاپ جزئیات
+    });
+    
+    // شمارنده کاراکتر
+    document.getElementById('woDescription').addEventListener('input', updateCharCount);
+    
+    // بستن پاپاپ‌ها
+    document.getElementById('workOrderPopup').addEventListener('click', function(e) {
+        if (e.target === this) closeWorkOrderPopup();
+    });
+    
+    document.getElementById('detailsPopup').addEventListener('click', function(e) {
+        if (e.target === this) closeDetailsPopup();
+    });
+    
+    // کلید Escape
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeWorkOrderPopup();
             closeDetailsPopup();
-            
-            // باز کردن پاپاپ ویرایش
-            openEditWorkOrderPopup(workOrder);
         }
-        
-        function openEditWorkOrderPopup(workOrder) {
-            // پر کردن فرم با داده‌های موجود
-            document.getElementById('woTitle').value = workOrder.problem_title;
-            document.getElementById('woAssignedTo').value = workOrder.assigned_to;
-            document.getElementById('woPriority').value = workOrder.priority;
-            document.getElementById('woRequestType').value = workOrder.request_type;
-            document.getElementById('woDescription').value = workOrder.problem_description;
-            document.getElementById('woNotes').value = workOrder.notes || '';
-            
-            // به روزرسانی شمارنده کاراکتر
-            updateCharCount();
-            
-            // تغییر عنوان و تنظیمات فرم
-            
-            
-            // ذخیره ID برای استفاده در ارسال
-            document.getElementById('workOrderPopup').dataset.editingId = workOrder.id;
-            
-            // نمایش پاپاپ
-            document.getElementById('workOrderPopup').style.display = 'flex';
-            document.getElementById('woTitle').focus();
-            document.getElementById('formAlert').style.display = 'none';
-            
-            // تغییر متن دکمه ثبت
-           
+    });
+    
+    // به روزرسانی خودکار هنگام بازگشت به صفحه
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden) {
+            // بارگذاری مجدد از سرور برای اطمینان از داده‌های به‌روز
+            loadReports(true);
         }
-        
-        function openDetailsPopup(workOrder) {
-            const detailsContent = document.getElementById('detailsContent');
-            
-            detailsContent.innerHTML = `
-                <div style="margin-bottom: 20px;">
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                            <div>
-                                <strong>شناسه:</strong> ${workOrder.id}
-                            </div>
-                            <div>
-                                <span class="status-badge status-${workOrder.status}" 
-                                      style="background: ${workOrder.status === 'pending' ? '#fff3cd' : 
-                                                         workOrder.status === 'in-progress' ? '#d1ecf1' : 
-                                                         workOrder.status === 'completed' ? '#d4edda' : '#f8d7da'}; 
-                                            color: ${workOrder.status === 'pending' ? '#856404' : 
-                                                    workOrder.status === 'in-progress' ? '#0c5460' : 
-                                                    workOrder.status === 'completed' ? '#155724' : '#721c24'};">
-                                    ${statusLabels[workOrder.status]}
-                                </span>
-                            </div>
-                        </div>
-                        
-                        <h3 style="color: var(--primary); margin-bottom: 10px;">${workOrder.problem_title}</h3>
-                        
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
-                            <div>
-                                <strong>مسئول پیگیری:</strong><br>
-                                ${workOrder.assigned_to}
-                            </div>
-                            <div>
-                                <strong>اولویت:</strong><br>
-                                <span style="color: ${priorityColors[workOrder.priority]}; font-weight: bold;">
-                                    ${priorityLabels[workOrder.priority]}
-                                </span>
-                            </div>
-                        </div>
-                        
-                        <div style="margin-bottom: 10px;">
-                            <strong>نوع درخواست:</strong><br>
-                            ${requestTypeLabels[workOrder.request_type]}
-                        </div>
-                    </div>
-                    
-                    <div style="margin-bottom: 15px;">
-                        <strong>شرح مشکل:</strong>
-                        <div style="background: white; padding: 10px; border-radius: 6px; border: 1px solid #eaeaea; margin-top: 5px;">
-                            ${workOrder.problem_description}
-                        </div>
-                    </div>
-                    
-                    ${workOrder.notes ? `
-                    <div style="margin-bottom: 15px;">
-                        <strong>یادداشت‌ها:</strong>
-                        <div style="background: white; padding: 10px; border-radius: 6px; border: 1px solid #eaeaea; margin-top: 5px;">
-                            ${workOrder.notes}
-                        </div>
-                    </div>
-                    ` : ''}
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 12px; color: var(--gray);">
-                        <div>
-                            <strong>تاریخ ثبت:</strong><br>
-                            ${formatPersianDate(workOrder.created_at)}
-                        </div>
-                        ${workOrder.completed_at ? `
-                        <div>
-                            <strong>تاریخ تکمیل:</strong><br>
-                            ${formatPersianDate(workOrder.completed_at)}
-                        </div>
-                        ` : ''}
-                    </div>
-                </div>
-                
-                <div class="form-actions">
-                  
-                    
-                    <button type="button" class="btn btn-primary" onclick="deleteWorkOrderUI(${workOrder.id})">
-                        <i class="fas fa-trash"></i> حذف
-                    </button>
-                </div>
-            `;
-            
-            document.getElementById('detailsPopup').style.display = 'flex';
-        }
-        
-        function closeDetailsPopup() {
-            document.getElementById('detailsPopup').style.display = 'none';
-        }
-        
-        async function changeStatus(workOrderId, newStatus) {
-            const confirmed = await confirm('آیا از تغییر وضعیت اطمینان دارید؟');
-            if (confirmed) {
-                const result = await updateWorkOrderStatus(workOrderId, newStatus);
-                if (result.success) {
-                    // وضعیت در Real-time به‌روزرسانی می‌شود
-                    closeDetailsPopup();
-                    
-                    // نمایش اعلان سیستم
-                    const statusText = statusLabels[newStatus];
-                    showAlert('systemAlert', 'success', 
-                        `وضعیت دستورکار به "${statusText}" تغییر یافت`, 
-                        true);
-                } else {
-                    showAlert('systemAlert', 'danger', result.message, true);
-                }
-            }
-        }
-        
-        async function deleteWorkOrderUI(workOrderId) {
-            const confirmed = await confirm('آیا از حذف این دستورکار اطمینان دارید؟');
-            if (confirmed) {
-                const result = await deleteWorkOrderFromSupabase(workOrderId);
-                if (result.success) {
-                    // حذف در Real-time به‌روزرسانی می‌شود
-                    closeDetailsPopup();
-                    
-                    // نمایش اعلان سیستم
-                    showAlert('systemAlert', 'success', 'دستورکار با موفقیت حذف شد', true);
-                } else {
-                    showAlert('systemAlert', 'danger', result.message, true);
-                }
-            }
-        }
-        
-        async function loadReports(forceReload = false) {
-            try {
-                const filters = {
-                    status: document.getElementById('statusFilter').value,
-                    priority: document.getElementById('priorityFilter').value,
-                    dateFrom: document.getElementById('dateFromFilter').value,
-                    dateTo: document.getElementById('dateToFilter').value
-                };
-                
-                // اگر forceReload true باشد یا داده‌ای در کش نیست، از سرور بگیر
-                if (forceReload || allWorkOrders.length === 0) {
-                    const workOrders = await getAllWorkOrders(filters);
-                    const filteredData = filterWorkOrders(workOrders, filters);
-                    updateReportsTable(filteredData);
-                    
-                    const stats = calculateStatsFromData(filteredData);
-                    updateStats(stats);
-                } else {
-                    // از کش استفاده کن
-                    const filteredData = filterWorkOrders(allWorkOrders, filters);
-                    updateReportsTable(filteredData);
-                    
-                    const stats = calculateStatsFromData(filteredData);
-                    updateStats(stats);
-                }
-                
-            } catch (error) {
-                console.error('خطا در بارگذاری گزارشات:', error);
-                document.getElementById('reportsTableBody').innerHTML = `
-                    <tr>
-                        <td colspan="8" style="text-align: center; color: var(--danger); padding: 20px;">
-                            خطا در بارگذاری داده‌ها
-                        </td>
-                    </tr>
-                `;
-                document.getElementById('tableInfo').textContent = 'خطا در بارگذاری';
-                showAlert('systemAlert', 'danger', 'خطا در بارگذاری داده‌ها', true);
-            }
-        }
-        
-        function updateReportsTable(workOrders) {
-            const tbody = document.getElementById('reportsTableBody');
-            
-            if (workOrders.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="8" style="text-align: center; color: var(--gray); padding: 20px;">
-                            هیچ دستورکاری یافت نشد
-                        </td>
-                    </tr>
-                `;
-                document.getElementById('tableInfo').textContent = 'هیچ رکوردی یافت نشد';
-                return;
-            }
-            
-            let html = '';
-            workOrders.forEach(wo => {
-                html += `
-                    <tr>
-                        <td>${wo.id}</td>
-                        <td><strong>${wo.problem_title}</strong></td>
-                        <td>${wo.assigned_to}</td>
-                        <td>
-                            <span style="color: ${priorityColors[wo.priority]}; font-weight: bold;">
-                                ${priorityLabels[wo.priority]}
-                            </span>
-                        </td>
-                        <td>${requestTypeLabels[wo.request_type]}</td>
-                        <td>${formatPersianDate(wo.created_at)}</td>
-                        <td>
-                            <span class="status-badge status-${wo.status}" 
-                                  style="background: ${wo.status === 'pending' ? '#fff3cd' : 
-                                                     wo.status === 'in-progress' ? '#d1ecf1' : 
-                                                     wo.status === 'completed' ? '#d4edda' : '#f8d7da'}; 
-                                        color: ${wo.status === 'pending' ? '#856404' : 
-                                                wo.status === 'in-progress' ? '#0c5460' : 
-                                                wo.status === 'completed' ? '#155724' : '#721c24'};">
-                                ${statusLabels[wo.status]}
-                            </span>
-                        </td>
-                        <td>
-                            <button onclick="openDetailsPopup(${JSON.stringify(wo).replace(/"/g, '&quot;')})" 
-                                    style="background: var(--secondary); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">
-                                <i class="fas fa-eye"></i> مشاهده
-                            </button>
-                        </td>
-                    </tr>
-                `;
-            });
-            
-            tbody.innerHTML = html;
-            document.getElementById('tableInfo').textContent = `تعداد رکوردها: ${workOrders.length}`;
-        }
-        
-        function updateStats(stats) {
-            document.getElementById('statsContainer').innerHTML = `
-                <div class="stat-card">
-                    <div class="stat-number">${stats.total}</div>
-                    <div class="stat-label">کل دستورکارها</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" style="color: var(--warning);">${stats.pending}</div>
-                    <div class="stat-label">در انتظار</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" style="color: var(--secondary);">${stats.inProgress}</div>
-                    <div class="stat-label">در حال انجام</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" style="color: var(--success);">${stats.completed}</div>
-                    <div class="stat-label">تکمیل شده</div>
-                </div>
-            `;
-        }
-        
-        function filterReports() {
-            // استفاده از debouncing برای جلوگیری از درخواست‌های زیاد
-            clearTimeout(filterTimeout);
-            filterTimeout = setTimeout(() => {
-                loadReports(false); // false یعنی از کش استفاده کن
-            }, 300);
-        }
-        
-        function exportData() {
-            showAlert('systemAlert', 'info', 'این ویژگی در نسخه فعلی فعال نیست', true);
-        }
-        
-        function checkEndOfMonth() {
-            const today = new Date();
-            const tomorrow = new Date(today);
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            
-            if (tomorrow.getDate() === 1) {
-                document.getElementById('cleanupAlert').style.display = 'flex';
-                showAlert('systemAlert', 'warning', 'فردا اولین روز ماه جدید است. لطفاً از داده‌های خود خروجی بگیرید.', false);
-            }
-        }
+    });
+    
+    // قطع اتصال Real-time هنگام بستن صفحه
+    window.addEventListener('beforeunload', unsubscribeRealtime);
+    
+    console.log('✅ سیستم Real-time آماده است');
+    
+    // ==================== ATTACH FUNCTIONS TO WINDOW ====================
+    window.showAlert = showAlert;
+    window.getAlertIcon = getAlertIcon;
+    window.formatPersianDate = formatPersianDate;
+    window.updateCharCount = updateCharCount;
+    window.setupRealtimeSubscription = setupRealtimeSubscription;
+    window.handleRealtimeUpdate = handleRealtimeUpdate;
+    window.updateUIFromCache = updateUIFromCache;
+    window.filterWorkOrders = filterWorkOrders;
+    window.calculateStatsFromData = calculateStatsFromData;
+    window.unsubscribeRealtime = unsubscribeRealtime;
+    window.createWorkOrder = createWorkOrder;
+    window.updateWorkOrder = updateWorkOrder;
+    window.getAllWorkOrders = getAllWorkOrders;
+    window.getWorkOrderStats = getWorkOrderStats;
+    window.updateWorkOrderStatus = updateWorkOrderStatus;
+    window.deleteWorkOrderFromSupabase = deleteWorkOrderFromSupabase;
+    window.openWorkOrderPopup = openWorkOrderPopup;
+    window.closeWorkOrderPopup = closeWorkOrderPopup;
+    window.resetWorkOrderPopup = resetWorkOrderPopup;
+    window.editWorkOrderUI = editWorkOrderUI;
+    window.openEditWorkOrderPopup = openEditWorkOrderPopup;
+    window.openDetailsPopup = openDetailsPopup;
+    window.closeDetailsPopup = closeDetailsPopup;
+    window.changeStatus = changeStatus;
+    window.deleteWorkOrderUI = deleteWorkOrderUI;
+    window.loadReports = loadReports;
+    window.updateReportsTable = updateReportsTable;
+    window.updateStats = updateStats;
+    window.filterReports = filterReports;
+    window.exportData = exportData;
+    window.checkEndOfMonth = checkEndOfMonth;
+    window.closeCustomAlert = window.closeCustomAlert;
+    window.closeCustomConfirm = window.closeCustomConfirm;
+    
+    console.log('✅ تمامی توابع در scope سراسری قرار گرفتند');
+});
 
-        // ==================== EVENT LISTENERS ====================
-        document.addEventListener('DOMContentLoaded', async function() {
-            // مدیریت کاربر
-            const userNameElement = document.getElementById('userName');
-            const userAvatarElement = document.getElementById('userAvatar');
-            const loginTimeElement = document.getElementById('loginTime');
-            
-            const now = new Date();
-            if (loginTimeElement) {
-                loginTimeElement.textContent = now.toLocaleTimeString('fa-IR');
-            }
-            
-            if (userNameElement) {
-                userNameElement.textContent = 'مدیر سیستم';
-            }
-            if (userAvatarElement) {
-                userAvatarElement.textContent = 'M';
-            }
-            
-            // تنظیم تاریخ امروز در فیلترها
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('dateFromFilter').value = today;
-            document.getElementById('dateToFilter').value = today;
-            
-            // بارگذاری اولیه داده‌ها
-            try {
-                await loadReports(true); // true برای بارگذاری اولیه از سرور
-                checkEndOfMonth();
-                showAlert('systemAlert', 'success', 'اتصال به سرور برقرار شد', true);
-            } catch (error) {
-                showAlert('systemAlert', 'danger', 'خطا در اتصال به سرور', true);
-            }
-            
-            // راه‌اندازی Real-time
-            await setupRealtimeSubscription();
-            
-            // مدیریت فرم ثبت دستورکار
-            document.getElementById('workOrderForm').addEventListener('submit', async function(e) {
-                e.preventDefault();
-                
-                const submitBtn = document.querySelector('#workOrderForm button[type="submit"]');
-                const isEditing = submitBtn.dataset.editing === 'true';
-                const workOrderId = document.getElementById('workOrderPopup').dataset.editingId;
-                
-                const title = document.getElementById('woTitle').value.trim();
-                const assignedTo = document.getElementById('woAssignedTo').value;
-                const priority = document.getElementById('woPriority').value;
-                const requestType = document.getElementById('woRequestType').value;
-                const description = document.getElementById('woDescription').value.trim();
-                
-                // اعتبارسنجی
-                if (!title || !assignedTo || !priority || !requestType || !description) {
-                    showAlert('formAlert', 'danger', 'لطفا تمام فیلدهای ضروری را پر کنید');
-                    return;
-                }
-                
-                if (description.length < 10) {
-                    showAlert('formAlert', 'danger', 'شرح مشکل باید حداقل ۱۰ کاراکتر باشد');
-                    return;
-                }
-                
-                const workOrderData = {
-                    problemTitle: title,
-                    assignedTo: assignedTo,
-                    priority: priority,
-                    requestType: requestType,
-                    problemDescription: description,
-                    notes: document.getElementById('woNotes').value.trim() || null
-                };
-                
-                // نمایش بارگذاری
-                document.getElementById('loadingIndicator').style.display = 'block';
-                document.getElementById('workOrderForm').style.display = 'none';
-                
-                try {
-                    let result;
-                    
-                    if (isEditing && workOrderId) {
-                        // ویرایش دستورکار موجود
-                        result = await updateWorkOrder(workOrderId, workOrderData);
-                    } else {
-                        // ایجاد دستورکار جدید
-                        result = await createWorkOrder(workOrderData);
-                    }
-                    
-                    if (result.success) {
-                        const actionText = isEditing ? 'به‌روزرسانی' : 'ثبت';
-                        showAlert('formAlert', 'success', `
-                            ✅ دستورکار با موفقیت ${actionText} شد<br>
-                            <small>شناسه: ${result.data.id}</small>
-                        `);
-                        
-                        setTimeout(() => {
-                            closeWorkOrderPopup();
-                            resetWorkOrderPopup();
-                            // اعلان سیستم
-                            showAlert('systemAlert', 'success', 
-                                isEditing ? 'تغییرات با موفقیت ذخیره شد' : 'دستورکار جدید ثبت شد', 
-                                true);
-                        }, 2000);
-                    } else {
-                        showAlert('formAlert', 'danger', result.message);
-                        document.getElementById('loadingIndicator').style.display = 'none';
-                        document.getElementById('workOrderForm').style.display = 'block';
-                    }
-                } catch (error) {
-                    showAlert('formAlert', 'danger', 'خطا در ثبت دستورکار: ' + error.message);
-                    document.getElementById('loadingIndicator').style.display = 'none';
-                    document.getElementById('workOrderForm').style.display = 'block';
-                }
-            });
-            
-            // شمارنده کاراکتر
-            document.getElementById('woDescription').addEventListener('input', updateCharCount);
-            
-            // بستن پاپاپ‌ها
-            document.getElementById('workOrderPopup').addEventListener('click', function(e) {
-                if (e.target === this) closeWorkOrderPopup();
-            });
-            
-            document.getElementById('detailsPopup').addEventListener('click', function(e) {
-                if (e.target === this) closeDetailsPopup();
-            });
-            
-            // کلید Escape
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') {
-                    closeWorkOrderPopup();
-                    closeDetailsPopup();
-                }
-            });
-            
-            // به روزرسانی خودکار هنگام بازگشت به صفحه
-            document.addEventListener('visibilitychange', function() {
-                if (!document.hidden) {
-                    // بارگذاری مجدد از سرور برای اطمینان از داده‌های به‌روز
-                    loadReports(true);
-                }
-            });
-            
-            // قطع اتصال Real-time هنگام بستن صفحه
-            window.addEventListener('beforeunload', unsubscribeRealtime);
-            
-            console.log('✅ سیستم Real-time آماده است');
-        });
+// Service Worker
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+        navigator.serviceWorker.register('../sw.js');
+    });
+}
     </script>
 </body>
 </html>
