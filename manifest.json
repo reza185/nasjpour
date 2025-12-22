@@ -3,7 +3,7 @@
   "name": "TPM PRO - میهن چاپ",
   "short_name": "TPM",
   "description": "سیستم هوشمند مدیریت تعمیرات و نگهداری - میهن چاپ سپاهان",
-  "start_url": "/nasjpour/?source=pwa&utm_source=pwa",
+  "start_url": "/nasjpour/",
   "scope": "/nasjpour/",
   "theme_color": "#142d4b",
   "background_color": "#142d4b",
@@ -14,13 +14,13 @@
   "lang": "fa",
   "dir": "rtl",
   "prefer_related_applications": false,
-  "id": "/nasjpour/?v=1.1.1",  
+  "id": "/nasjpour/",  
   
   "version": "1.1.1",
   "ios": {
     "precomposed": true,
     "apple-mobile-web-app-capable": "yes",
-    "apple-mobile-web-app-status-bar-style": "black-translucent"
+    "apple-mobile-web-app-status-bar-style": "default"
   },
   "launch_handler": {
     "client_mode": "navigate-new"
