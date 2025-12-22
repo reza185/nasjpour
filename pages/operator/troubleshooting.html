@@ -1409,6 +1409,236 @@
         <i class="fas fa-wifi-slash"></i> حالت آفلاین - اتصال اینترنت برقرار نیست
     </div>
     <script>
+
+// ==================== دیباگ و تست ====================
+console.log('🔍 شروع دیباگ موبایل');
+
+// تابع برای لاگ کردن تمام کلیک‌ها و تاچ‌ها
+function debugAllEvents() {
+    // لاگ کلیک روی body
+    document.body.addEventListener('click', function(e) {
+        console.log('📍 کلیک روی body:', e.target.className, e.target.tagName);
+    });
+    
+    // لاگ تاچ روی body
+    document.body.addEventListener('touchstart', function(e) {
+        console.log('👆 تاچ شروع روی:', e.target.className, e.target.tagName);
+    }, { passive: true });
+    
+    // لاگ تاچ روی دکمه‌ها
+    document.querySelectorAll('.action-btn, .btn, .category-tab').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            console.log('✅ کلیک روی دکمه:', this.className, this.textContent.trim());
+            e.preventDefault();
+            e.stopPropagation();
+        });
+        
+        btn.addEventListener('touchstart', function(e) {
+            console.log('🟢 تاچ روی دکمه:', this.className, this.textContent.trim());
+            e.preventDefault();
+            e.stopPropagation();
+        });
+        
+        btn.addEventListener('touchend', function(e) {
+            console.log('🔴 تاچ پایان روی دکمه:', this.className);
+            e.preventDefault();
+            e.stopPropagation();
+        });
+    });
+}
+
+// ==================== ترفند رفع مشکل موبایل ====================
+function forceMobileFix() {
+    console.log('🔧 اجرای forceMobileFix');
+    
+    // حذف همه event listenerهای قبلی از دکمه‌ها
+    document.querySelectorAll('.action-btn.report-btn').forEach(btn => {
+        btn.replaceWith(btn.cloneNode(true));
+    });
+    
+    // اضافه کردن event listener جدید با تاخیر
+    setTimeout(() => {
+        // 1. دکمه گزارش مشکل
+        const reportBtn = document.querySelector('.action-btn.report-btn');
+        if (reportBtn) {
+            console.log('🎯 دکمه گزارش پیدا شد');
+            
+            // برای کلیک (دسکتاپ)
+            reportBtn.addEventListener('click', function(e) {
+                console.log('🖱️ کلیک روی گزارش');
+                e.stopImmediatePropagation();
+                e.preventDefault();
+                openReportPopup('استنتر آرتوس');
+                return false;
+            });
+            
+            // برای تاچ (موبایل)
+            reportBtn.addEventListener('touchstart', function(e) {
+                console.log('📱 تاچ شروع روی گزارش');
+                e.stopImmediatePropagation();
+                e.preventDefault();
+            }, { passive: false });
+            
+            reportBtn.addEventListener('touchend', function(e) {
+                console.log('📱 تاچ پایان روی گزارش');
+                e.stopImmediatePropagation();
+                e.preventDefault();
+                openReportPopup('استنتر آرتوس');
+                return false;
+            }, { passive: false });
+            
+            // اضافه کردن استایل برای تاچ
+            reportBtn.style.cssText += `
+                touch-action: none !important;
+                -webkit-tap-highlight-color: transparent !important;
+                cursor: pointer !important;
+            `;
+        }
+        
+        // 2. دکمه عیب‌یابی
+        const troubleshootBtn = document.querySelector('.action-btn.troubleshoot-btn');
+        if (troubleshootBtn) {
+            troubleshootBtn.addEventListener('click', function(e) {
+                e.stopImmediatePropagation();
+                e.preventDefault();
+                startTroubleshooting();
+                return false;
+            });
+            
+            troubleshootBtn.addEventListener('touchend', function(e) {
+                e.stopImmediatePropagation();
+                e.preventDefault();
+                startTroubleshooting();
+                return false;
+            }, { passive: false });
+        }
+        
+        // 3. دکمه بستن پاپ‌آپ
+        const closeBtn = document.querySelector('.close-btn');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', function(e) {
+                e.stopImmediatePropagation();
+                closeReportPopup();
+            });
+            
+            closeBtn.addEventListener('touchend', function(e) {
+                e.stopImmediatePropagation();
+                closeReportPopup();
+            }, { passive: false });
+        }
+        
+        // 4. دکمه‌های داخل پاپ‌آپ
+        document.querySelectorAll('.cancel-btn').forEach(btn => {
+            btn.addEventListener('touchend', function(e) {
+                e.stopImmediatePropagation();
+                closeReportPopup();
+            }, { passive: false });
+        });
+        
+    }, 1000); // تاخیر ۱ ثانیه‌ای برای اطمینان از لود کامل
+}
+
+// ==================== تابع تست پاپ‌آپ ====================
+function testPopup() {
+    console.log('🧪 تست پاپ‌آپ اجرا شد');
+    const popup = document.getElementById('reportPopup');
+    if (popup) {
+        popup.style.display = 'flex';
+        console.log('✅ پاپ‌آپ نمایش داده شد');
+        
+        // تست بستن با کلیک خارج
+        popup.addEventListener('click', function(e) {
+            if (e.target === this) {
+                console.log('🎯 کلیک روی overlay');
+                popup.style.display = 'none';
+            }
+        });
+    } else {
+        console.log('❌ پاپ‌آپ پیدا نشد');
+    }
+}
+
+// ==================== اجرای تست‌ها ====================
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 DOM لود شد');
+    
+    // دیباگ رو فعال کن
+    debugAllEvents();
+    
+    // اجرای فیکس
+    forceMobileFix();
+    
+    // اضافه کردن دکمه تست برای دیباگ
+    const testBtn = document.createElement('button');
+    testBtn.textContent = 'تست پاپ‌آپ (فقط دیباگ)';
+    testBtn.style.cssText = `
+        position: fixed;
+        bottom: 100px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: red;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 10px;
+        z-index: 999999;
+    `;
+    testBtn.addEventListener('click', testPopup);
+    document.body.appendChild(testBtn);
+    
+    console.log('✅ تست‌ها اجرا شدند');
+});
+
+// ==================== توابع اصلی (بدون تغییر) ====================
+// توابع openReportPopup, closeReportPopup و بقیه توابع رو اینجا کپی کن...
+// فقط مطمئن شو که توابع زیر حتما وجود دارند:
+
+function openReportPopup(machineName) {
+    console.log('🚀 openReportPopup فراخوانی شد:', machineName);
+    
+    // ابتدا popup رو پیدا کن
+    const popup = document.getElementById('reportPopup');
+    if (!popup) {
+        console.log('❌ پاپ‌آپ پیدا نشد!');
+        return;
+    }
+    
+    // مقدار دهی فیلدها
+    const machineInput = document.getElementById('machine_name');
+    if (machineInput) {
+        machineInput.value = machineName;
+    }
+    
+    // نمایش پاپ‌آپ
+    popup.style.display = 'flex';
+    console.log('✅ پاپ‌آپ نمایش داده شد');
+    
+    // فوکوس روی فیلد نام
+    setTimeout(() => {
+        const nameInput = document.getElementById('reporter_name');
+        if (nameInput) {
+            nameInput.focus();
+        }
+    }, 100);
+}
+
+function closeReportPopup() {
+    console.log('🚪 closeReportPopup فراخوانی شد');
+    const popup = document.getElementById('reportPopup');
+    if (popup) {
+        popup.style.display = 'none';
+        console.log('✅ پاپ‌آپ بسته شد');
+    }
+    
+    // ریست فرم
+    const form = document.getElementById('reportForm');
+    if (form) {
+        form.reset();
+    }
+}
+
+// بقیه توابع اصلی رو اینجا کپی کن...
+        
         // ==================== CUSTOM ALERT SYSTEM ====================
         delete window.alert;
         
