@@ -672,375 +672,739 @@
     <!-- اسکریپت Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        delete window.confirm;
+       // ==================== CUSTOM ALERT SYSTEM ====================
+document.addEventListener('DOMContentLoaded', function() {
+    
+    // ==================== تابع تشخیص نوع ایراد و تعیین تکنسین ====================
+    function determineIssueTypeAndTechnician(problemDescription) {
+        if (!problemDescription) return { issueType: 'فنی', technician: 'نوروزی' };
         
-        window.confirm = function(message) {
-            return new Promise((resolve) => {
-                // ساخت overlay
-                const overlay = document.createElement('div');
-                overlay.style.cssText = `
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    background: rgba(0,0,0,0.5);
-                    z-index: 10000;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                `;
-                
-                // ساخت dialog
-                const dialog = document.createElement('div');
-                dialog.style.cssText = `
-                    background: white;
-                    padding: 25px;
-                    border-radius: 12px;
-                    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-                    text-align: center;
-                    min-width: 300px;
-                    max-width: 90%;
-                    font-family: Vazirmatn, sans-serif;
-                    border: 2px solid #2c3e50;
-                `;
-                
-                dialog.innerHTML = `
-                    <div style="margin-bottom: 20px; font-size: 16px; color: #2c3e50; line-height: 1.5;">${message}</div>
-                    <div style="display: flex; gap: 10px; justify-content: center;">
-                        <button id="customConfirmYes" 
-                                style="padding: 10px 25px; background: #27ae60; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
-                            بله
-                        </button>
-                        <button id="customConfirmNo" 
-                                style="padding: 10px 25px; background: #e74c3c; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
-                            خیر
-                        </button>
-                    </div>
-                `;
-                
-                overlay.appendChild(dialog);
-                document.body.appendChild(overlay);
-                
-                // تابع بستن
-                const closeConfirm = function(result) {
-                    if (document.body.contains(overlay)) {
-                        document.body.removeChild(overlay);
-                    }
-                    resolve(result);
-                };
-                
-                // اضافه کردن event listener برای دکمه‌ها
-                document.getElementById('customConfirmYes').addEventListener('click', () => closeConfirm(true));
-                document.getElementById('customConfirmNo').addEventListener('click', () => closeConfirm(false));
-                
-                // با کلیک روی overlay هم بسته نشه (مثل confirm اصلی)
-                overlay.onclick = function(e) {
-                    if (e.target === overlay) {
-                        // کاری نکن - مثل confirm اصلی که با کلیک خارج بسته نمیشه
-                    }
-                };
-            });
+        const problem = problemDescription.toLowerCase();
+        
+        const electricalKeywords = [
+            'برق', 'الکتریک', 'سیم', 'کابل', 'فیوز', 'کلید', 'مدار', 
+            'ولتاژ', 'جریان', 'موتور', 'کنترل', 'تابلو', 'دستگاه اندازه گیری',
+            'اینورتر', 'میکروسوییچ', 'کنتاکتور', 'شاسی', 'چشم الکترونیکی',
+            'سنسور', 'پی‌ال‌سی', 'ال‌سی‌دی', 'کنترل پنل', 'رله', 'ترانس',
+            'الکترونیک', 'برقی', 'ولت', 'آمپر', 'وات', 'برق رسانی'
+        ];
+        
+        const technicalKeywords = [
+            'روغن', 'گیربکس', 'بلبرینگ', 'یاتاقان', 'شفت', 'گشتاور',
+            'مکانیک', 'سرویس', 'تعویض', 'بازبینی', 'قطعه', 'جوش',
+            'لاستیک', 'غلطک', 'زنجیر', 'چرخ دنده', 'تسمه', 'کوپلینگ',
+            'فن', 'رادیاتور', 'دمای روغن', 'بالانس', 'گیرکردن',
+            'اسپیندل', 'ریل', 'جک', 'پنوماتیک', 'باد', 'فشار',
+            'مکانیکی', 'فنی', 'تعمیر', 'نصب', 'سرویس', 'نگهداری',
+            'صدا', 'لرزش', 'نشت', 'فرسودگی', 'خرابی مکانیکی'
+        ];
+        
+        let electricalCount = 0;
+        let technicalCount = 0;
+        
+        electricalKeywords.forEach(keyword => {
+            if (problem.includes(keyword)) electricalCount++;
+        });
+        
+        technicalKeywords.forEach(keyword => {
+            if (problem.includes(keyword)) technicalCount++;
+        });
+        
+        if (electricalCount > 0 && technicalCount === 0) {
+            return { issueType: 'برق', technician: 'ابراهیمی' };
+        } else if (technicalCount > 0 && electricalCount === 0) {
+            return { issueType: 'فنی', technician: 'نوروزی' };
+        } else if (electricalCount > 0 && technicalCount > 0) {
+            return { issueType: 'ترکیبی', technician: 'ابراهیمی و نوروزی' };
+        }
+        
+        return { issueType: 'فنی', technician: 'نوروزی' };
+    }
+    
+    // تنظیمات Supabase
+    const SUPABASE_URL = 'https://kalykylvjqigqlaprlca.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImthbHlreWx2anFpZ3FsYXBybGNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM1NjI1OTcsImV4cCI6MjA3OTEzODU5N30.S8YtogVrxkqYjkgfkGpy4_mS6mqaNxmsHjxnhyBPwEY';
+    
+    // ایجاد کلاینت Supabase
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    // تابع برای فرمت کردن تاریخ و زمان به فارسی
+    function formatPersianDateTime(date) {
+        const options = {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
         };
-        
-        // تنظیمات Supabase
-        const SUPABASE_URL = 'https://kalykylvjqigqlaprlca.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImthbHlreWx2anFpZ3FsYXBybGNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM1NjI1OTcsImV4cCI6MjA3OTEzODU5N30.S8YtogVrxkqYjkgfkGpy4_mS6mqaNxmsHjxnhyBPwEY';
-        
-        // ایجاد کلاینت Supabase
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        
-        // تابع برای فرمت کردن تاریخ و زمان به فارسی
-        function formatPersianDateTime(date) {
-            const options = {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            };
-            return new Intl.DateTimeFormat('fa-IR', options).format(date);
-        }
+        return new Intl.DateTimeFormat('fa-IR', options).format(date);
+    }
 
-        // تابع برای محاسبه زمان گذشته از ورود
-        function getTimeSinceLogin(loginTime) {
-            const now = new Date();
-            const diff = now - loginTime;
-            const minutes = Math.floor(diff / 60000);
-            const hours = Math.floor(minutes / 60);
-            
-            if (hours > 0) {
-                return `${hours} ساعت و ${minutes % 60} دقیقه قبل`;
-            } else {
-                return `${minutes} دقیقه قبل`;
-            }
+    // تابع برای محاسبه زمان گذشته از ورود
+    function getTimeSinceLogin(loginTime) {
+        const now = new Date();
+        const diff = now - loginTime;
+        const minutes = Math.floor(diff / 60000);
+        const hours = Math.floor(minutes / 60);
+        
+        if (hours > 0) {
+            return `${hours} ساعت و ${minutes % 60} دقیقه قبل`;
+        } else {
+            return `${minutes} دقیقه قبل`;
         }
+    }
 
-        // تابع برای به روز رسانی زمان آنلاین
-        function updateOnlineTime() {
-            const loginTimeElement = document.getElementById('loginTime');
-            if (loginTimeElement && window.loginTime) {
-                loginTimeElement.textContent = getTimeSinceLogin(window.loginTime);
-            }
+    // تابع برای به روز رسانی زمان آنلاین
+    function updateOnlineTime() {
+        const loginTimeElement = document.getElementById('loginTime');
+        if (loginTimeElement && window.loginTime) {
+            loginTimeElement.textContent = getTimeSinceLogin(window.loginTime);
         }
+    }
 
-        // تابع برای نمایش حالت "اپراتور تعیین وضعیت نکرده است"
-        function showNoOperatorStatus() {
-            console.log('📭 نمایش حالت "تعیین وضعیت نکرده است"');
-            
-            const machineContainer = document.getElementById('machineContainer');
-            const machineStatus = document.getElementById('machineStatus');
-            const machineIcon = document.getElementById('machineIcon');
-            const lastUpdateElement = document.getElementById('lastUpdate');
-            const operatorNameElement = document.getElementById('operatorName');
-            const reportDateElement = document.getElementById('reportDate');
-            const statusBadgeElement = document.getElementById('statusBadgeUnderLogo');
-            
-            // نمایش کانتینر
-            machineContainer.style.display = 'flex';
-            
-            // تنظیم وضعیت دستگاه
-            machineStatus.textContent = 'اپراتور تعیین وضعیت نکرده است';
-            machineStatus.className = 'machine-status status-maintenance';
-            
-            // تنظیم آیکون
-            machineIcon.className = 'machine-icon bg-maintenance';
-            machineIcon.innerHTML = '<i class="fas fa-question-circle"></i>';
-            
-            // تنظیم وضعیت زیر لوگو
+    // تابع برای نمایش حالت "اپراتور تعیین وضعیت نکرده است"
+    function showNoOperatorStatus() {
+        console.log('📭 نمایش حالت "تعیین وضعیت نکرده است"');
+        
+        const machineContainer = document.getElementById('machineContainer');
+        const machineStatus = document.getElementById('machineStatus');
+        const machineIcon = document.getElementById('machineIcon');
+        const lastUpdateElement = document.getElementById('lastUpdate');
+        const operatorNameElement = document.getElementById('operatorName');
+        const reportDateElement = document.getElementById('reportDate');
+        const statusBadgeElement = document.getElementById('statusBadgeUnderLogo');
+        
+        // نمایش کانتینر
+        machineContainer.style.display = 'flex';
+        
+        // تنظیم وضعیت دستگاه
+        machineStatus.textContent = 'اپراتور تعیین وضعیت نکرده است';
+        machineStatus.className = 'machine-status status-maintenance';
+        
+        // تنظیم آیکون
+        machineIcon.className = 'machine-icon bg-maintenance';
+        machineIcon.innerHTML = '<i class="fas fa-question-circle"></i>';
+        
+        // تنظیم وضعیت زیر لوگو
+        if (statusBadgeElement) {
             statusBadgeElement.textContent = 'وضعیت نامشخص';
             statusBadgeElement.className = 'status-badge-under-logo status-badge-unknown';
             statusBadgeElement.style.display = 'block';
-            
-            // تنظیم اطلاعات دیگر
-            const now = new Date();
-            lastUpdateElement.textContent = formatPersianDateTime(now);
-            operatorNameElement.textContent = 'نوروزی';
-            reportDateElement.textContent = formatPersianDateTime(now);
-            
-            console.log('✅ حالت "تعیین وضعیت نکرده است" نمایش داده شد');
         }
+        
+        // تنظیم اطلاعات دیگر
+        const now = new Date();
+        if (lastUpdateElement) lastUpdateElement.textContent = formatPersianDateTime(now);
+        if (operatorNameElement) operatorNameElement.textContent = 'نوروزی';
+        if (reportDateElement) reportDateElement.textContent = formatPersianDateTime(now);
+        
+        console.log('✅ حالت "تعیین وضعیت نکرده است" نمایش داده شد');
+    }
 
-        // تابع برای دریافت آخرین وضعیت دستگاه استنتر
-        async function getLatestMachineStatus() {
-            try {
-                console.log('📡 در حال دریافت اطلاعات از Supabase...');
-                
-                // نمایش لاودر
-                document.getElementById('loader').style.display = 'block';
-                document.getElementById('machineContainer').style.display = 'none';
-                
-                // دریافت داده‌ها از جدول operatourreports
-                const { data, error } = await supabase
-                    .from('operatourreports')
-                    .select('*')
-                    .order('created_at', { ascending: false })
-                    .limit(1);
-                
-                console.log('📊 پاسخ Supabase:', { data, error });
-                
-                if (error) {
-                    console.error('❌ خطا در دریافت اطلاعات:', error);
-                    throw error;
-                }
-                
-                // پنهان کردن لاودر و نمایش اطلاعات
-                document.getElementById('loader').style.display = 'none';
-                document.getElementById('machineContainer').style.display = 'flex';
-                
-                if (data && data.length > 0) {
-                    const latestReport = data[0];
-                    console.log('✅ آخرین گزارش دریافت شد:', latestReport);
-                    updateMachineStatus(latestReport);
-                } else {
-                    console.log('⚠️ هیچ داده‌ای در دیتابیس وجود ندارد');
-                    showNoOperatorStatus();
-                }
-            } catch (error) {
+    // تابع برای دریافت آخرین وضعیت دستگاه استنتر
+    async function getLatestMachineStatus() {
+        try {
+            console.log('📡 در حال دریافت اطلاعات از Supabase...');
+            
+            // نمایش لاودر
+            const loader = document.getElementById('loader');
+            const machineContainer = document.getElementById('machineContainer');
+            
+            if (loader) loader.style.display = 'block';
+            if (machineContainer) machineContainer.style.display = 'none';
+            
+            // دریافت داده‌ها از جدول operatourreports
+            const { data, error } = await supabase
+                .from('operatourreports')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .limit(1);
+            
+            console.log('📊 پاسخ Supabase:', { data, error });
+            
+            if (error) {
                 console.error('❌ خطا در دریافت اطلاعات:', error);
-                document.getElementById('loader').style.display = 'none';
-                showErrorMessage('خطا در اتصال به سرور: ' + error.message);
+                throw error;
             }
+            
+            // پنهان کردن لاودر و نمایش اطلاعات
+            if (loader) loader.style.display = 'none';
+            if (machineContainer) machineContainer.style.display = 'flex';
+            
+            if (data && data.length > 0) {
+                const latestReport = data[0];
+                console.log('✅ آخرین گزارش دریافت شد:', latestReport);
+                updateMachineStatus(latestReport);
+            } else {
+                console.log('⚠️ هیچ داده‌ای در دیتابیس وجود ندارد');
+                showNoOperatorStatus();
+            }
+        } catch (error) {
+            console.error('❌ خطا در دریافت اطلاعات:', error);
+            const loader = document.getElementById('loader');
+            if (loader) loader.style.display = 'none';
+            showErrorMessage('خطا در اتصال به سرور: ' + error.message);
         }
+    }
 
-        // تابع برای به روز رسانی وضعیت دستگاه استنتر
-        function updateMachineStatus(report) {
-            console.log('🔄 به روزرسانی وضعیت دستگاه با داده:', report);
-            
-            const machineStatus = report.machine_status;
-            const machineIcon = document.getElementById('machineIcon');
-            const machineStatusElement = document.getElementById('machineStatus');
-            const lastUpdateElement = document.getElementById('lastUpdate');
-            const operatorNameElement = document.getElementById('operatorName');
-            const reportDateElement = document.getElementById('reportDate');
-            const statusBadgeElement = document.getElementById('statusBadgeUnderLogo');
-            
-            console.log('📋 وضعیت دستگاه از دیتابیس:', machineStatus);
-            
-            // تنظیم وضعیت دستگاه
-            if (machineStatus === 'سالم') {
-                console.log('✅ دستگاه سالم است');
+    // تابع برای به روز رسانی وضعیت دستگاه استنتر
+    function updateMachineStatus(report) {
+        console.log('🔄 به روزرسانی وضعیت دستگاه با داده:', report);
+        
+        const machineStatus = report.machine_status;
+        const machineIcon = document.getElementById('machineIcon');
+        const machineStatusElement = document.getElementById('machineStatus');
+        const lastUpdateElement = document.getElementById('lastUpdate');
+        const operatorNameElement = document.getElementById('operatorName');
+        const reportDateElement = document.getElementById('reportDate');
+        const statusBadgeElement = document.getElementById('statusBadgeUnderLogo');
+        
+        console.log('📋 وضعیت دستگاه از دیتابیس:', machineStatus);
+        
+        // تنظیم وضعیت دستگاه
+        if (machineStatus === 'سالم') {
+            console.log('✅ دستگاه سالم است');
+            if (machineStatusElement) {
                 machineStatusElement.textContent = 'سالم و عملیاتی';
                 machineStatusElement.className = 'machine-status status-operational';
+            }
+            if (machineIcon) {
                 machineIcon.className = 'machine-icon bg-operational pulse';
                 machineIcon.innerHTML = '<i class="fas fa-check-circle"></i>';
-                
-                // اضافه کردن وضعیت زیر لوگو
+            }
+            
+            // اضافه کردن وضعیت زیر لوگو
+            if (statusBadgeElement) {
                 statusBadgeElement.textContent = 'سالم';
                 statusBadgeElement.className = 'status-badge-under-logo status-badge-operational';
                 statusBadgeElement.style.display = 'block';
-                
-            } else if (machineStatus === 'در حال تعمیر') {
-                console.log('🛠️ دستگاه در حال تعمیر است');
+            }
+            
+        } else if (machineStatus === 'در حال تعمیر') {
+            console.log('🛠️ دستگاه در حال تعمیر است');
+            if (machineStatusElement) {
                 machineStatusElement.textContent = 'در حال تعمیر';
                 machineStatusElement.className = 'machine-status status-maintenance';
+            }
+            if (machineIcon) {
                 machineIcon.className = 'machine-icon bg-maintenance';
                 machineIcon.innerHTML = '<i class="fas fa-tools"></i>';
-                
-                // اضافه کردن وضعیت زیر لوگو
+            }
+            
+            // اضافه کردن وضعیت زیر لوگو
+            if (statusBadgeElement) {
                 statusBadgeElement.textContent = 'تعمیر';
                 statusBadgeElement.className = 'status-badge-under-logo status-badge-maintenance';
                 statusBadgeElement.style.display = 'block';
-                
-            } else if (machineStatus === 'خراب') {
-                console.log('❌ دستگاه خراب است');
+            }
+            
+        } else if (machineStatus === 'خراب') {
+            console.log('❌ دستگاه خراب است');
+            if (machineStatusElement) {
                 machineStatusElement.textContent = 'خراب و غیرفعال';
                 machineStatusElement.className = 'machine-status status-broken';
+            }
+            if (machineIcon) {
                 machineIcon.className = 'machine-icon bg-broken';
                 machineIcon.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
-                
-                // اضافه کردن وضعیت زیر لوگو
+            }
+            
+            // اضافه کردن وضعیت زیر لوگو
+            if (statusBadgeElement) {
                 statusBadgeElement.textContent = 'خراب';
                 statusBadgeElement.className = 'status-badge-under-logo status-badge-broken';
                 statusBadgeElement.style.display = 'block';
-                
-            } else {
-                console.log('❓ وضعیت دستگاه نامشخص:', machineStatus);
+            }
+            
+        } else {
+            console.log('❓ وضعیت دستگاه نامشخص:', machineStatus);
+            if (machineStatusElement) {
                 machineStatusElement.textContent = machineStatus || 'نامشخص';
                 machineStatusElement.className = 'machine-status status-maintenance';
+            }
+            if (machineIcon) {
                 machineIcon.className = 'machine-icon bg-maintenance';
                 machineIcon.innerHTML = '<i class="fas fa-question-circle"></i>';
-                
-                // وضعیت زیر لوگو برای حالت نامشخص
+            }
+            
+            // وضعیت زیر لوگو برای حالت نامشخص
+            if (statusBadgeElement) {
                 statusBadgeElement.textContent = 'نامشخص';
                 statusBadgeElement.className = 'status-badge-under-logo status-badge-unknown';
                 statusBadgeElement.style.display = 'block';
             }
-            
-            // تنظیم اطلاعات دیگر
-            const now = new Date();
-            lastUpdateElement.textContent = formatPersianDateTime(now);
-            operatorNameElement.textContent = report.operator_name || 'نوروزی';
+        }
+        
+        // تنظیم اطلاعات دیگر
+        const now = new Date();
+        if (lastUpdateElement) lastUpdateElement.textContent = formatPersianDateTime(now);
+        if (operatorNameElement) operatorNameElement.textContent = report.operator_name || 'نوروزی';
+        if (reportDateElement) {
             reportDateElement.textContent = report.created_at ? 
                 formatPersianDateTime(new Date(report.created_at)) : 'نامشخص';
-            
-            console.log('🎉 وضعیت دستگاه با موفقیت به روز شد');
         }
+        
+        console.log('🎉 وضعیت دستگاه با موفقیت به روز شد');
+    }
 
-        // تابع برای نمایش پیام عدم وجود داده
-        function showNoDataMessage() {
-            console.log('📭 نمایش پیام عدم وجود داده');
-            document.getElementById('machineContainer').style.display = 'flex';
-            document.getElementById('machineStatus').textContent = 'داده‌ای یافت نشد';
-            document.getElementById('machineStatus').className = 'machine-status status-maintenance';
-            document.getElementById('machineIcon').className = 'machine-icon bg-maintenance';
-            document.getElementById('machineIcon').innerHTML = '<i class="fas fa-database"></i>';
-            
-            // وضعیت زیر لوگو برای حالت بدون داده
-            const statusBadgeElement = document.getElementById('statusBadgeUnderLogo');
+    // تابع برای نمایش پیام عدم وجود داده
+    function showNoDataMessage() {
+        console.log('📭 نمایش پیام عدم وجود داده');
+        const machineContainer = document.getElementById('machineContainer');
+        const machineStatus = document.getElementById('machineStatus');
+        const machineIcon = document.getElementById('machineIcon');
+        const statusBadgeElement = document.getElementById('statusBadgeUnderLogo');
+        
+        if (machineContainer) machineContainer.style.display = 'flex';
+        if (machineStatus) {
+            machineStatus.textContent = 'داده‌ای یافت نشد';
+            machineStatus.className = 'machine-status status-maintenance';
+        }
+        if (machineIcon) {
+            machineIcon.className = 'machine-icon bg-maintenance';
+            machineIcon.innerHTML = '<i class="fas fa-database"></i>';
+        }
+        
+        // وضعیت زیر لوگو برای حالت بدون داده
+        if (statusBadgeElement) {
             statusBadgeElement.textContent = 'بدون داده';
             statusBadgeElement.className = 'status-badge-under-logo status-badge-unknown';
             statusBadgeElement.style.display = 'block';
         }
+    }
 
-        // تابع برای نمایش پیام خطا
-        function showErrorMessage(message) {
-            console.log('💥 نمایش پیام خطا:', message);
-            document.getElementById('machineContainer').style.display = 'flex';
-            document.getElementById('machineStatus').textContent = "اتصال اینترنت ناپایدار است";
-            document.getElementById('machineStatus').className = 'machine-status status-broken';
-            document.getElementById('machineIcon').className = 'machine-icon bg-broken';
-            document.getElementById('machineIcon').innerHTML = '<i class="fas fa-exclamation-circle"></i>';
-            
-            // وضعیت زیر لوگو برای حالت خطا
-            const statusBadgeElement = document.getElementById('statusBadgeUnderLogo');
+    // تابع برای نمایش پیام خطا
+    function showErrorMessage(message) {
+        console.log('💥 نمایش پیام خطا:', message);
+        const machineContainer = document.getElementById('machineContainer');
+        const machineStatus = document.getElementById('machineStatus');
+        const machineIcon = document.getElementById('machineIcon');
+        const statusBadgeElement = document.getElementById('statusBadgeUnderLogo');
+        
+        if (machineContainer) machineContainer.style.display = 'flex';
+        if (machineStatus) {
+            machineStatus.textContent = "اتصال اینترنت ناپایدار است";
+            machineStatus.className = 'machine-status status-broken';
+        }
+        if (machineIcon) {
+            machineIcon.className = 'machine-icon bg-broken';
+            machineIcon.innerHTML = '<i class="fas fa-exclamation-circle"></i>';
+        }
+        
+        // وضعیت زیر لوگو برای حالت خطا
+        if (statusBadgeElement) {
             statusBadgeElement.textContent = 'خطا';
             statusBadgeElement.className = 'status-badge-under-logo status-badge-broken';
             statusBadgeElement.style.display = 'block';
         }
+    }
 
-        // تابع دیباگ برای بررسی وضعیت
-        function debugStatus() {
-            console.log('🔍 وضعیت فعلی عناصر:');
-            console.log('- machineContainer display:', document.getElementById('machineContainer').style.display);
-            console.log('- statusBadgeUnderLogo display:', document.getElementById('statusBadgeUnderLogo').style.display);
-            console.log('- statusBadgeUnderLogo text:', document.getElementById('statusBadgeUnderLogo').textContent);
-            console.log('- machineStatus text:', document.getElementById('machineStatus').textContent);
-            
-            // تست دستی وضعیت‌های مختلف
-            const testData = [
-                { machine_status: 'سالم', operator_name: 'تست سالم' },
-                { machine_status: 'خراب', operator_name: 'تست خراب' },
-                { machine_status: 'در حال تعمیر', operator_name: 'تست تعمیر' }
-            ];
-            
-            const randomTest = testData[Math.floor(Math.random() * testData.length)];
-            console.log('🧪 تست دستی با داده:', randomTest);
-            updateMachineStatus(randomTest);
-        }
+    // تابع دیباگ برای بررسی وضعیت
+    function debugStatus() {
+        console.log('🔍 وضعیت فعلی عناصر:');
+        console.log('- machineContainer display:', document.getElementById('machineContainer')?.style.display);
+        console.log('- statusBadgeUnderLogo display:', document.getElementById('statusBadgeUnderLogo')?.style.display);
+        console.log('- statusBadgeUnderLogo text:', document.getElementById('statusBadgeUnderLogo')?.textContent);
+        console.log('- machineStatus text:', document.getElementById('machineStatus')?.textContent);
+        
+        // تست دستی وضعیت‌های مختلف
+        const testData = [
+            { machine_status: 'سالم', operator_name: 'تست سالم' },
+            { machine_status: 'خراب', operator_name: 'تست خراب' },
+            { machine_status: 'در حال تعمیر', operator_name: 'تست تعمیر' }
+        ];
+        
+        const randomTest = testData[Math.floor(Math.random() * testData.length)];
+        console.log('🧪 تست دستی با داده:', randomTest);
+        updateMachineStatus(randomTest);
+    }
 
-        // اجرا پس از لود صفحه
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 صفحه لود شد');
-            
-            // مدیریت زمان ورود کاربر
-            const now = new Date();
-            window.loginTime = now;
-            
-            // نمایش زمان ورود
-            const loginTimeElement = document.getElementById('loginTime');
-            const lastLoginTimeElement = document.getElementById('lastLoginTime');
-            
-            if (loginTimeElement) {
-                loginTimeElement.textContent = formatPersianDateTime(now);
-            }
-            
-            if (lastLoginTimeElement) {
-                lastLoginTimeElement.textContent = formatPersianDateTime(now);
-            }
-
-            // به روز رسانی زمان آنلاین هر دقیقه
-            setInterval(updateOnlineTime, 60000);
-
-            // دریافت وضعیت دستگاه استنتر
-            console.log('🔄 شروع دریافت وضعیت دستگاه...');
-            getLatestMachineStatus();
-            
-            // به روز رسانی خودکار وضعیت دستگاه هر 30 ثانیه
-            setInterval(getLatestMachineStatus, 30000);
-        });
-
-        // تشخیص وضعیت آنلاین/آفلاین
-        // سرویس ورکر
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
-                navigator.serviceWorker.register('../sw.js');
+    // ==================== آپدیت تابع ارسال گزارش ====================
+    function setupReportForm() {
+        const reportForm = document.getElementById('reportForm');
+        if (reportForm) {
+            reportForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                e.stopPropagation(); 
+                
+                const problemDescription = document.getElementById('problem_description')?.value;
+                const { issueType, technician } = determineIssueTypeAndTechnician(problemDescription);
+                
+                const formData = {
+                    reporter_name: document.getElementById('reporter_name')?.value || '',
+                    machine_name: document.getElementById('machine_name')?.value || '',
+                    machine_status: document.getElementById('machine_status')?.value || 'سالم',
+                    problem_description: problemDescription || '',
+                    priority: document.getElementById('priority')?.value || 'متوسط',
+                    action_type: issueType,
+                    technician_name: technician,
+                    status: 'جدید',
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString(),
+                    actions_taken: problemDescription || ''
+                };
+                
+                try {
+                    const { data, error } = await supabase
+                        .from('operatourreports')
+                        .insert([formData]);
+                    
+                    if (error) {
+                        throw error;
+                    }
+                    
+                    alert(`✅ گزارش با موفقیت ارسال شد!\n\n📋 دستگاه: ${formData.machine_name}\n⚡ نوع ایراد: ${issueType}\n👤 تکنسین: ${technician}\n📊 وضعیت: ${formData.machine_status}\n📝 اقدامات: ثبت شد`);
+                    closeReportPopup();
+                    loadReports();
+                    getLatestMachineStatus(); // بروزرسانی وضعیت دستگاه
+                    
+                } catch (error) {
+                    console.error('خطا در ارسال گزارش:', error);
+                    alert('❌ خطا در ارسال گزارش. لطفاً دوباره تلاش کنید.');
+                }
             });
         }
+    }
 
-        // مدیریت آفلاین
-        window.addEventListener('online', function() {
-            document.getElementById('offlineAlert').style.display = 'none';
-        });
+    // تابع باز کردن پاپاپ گزارش
+    function openReportPopup(machine_name) {
+        // جلوگیری از event bubbling
+        if (event) event.stopPropagation();
+        
+        document.getElementById('machine_name').value = machine_name;
+        document.getElementById('reportPopup').style.display = 'flex';
+        document.getElementById('reporter_name').focus();
+        document.getElementById('problem_description').value = '';
+    }
+    
+    // تابع بستن پاپاپ گزارش
+    function closeReportPopup() {
+        document.getElementById('reportPopup').style.display = 'none';
+        const reportForm = document.getElementById('reportForm');
+        if (reportForm) reportForm.reset();
+    }
 
-        window.addEventListener('offline', function() {
-            document.getElementById('offlineAlert').style.display = 'block';
-        });
-
-        if (!navigator.onLine) {
-            document.getElementById('offlineAlert').style.display = 'block';
+    // تابع نمایش گزارش‌ها
+    function displayReports(reports) {
+        const container = document.getElementById('reportsTableContainer');
+        if (!container) return;
+        
+        if (!reports || reports.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <p>هنوز گزارشی ثبت نشده است</p>
+                </div>
+            `;
+            return;
         }
+        
+        let tableHTML = `
+            <table class="reports-table">
+                <thead>
+                    <tr>
+                        <th>نام گزارش‌ دهنده</th>
+                        <th>دستگاه</th>
+                        <th>وضعیت دستگاه</th>
+                        <th>نوع ایراد</th>
+                        <th>تکنسین</th>
+                        <th>اولویت</th>
+                        <th>وضعیت گزارش</th>
+                        <th>مشکل نوشته شده</th>
+                        <th>تاریخ ثبت</th>
+                        <th>عملیات</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+        
+        reports.forEach(report => {
+            const date = new Date(report.created_at).toLocaleDateString('fa-IR');
+            const issueType = report.action_type || 'فنی';
+            const technician = report.technician_name || 'نوروزی';
+            
+            let issueTypeBadge;
+            if (issueType === 'برق') {
+                issueTypeBadge = '<span class="issue-type-badge electrical-badge">⚡ برق</span>';
+            } else if (issueType === 'فنی') {
+                issueTypeBadge = '<span class="issue-type-badge technical-badge">🔧 فنی</span>';
+            } else {
+                issueTypeBadge = '<span class="issue-type-badge combined-badge">🔰 ترکیبی</span>';
+            }
+            
+            let technicianBadge;
+            if (technician === 'ابراهیمی') {
+                technicianBadge = '<span class="technician-name electrical-technician">ابراهیمی</span>';
+            } else if (technician === 'نوروزی') {
+                technicianBadge = '<span class="technician-name technical-technician">نوروزی</span>';
+            } else {
+                technicianBadge = '<span class="technician-name combined-technician">هر دو</span>';
+            }
+            
+            tableHTML += `
+                <tr>
+                    <td>${report.reporter_name}</td>
+                    <td>${report.machine_name}</td>
+                    <td>${report.machine_status}</td>
+                    <td>${issueTypeBadge}</td>
+                    <td>${technicianBadge}</td>
+                    <td>${report.priority || '-'}</td>
+                    <td>${report.status || 'جدید'}</td>
+                    <td title="${report.problem_description}">
+                        ${report.problem_description}
+                    </td>
+                    <td>${date}</td>
+                    <td>
+                        <button class="delete-btn" onclick="deleteReport('${report.id}')">
+                            <i class="fas fa-trash"></i>
+                            حذف
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+        
+        tableHTML += `
+                </tbody>
+            </table>
+        `;
+        
+        container.innerHTML = tableHTML;
+    }
+
+    // تابع لود گزارش‌ها
+    async function loadReports() {
+        try {
+            const { data: reports, error } = await supabase
+                .from('operatourreports')
+                .select('*')
+                .order('created_at', { ascending: false });
+            
+            if (error) {
+                throw error;
+            }
+            
+            displayReports(reports);
+            
+        } catch (error) {
+            console.error('خطا در دریافت گزارش‌ها:', error);
+            alert('خطا در دریافت گزارش‌ها');
+        }
+    }
+
+    // تابع حذف گزارش
+    async function deleteReport(reportId) {
+        const result = await confirm('آیا از حذف این گزارش اطمینان دارید؟');
+        if (!result) {
+            return;
+        }
+        
+        try {
+            const { error } = await supabase
+                .from('operatourreports')
+                .delete()
+                .eq('id', reportId);
+            
+            if (error) {
+                throw error;
+            }
+            
+            alert('گزارش با موفقیت حذف شد');
+            loadReports();
+            getLatestMachineStatus(); // بروزرسانی وضعیت دستگاه
+            
+        } catch (error) {
+            console.error('خطا در حذف گزارش:', error);
+            alert('خطا در حذف گزارش');
+        }
+    }
+
+    // تابع پاک کردن خودکار گزارش‌های قدیمی
+    async function autoDeleteOldReports() {
+        try {
+            const oneMonthAgo = new Date();
+            oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+            
+            const { error } = await supabase
+                .from('operatourreports')
+                .delete()
+                .lt('created_at', oneMonthAgo.toISOString());
+            
+            if (error) {
+                throw error;
+            }
+            
+            console.log('گزارش‌های قدیمی با موفقیت پاک شدند');
+            
+        } catch (error) {
+            console.error('خطا در پاک کردن گزارش‌های قدیمی:', error);
+        }
+    }
+
+    // تابع بروزرسانی گزارش‌ها
+    async function refreshReports() {
+        await loadReports();
+        alert('گزارش‌ها با موفقیت بروزرسانی شدند');
+    }
+
+    // تابع بروزرسانی وضعیت دستگاه
+    async function refreshMachineStatus() {
+        await getLatestMachineStatus();
+        alert('وضعیت دستگاه با موفقیت بروزرسانی شد');
+    }
+
+    // مدیریت time login
+    const now = new Date();
+    window.loginTime = now;
+    
+    // نمایش زمان ورود
+    const loginTimeElement = document.getElementById('loginTime');
+    const lastLoginTimeElement = document.getElementById('lastLoginTime');
+    
+    if (loginTimeElement) {
+        loginTimeElement.textContent = formatPersianDateTime(now);
+    }
+    
+    if (lastLoginTimeElement) {
+        lastLoginTimeElement.textContent = formatPersianDateTime(now);
+    }
+
+    // به روز رسانی زمان آنلاین هر دقیقه
+    setInterval(updateOnlineTime, 60000);
+
+    // دریافت وضعیت دستگاه استنتر
+    console.log('🔄 شروع دریافت وضعیت دستگاه...');
+    getLatestMachineStatus();
+    
+    // به روز رسانی خودکار وضعیت دستگاه هر 30 ثانیه
+    setInterval(getLatestMachineStatus, 30000);
+
+    // لود گزارش‌ها هنگام بارگذاری صفحه
+    loadReports();
+    
+    // اجرای پاک‌سازی خودکار
+    autoDeleteOldReports();
+
+    // تنظیم فرم گزارش
+    setupReportForm();
+
+    // ==================== قرار دادن توابع در scope سراسری ====================
+    window.getLatestMachineStatus = getLatestMachineStatus;
+    window.updateMachineStatus = updateMachineStatus;
+    window.showNoOperatorStatus = showNoOperatorStatus;
+    window.showNoDataMessage = showNoDataMessage;
+    window.showErrorMessage = showErrorMessage;
+    window.debugStatus = debugStatus;
+    window.formatPersianDateTime = formatPersianDateTime;
+    window.getTimeSinceLogin = getTimeSinceLogin;
+    window.updateOnlineTime = updateOnlineTime;
+    window.determineIssueTypeAndTechnician = determineIssueTypeAndTechnician;
+    window.openReportPopup = openReportPopup;
+    window.closeReportPopup = closeReportPopup;
+    window.deleteReport = deleteReport;
+    window.loadReports = loadReports;
+    window.refreshReports = refreshReports;
+    window.refreshMachineStatus = refreshMachineStatus;
+    window.autoDeleteOldReports = autoDeleteOldReports;
+    
+    console.log('✅ تمامی توابع در scope سراسری قرار گرفتند');
+});
+
+// ==================== CUSTOM CONFIRM SYSTEM ====================
+delete window.confirm;
+
+window.confirm = function(message) {
+    return new Promise((resolve) => {
+        // ساخت overlay
+        const overlay = document.createElement('div');
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        `;
+        
+        // ساخت dialog
+        const dialog = document.createElement('div');
+        dialog.style.cssText = `
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            text-align: center;
+            min-width: 300px;
+            max-width: 90%;
+            font-family: Vazirmatn, sans-serif;
+            border: 2px solid #2c3e50;
+        `;
+        
+        dialog.innerHTML = `
+            <div style="margin-bottom: 20px; font-size: 16px; color: #2c3e50; line-height: 1.5;">${message}</div>
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button id="customConfirmYes" 
+                        style="padding: 10px 25px; background: #27ae60; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                    بله
+                </button>
+                <button id="customConfirmNo" 
+                        style="padding: 10px 25px; background: #e74c3c; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                    خیر
+                </button>
+            </div>
+        `;
+        
+        overlay.appendChild(dialog);
+        document.body.appendChild(overlay);
+        
+        // تابع بستن
+        const closeConfirm = function(result) {
+            if (document.body.contains(overlay)) {
+                document.body.removeChild(overlay);
+            }
+            resolve(result);
+        };
+        
+        // اضافه کردن event listener برای دکمه‌ها
+        document.getElementById('customConfirmYes').addEventListener('click', () => closeConfirm(true));
+        document.getElementById('customConfirmNo').addEventListener('click', () => closeConfirm(false));
+        
+        // با کلیک روی overlay هم بسته نشه (مثل confirm اصلی)
+        overlay.onclick = function(e) {
+            if (e.target === overlay) {
+                // کاری نکن - مثل confirm اصلی که با کلیک خارج بسته نمیشه
+            }
+        };
+    });
+};
+
+// Service Worker
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+        navigator.serviceWorker.register('../sw.js');
+    });
+}
+
+// مدیریت آفلاین
+window.addEventListener('online', function() {
+    const offlineAlert = document.getElementById('offlineAlert');
+    if (offlineAlert) offlineAlert.style.display = 'none';
+});
+
+window.addEventListener('offline', function() {
+    const offlineAlert = document.getElementById('offlineAlert');
+    if (offlineAlert) offlineAlert.style.display = 'block';
+});
+
+if (!navigator.onLine) {
+    const offlineAlert = document.getElementById('offlineAlert');
+    if (offlineAlert) offlineAlert.style.display = 'block';
+}
     </script>
-    <script src="./supervisor-notifications.js"></script>
+   
 </body>
 </html>
